@@ -47,11 +47,9 @@ local swapListeners = {}
   @param {number} itemId
   @param {number} enchantId
     Optional enchantId to consider when equipping the item
-  @param {number} runeAbilityId
-    Optional runeAbilityId to consider
   @param {number} slotId
 ]]--
-function GM_AddToCombatQueue(itemId, enchantId, runeAbilityId, slotId)
+function GM_AddToCombatQueue(itemId, enchantId, slotId)
   if type(itemId) ~= "number" then
     mod.logger.PrintUserChatError(
       string.format(rggm.L["macro_invalid_argument"], 1, "GM_AddToCombatQueue", type(itemId)))
@@ -64,15 +62,9 @@ function GM_AddToCombatQueue(itemId, enchantId, runeAbilityId, slotId)
     return
   end
 
-  if runeAbilityId ~= nil and type(runeAbilityId) ~= "number" then
-    mod.logger.PrintUserChatError(
-      string.format(rggm.L["macro_invalid_argument"], 3, "GM_AddToCombatQueue", type(runeAbilityId)))
-    return
-  end
-
   if type(slotId) ~= "number" then
     mod.logger.PrintUserChatError(
-      string.format(rggm.L["macro_invalid_argument"], 4, "GM_AddToCombatQueue", type(slotId)))
+      string.format(rggm.L["macro_invalid_argument"], 3, "GM_AddToCombatQueue", type(slotId)))
     return
   end
 
@@ -81,7 +73,7 @@ function GM_AddToCombatQueue(itemId, enchantId, runeAbilityId, slotId)
   if equipSlot == nil then return end
 
   if me.CheckSlotValidity(equipSlot, slotId) then
-    mod.combatQueue.AddToQueue(itemId, enchantId, runeAbilityId, slotId)
+    mod.combatQueue.AddToQueue(itemId, enchantId, slotId)
   else
     mod.logger.PrintUserChatError(string.format(rggm.L["unable_to_find_equipslot"], itemId))
     return

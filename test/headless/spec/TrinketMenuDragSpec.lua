@@ -106,7 +106,7 @@ describe("TrinketMenu drag and drop", function()
     placementFailure = nil
 
     calls = {
-      findItemInBag = {},        -- itemManager.FindItemInBag(itemId, enchantId, runeAbilityId)
+      findItemInBag = {},        -- itemManager.FindItemInBag(itemId, enchantId)
       pickedUpContainerItems = {}, -- C_Container.PickupContainerItem(bagNumber, bagPos)
       placedInBag = {},          -- itemManager.PlaceCursorItemInBag(itemId)
       equipped = {},             -- itemManager.EquipItemByItemAndEnchantId(item)
@@ -131,10 +131,8 @@ describe("TrinketMenu drag and drop", function()
     }
 
     rggm.itemManager = {
-      FindItemInBag = function(itemId, enchantId, runeAbilityId)
-        calls.findItemInBag[#calls.findItemInBag + 1] = {
-          itemId = itemId, enchantId = enchantId, runeAbilityId = runeAbilityId
-        }
+      FindItemInBag = function(itemId, enchantId)
+        calls.findItemInBag[#calls.findItemInBag + 1] = { itemId = itemId, enchantId = enchantId }
 
         if bagLocation == nil then return nil, nil, false end
 
@@ -268,14 +266,11 @@ describe("TrinketMenu drag and drop", function()
       assert.are.same({ { bagNumber = 0, bagPos = 3 } }, calls.pickedUpContainerItems)
     end)
 
-    it("matches on the itemId alone because trinkets carry no enchant or rune", function()
+    it("matches on the itemId alone because trinkets carry no enchant", function()
       trinketMenu.TrinketMenuSlotOnDragStart(CreateFakeTrinketSlot(TRINKET_ITEM_ID))
 
       assert.are.equal(1, #calls.findItemInBag)
-      assert.are.same(
-        { itemId = TRINKET_ITEM_ID, enchantId = 0, runeAbilityId = 0 },
-        calls.findItemInBag[1]
-      )
+      assert.are.same({ itemId = TRINKET_ITEM_ID, enchantId = 0 }, calls.findItemInBag[1])
     end)
 
     it("does nothing when drag and drop is disabled", function()

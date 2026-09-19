@@ -381,10 +381,10 @@ function me.TrinketMenuSlotOnDragStart(self)
   if self.itemId == nil then return end -- slot represents no item
 
   --[[
-    Trinkets carry neither an enchant nor a rune - matching on the itemId alone is enough
-    (0 acts as a wildcard for both the enchantId and the runeAbilityId)
+    Trinkets carry no enchant - matching on the itemId alone is enough
+    (0 acts as a wildcard for the enchantId)
   ]]--
-  local bagNumber, bagPos = mod.itemManager.FindItemInBag(self.itemId, 0, 0)
+  local bagNumber, bagPos = mod.itemManager.FindItemInBag(self.itemId, 0)
 
   if bagNumber == nil then return end
 

@@ -147,8 +147,6 @@ function me.GetItemsForInventoryType(inventoryType)
   end
 
   for _, entry in ipairs(mod.itemLocationCache.GetBagEntries()) do
-    -- runes are not cached (engraving fires no bag event) - read live per occupied slot
-    local rune = mod.engrave.GetRuneForInventorySlot(entry.bagNumber, entry.bagPos)
     local itemName, _, itemRarity, _, _, _, _, _, equipSlot, itemIcon = C_Item.GetItemInfo(entry.itemId)
 
     for it = 1, #inventoryType do
@@ -166,7 +164,6 @@ function me.GetItemsForInventoryType(inventoryType)
           items[idx].equipSlot = equipSlot
           items[idx].quality = itemRarity
           items[idx].enchantId = entry.enchantId
-          items[idx].rune = rune or nil
 
           idx = idx + 1
         else
@@ -213,13 +210,9 @@ function me.EquipItemByItemAndEnchantId(item)
   ]]--
   if UnitAffectingCombat(RGGM_CONSTANTS.UNIT_ID_PLAYER) or mod.common.IsPlayerReallyDead()
     or mod.combatQueue.IsEquipChangeBlocked() or mod.common.IsPlayerCasting() then
-    mod.combatQueue.AddToQueue(
-      tonumber(item.itemId), tonumber(item.enchantId), tonumber(item.runeAbilityId), tonumber(item.slotId)
-    )
+    mod.combatQueue.AddToQueue(tonumber(item.itemId), tonumber(item.enchantId), tonumber(item.slotId))
   else
-    me.SwitchItems(
-      tonumber(item.itemId), tonumber(item.enchantId), tonumber(item.runeAbilityId), tonumber(item.slotId)
-    )
+    me.SwitchItems(tonumber(item.itemId), tonumber(item.enchantId), tonumber(item.slotId))
   end
 end
 
@@ -269,15 +262,13 @@ end
   @param {number} itemId
   @param {number} enchantId
     Optional enchantId
-  @param {number} runeAbilityId
-    Optional runeAbilityId
   @param {number} slotId
 
   @return {string | nil}
     string - one of me.failureReason if the swap was aborted
     nil - if the swap was executed
 ]]--
-function me.SwitchItems(itemId, enchantId, runeAbilityId, slotId)
+function me.SwitchItems(itemId, enchantId, slotId)
   if CursorHasItem() then
     NotifySwapFailure(me.failureReason.cursorBusy, slotId, itemId)
 
@@ -303,7 +294,7 @@ function me.SwitchItems(itemId, enchantId, runeAbilityId, slotId)
   end
 
   local failureReason = me.failureReason.itemNotFound
-  local bagNumber, bagPos, usedFallback = me.FindItemInBag(itemId, enchantId, runeAbilityId)
+  local bagNumber, bagPos, usedFallback = me.FindItemInBag(itemId, enchantId)
 
   if bagNumber and bagPos then
     local itemInfo = C_Container.GetContainerItemInfo(bagNumber, bagPos)
@@ -383,7 +374,7 @@ function me.FindEquipedItem(itemId)
 end
 
 --[[
-  Find a bag location holding an item matching the passed itemId, enchantId and runeAbilityId.
+  Find a bag location holding an item matching the passed itemId and enchantId.
   Candidate locations come from the item location cache; each candidate is re-verified against
   the live container link so a stale cache entry can never equip the wrong item. If the live
   contents diverged from the cache the scan retries once against a rebuilt cache
@@ -391,8 +382,6 @@ end
   @param {number} itemId
   @param {number} enchantId
     Optional enchantId to match
-  @param {number} runeAbilityId
-    Optional runeAbilityId to match
   @param {boolean} isRetry
     Internal; true when re-scanning after a stale cache was detected and invalidated
 
@@ -401,7 +390,7 @@ end
     number - the bagPos where the item was found
     nil - if the item could not be found
 ]]--
-ScanBagsForItem = function(itemId, enchantId, runeAbilityId, isRetry)
+ScanBagsForItem = function(itemId, enchantId, isRetry)
   local locations = mod.itemLocationCache.GetItemLocations(itemId)
   local staleEntryDetected = false
 
@@ -409,11 +398,9 @@ ScanBagsForItem = function(itemId, enchantId, runeAbilityId, isRetry)
     local entry = locations[i]
     local itemLink = C_Container.GetContainerItemLink(entry.bagNumber, entry.bagPos)
     local itemInfo = mod.common.GetItemInfo(itemLink)
-    -- runes are not cached (engraving fires no bag event) - read live per candidate
-    local rune = mod.engrave.GetRuneForInventorySlot(entry.bagNumber, entry.bagPos)
 
     if itemInfo.itemId == itemId then
-      if me.IsEnchantIdMatching(itemInfo, enchantId) and me.IsRuneAbilityIdMatching(rune, runeAbilityId) then
+      if me.IsEnchantIdMatching(itemInfo, enchantId) then
         mod.logger.LogDebug(me.tag, "Found item in bag: " .. entry.bagNumber .. " at position: " .. entry.bagPos)
 
         return entry.bagNumber, entry.bagPos
@@ -427,7 +414,7 @@ ScanBagsForItem = function(itemId, enchantId, runeAbilityId, isRetry)
     mod.logger.LogDebug(me.tag, "Item location cache diverged from live bag contents - rescanning")
     mod.itemLocationCache.Invalidate()
 
-    return ScanBagsForItem(itemId, enchantId, runeAbilityId, true)
+    return ScanBagsForItem(itemId, enchantId, true)
   end
 
   return nil, nil
@@ -440,13 +427,11 @@ end
   has a matching itemId but a different enchantId (or no enchant at all)
 
   If no exact copy can be found and fallbackToBaseItem is enabled a second pass matching the
-  itemId only is made (enchantId and runeAbilityId 0 act as wildcards for the matchers)
+  itemId only is made (enchantId 0 acts as a wildcard for the matcher)
 
   @param {number} itemId
   @param {number} enchantId
     Optional enchantId to match
-  @param {number} runeAbilityId
-    Optional runeAbilityId to match
 
   @return {number | nil}, {number | nil}, {boolean}
     number - the bagNumber where the item was found
@@ -454,19 +439,19 @@ end
     nil - if the item could not be found
     boolean - whether the hit was found by the itemId-only fallback pass
 ]]--
-function me.FindItemInBag(itemId, enchantId, runeAbilityId)
+function me.FindItemInBag(itemId, enchantId)
   mod.logger.LogDebug(me.tag, "Searching for item: " .. itemId .. " with enchant: "
       .. (enchantId or "nil") ..  " in bags")
 
-  local bagNumber, bagPos = ScanBagsForItem(itemId, enchantId, runeAbilityId)
+  local bagNumber, bagPos = ScanBagsForItem(itemId, enchantId)
 
   if bagNumber ~= nil then
     return bagNumber, bagPos, false
   end
 
   -- skip the fallback pass when the strict pass was already an itemId-only wildcard scan
-  if mod.configuration.IsFallbackToBaseItemEnabled() and not (enchantId == 0 and runeAbilityId == 0) then
-    bagNumber, bagPos = ScanBagsForItem(itemId, 0, 0)
+  if mod.configuration.IsFallbackToBaseItemEnabled() and enchantId ~= 0 then
+    bagNumber, bagPos = ScanBagsForItem(itemId, 0)
 
     if bagNumber ~= nil then
       mod.logger.LogDebug(me.tag, "Found substitute copy of item: " .. itemId .. " through fallback pass")
@@ -478,31 +463,6 @@ function me.FindItemInBag(itemId, enchantId, runeAbilityId)
   mod.logger.LogError(me.tag, "Item not found in bags")
 
   return nil, nil, false
-end
-
---[[
-  Search for an item in all bags and return the bagNumber and bagPos
-
-  @param {table} itemInfo
-
-  @return {number | nil}, {number | nil}
-    number - the bagNumber where the item was found
-    number - the bagPos where the item was found
-    nil - if the item could not be found
-]]--
-function me.FindItemInBagForCursor(itemInfo)
-  for i = 0, 4 do
-    for j = 1, C_Container.GetContainerNumSlots(i) do
-      local itemLink = C_Container.GetContainerItemLink(i, j)
-      local item = mod.common.GetItemInfo(itemLink)
-
-      if item.itemId == itemInfo.itemId and item.enchantId == itemInfo.enchantId then
-        return i, j
-      end
-    end
-  end
-
-  return nil, nil
 end
 
 --[[
@@ -532,38 +492,6 @@ function me.IsEnchantIdMatching(itemInfo, enchantId)
 end
 
 --[[
-  Check if the runeAbilityId of a rune matches the passed runeAbilityId
-
-  @param {table} rune
-  @param {number} runeAbilityId
-
-  @return {boolean}
-    true - If the runeAbilityId of the rune matches the passed runeAbilityId
-    false - If the runeAbilityId of the rune does not match the passed runeAbilityId
-]]--
-function me.IsRuneAbilityIdMatching(rune, runeAbilityId)
-  --[[
-    If the rune and the runeAbilityId is nil we consider it a match. This can happen when the
-    item doesn't have a rune at all or if SOD is not active and we ignore runes completely
-
-    If runeAbilityId is set to 0 we consider it to match as well. This can be the case if we don't care
-    about the rune itself and pass nil for the rune ability id
-  ]]--
-  if runeAbilityId == 0 or (rune == nil and runeAbilityId == nil) then
-    return true
-  end
-
-  --[[
-    If the rune is not nil we expect the runeAbilityId to match the passed skillLineAbilityID
-  ]]--
-  if rune and rune.skillLineAbilityID == runeAbilityId then
-    return true
-  end
-
-  return false
-end
-
---[[
   Find items in both bags and worn items that have an onUse effect. Duplicate items are filtered
 
   @param {table} inventoryType
@@ -585,19 +513,10 @@ function me.FindQuickChangeItems(inventoryType, mustHaveOnUse)
     for slot = 1, numSlots do
       local itemLink = C_Container.GetContainerItemLink(bag, slot)
       local itemInfo = mod.common.GetItemInfo(itemLink)
-      local rune = mod.engrave.GetRuneForInventorySlot(bag, slot)
-      local runeAbilityId = rune and rune.skillLineAbilityID or nil
-      local runeName = rune and rune.name or nil
 
-      if itemInfo.itemId and not me.IsDuplicateItem(items, itemInfo.itemId, itemInfo.enchantId, runeAbilityId) then
+      if itemInfo.itemId and not me.IsDuplicateItem(items, itemInfo.itemId, itemInfo.enchantId) then
         local item = me.AddItemsMatchingInventoryType(
-          inventoryType,
-          itemInfo.itemId,
-          itemInfo.enchantId,
-          runeAbilityId,
-          runeName,
-          mustHaveOnUse
-        )
+          inventoryType, itemInfo.itemId, itemInfo.enchantId, mustHaveOnUse)
 
         if item then
           table.insert(items, item)
@@ -611,19 +530,10 @@ function me.FindQuickChangeItems(inventoryType, mustHaveOnUse)
   for _, gearSlot in ipairs(gearSlots) do
     local itemLink = GetInventoryItemLink(RGGM_CONSTANTS.UNIT_ID_PLAYER, gearSlot.slotId)
     local itemInfo = mod.common.GetItemInfo(itemLink)
-    local rune = mod.engrave.GetRuneForEquipmentSlot(gearSlot.slotId)
-    local runeAbilityId = rune and rune.skillLineAbilityID or nil
-    local runeName = rune and rune.name or nil
 
-    if itemInfo.itemId and not me.IsDuplicateItem(items, itemInfo.itemId, itemInfo.enchantId, runeAbilityId) then
+    if itemInfo.itemId and not me.IsDuplicateItem(items, itemInfo.itemId, itemInfo.enchantId) then
       local item = me.AddItemsMatchingInventoryType(
-        inventoryType,
-        itemInfo.itemId,
-        itemInfo.enchantId,
-        runeAbilityId,
-        runeName,
-        mustHaveOnUse
-      )
+        inventoryType, itemInfo.itemId, itemInfo.enchantId, mustHaveOnUse)
 
       if item then
         table.insert(items, item)
@@ -639,18 +549,14 @@ end
   @param {number} itemId
   @param {number} enchantId
     Optional enchantId to match
-  @param {number} runeAbilityId
-    Optional runeAbilityId to match
 
   @return {boolean}
     true  - If the list already contains an item with the passed itemId and enchantId
     false - If the list does not contain an item with the passed itemId and enchantId
 ]]--
-function me.IsDuplicateItem(items, itemId, enchantId, runeAbilityId)
+function me.IsDuplicateItem(items, itemId, enchantId)
   for i = 1, #items do
-    if items[i].id == itemId
-      and items[i].enchantId == enchantId
-      and items[i].runeAbilityId == runeAbilityId then
+    if items[i].id == itemId and items[i].enchantId == enchantId then
       return true
     end
   end
@@ -686,10 +592,6 @@ end
   @param {number} itemId
   @param {number} enchantId
     Optional enchantId
-  @param {number} runeAbilityId
-    Optional runeAbilityId
-  @param {string} runeName
-    Optional runeName
   @param {boolean} mustHaveOnUse
     true - If the items have to have an onUse effect to be considered
     false - If the items do not have an onUse effect to be considered
@@ -698,7 +600,7 @@ end
     table - If an item could be found
     nil - If no item could be found
 ]]--
-function me.AddItemsMatchingInventoryType(inventoryType, itemId, enchantId, runeAbilityId, runeName, mustHaveOnUse)
+function me.AddItemsMatchingInventoryType(inventoryType, itemId, enchantId, mustHaveOnUse)
   local item
   local itemName, _, _, _, _, _, _, _, equipSlot, itemIcon = C_Item.GetItemInfo(itemId)
 
@@ -711,8 +613,6 @@ function me.AddItemsMatchingInventoryType(inventoryType, itemId, enchantId, rune
         item.name = itemName
         item.id = itemId
         item.enchantId = enchantId or nil
-        item.runeAbilityId = runeAbilityId or nil
-        item.runeName = runeName or nil
         item.texture = itemIcon
       else
         mod.logger.LogDebug(me.tag, "Skipped item: " .. itemName .. " because it has no onUse effect")

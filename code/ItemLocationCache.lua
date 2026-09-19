@@ -32,9 +32,7 @@
   the combat queue ticker, ItemManager.GetItemsForInventoryType per menu refresh).
 
   The cache starts dirty and rebuilds lazily on the next lookup after Invalidate. Core marks it
-  dirty on BAG_UPDATE and ITEM_LOCK_CHANGED. Rune engravings are deliberately not cached - a rune
-  changes through engraving without any bag event firing, so consumers read runes live per
-  candidate slot.
+  dirty on BAG_UPDATE and ITEM_LOCK_CHANGED.
 ]]--
 local mod = rggm
 local me = {}

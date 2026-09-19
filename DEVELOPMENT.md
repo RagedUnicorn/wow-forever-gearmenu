@@ -157,8 +157,8 @@ setter writes and every reader reads. The profile store is
 `GearMenuConfiguration.profiles = { [name] = snapshot }`, one stored copy per profile. A
 profile captures the `PROFILE_FIELD_SPEC` fields - the general options, the item quality
 filter, `gearBars` (every bar with its slots, sizes, orientation, lock state, key-binding
-labels and position), `quickChangeRules`, `frames`, the TrinketMenu settings, `uiTheme`,
-the Season of Discovery rune option and the base-item fallback. Bookkeeping stays out of
+labels and position), `quickChangeRules`, `frames`, the TrinketMenu settings, `uiTheme`
+and the base-item fallback. Bookkeeping stays out of
 it: `addonVersion`, `firstTimeInitializationDone`, the store itself and `activeProfile`,
 the name of the profile the live configuration belongs to. `activeProfile` is written
 only by `EnsureActiveProfile`, `SwitchProfile`, `CreateProfile`, `DeleteProfile` and

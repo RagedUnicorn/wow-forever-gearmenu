@@ -165,17 +165,6 @@ RGGM_SHOTS = {
     shows = "TrinketMenu with all trinkets and cooldowns in view; left/right click equips upper/lower slot"
   },
   {
-    name = "gm_rune_support",
-    shot = "rune_support",
-    frame = "GM_GearBarFrame_1",
-    kind = "gif",
-    setup = {},
-    includeFrames = { "GM_ChangeMenu" },
-    hideChrome = true,
-    padding = 250,
-    shows = "Season of Discovery rune icons overlaid on changeMenu items"
-  },
-  {
     name = "gm_create_gearbar",
     shot = "create_gearbar",
     frame = "SettingsPanel",

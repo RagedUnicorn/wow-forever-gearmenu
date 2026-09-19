@@ -224,7 +224,7 @@ function me.OnLoad(self)
     Fires when the player equips or unequips an item
     This is already filtered for the player only and seems to work better than UNIT_INVENTORY_CHANGED
     UNIT_INVENTORY_CHANGED does not fire when equipping between items that have the same id but might
-    have different enchantments or rune engravings
+    have different enchantments
   ]]--
   me.event.Register("PLAYER_EQUIPMENT_CHANGED", OnPlayerEquipmentChanged, { gated = true })
   -- Fires when the player equips or unequips an item this is used as fallback during initial login of the player
@@ -292,8 +292,6 @@ end
 ]]--
 Initialize = function()
   me.logger.LogDebug(me.tag, "Initialize addon")
-  -- update runes
-  me.engrave.RefreshRunes()
   -- setup slash commands
   me.cmd.SetupSlashCmdList()
   -- load addon variables

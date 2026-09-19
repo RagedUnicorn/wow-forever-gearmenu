@@ -29,7 +29,6 @@ code/Logger.lua
 code/Cmd.lua
 code/Ticker.lua
 code/Common.lua
-code/Season.lua
 code/Tooltip.lua
 code/Target.lua
 code/GearManager.lua
@@ -44,7 +43,6 @@ code/Encoder.lua
 code/Profile.lua
 code/Comm.lua
 code/Macro.lua
-code/Engrave.lua
 
 # gui
 gui/Frame.xml
@@ -66,4 +64,3 @@ gui/GeneralMenu.lua
 gui/TrinketConfigurationMenu.lua
 gui/QuickChangeMenu.lua
 gui/KeyBind.lua
-gui/EngraveFrame.lua

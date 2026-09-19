@@ -182,12 +182,8 @@ local CONFIGURATION_DEFAULTS = {
   ]]--
   { ["name"] = "uiTheme", ["default"] = RGGM_CONSTANTS.UI_THEME_CUSTOM },
   --[[
-    Whether to enable rune slots or not (this is an SOD specific feature)
-  ]]--
-  { ["name"] = "enableRuneSlots", ["default"] = true },
-  --[[
     Whether a swap may fall back to any bag copy of the requested itemId when no copy
-    with the exact enchantId/runeAbilityId can be found. Off by default to preserve
+    with the exact enchantId can be found. Off by default to preserve
     strict matching
   ]]--
   { ["name"] = "enableFallbackToBaseItem", ["default"] = false },
@@ -837,39 +833,14 @@ function me.SetUiTheme(uiTheme)
 end
 
 --[[
-  Show rune slots
-]]--
-function me.EnableRuneSlots()
-  GearMenuConfiguration.enableRuneSlots = true
-  mod.gearBar.UpdateGearBars(mod.gearBar.UpdateGearBarVisual)
-end
-
---[[
-  Hide rune slots
-]]--
-function me.DisableRuneSlots()
-  GearMenuConfiguration.enableRuneSlots = false
-  mod.gearBar.UpdateGearBars(mod.gearBar.UpdateGearBarVisual)
-end
-
---[[
-  @return {boolean}
-    true - if showing of rune slots is enabled
-    false - if showing of rune slots is disabled
-]]--
-function me.IsRuneSlotsEnabled()
-  return GearMenuConfiguration.enableRuneSlots
-end
-
---[[
-  Enable falling back to the base itemId when the exact enchant/rune copy is missing
+  Enable falling back to the base itemId when the exact enchant copy is missing
 ]]--
 function me.EnableFallbackToBaseItem()
   GearMenuConfiguration.enableFallbackToBaseItem = true
 end
 
 --[[
-  Disable falling back to the base itemId when the exact enchant/rune copy is missing
+  Disable falling back to the base itemId when the exact enchant copy is missing
 ]]--
 function me.DisableFallbackToBaseItem()
   GearMenuConfiguration.enableFallbackToBaseItem = false

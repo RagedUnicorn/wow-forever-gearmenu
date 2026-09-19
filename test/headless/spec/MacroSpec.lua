@@ -104,8 +104,8 @@ describe("Macro", function()
       end
     }
     rggm.combatQueue = {
-      AddToQueue = function(itemId, enchantId, runeAbilityId, slotId)
-        queueAdds[#queueAdds + 1] = { itemId, enchantId, runeAbilityId, slotId }
+      AddToQueue = function(itemId, enchantId, slotId)
+        queueAdds[#queueAdds + 1] = { itemId, enchantId, slotId }
       end,
       RemoveFromQueue = function(slotId)
         queueRemoves[#queueRemoves + 1] = slotId
@@ -186,24 +186,24 @@ describe("Macro", function()
     it("queues a valid swap and does not print an error", function()
       gearSlots = { { slotId = 13 }, { slotId = 14 } }
 
-      GM_AddToCombatQueue(1000, 0, 0, 13)
+      GM_AddToCombatQueue(1000, 0, 13)
 
       assert.are.equal(1, #queueAdds)
-      assert.are.same({ 1000, 0, 0, 13 }, queueAdds[1])
+      assert.are.same({ 1000, 0, 13 }, queueAdds[1])
       assert.are.equal(0, #chatErrors)
     end)
 
-    it("allows nil optional enchantId and runeAbilityId", function()
+    it("allows a nil optional enchantId", function()
       gearSlots = { { slotId = 13 } }
 
-      GM_AddToCombatQueue(1000, nil, nil, 13)
+      GM_AddToCombatQueue(1000, nil, 13)
 
       assert.are.equal(1, #queueAdds)
       assert.are.equal(0, #chatErrors)
     end)
 
     it("rejects a non-number itemId with a chat error and does not queue", function()
-      GM_AddToCombatQueue("x", 0, 0, 13)
+      GM_AddToCombatQueue("x", 0, 13)
 
       assert.are.equal(0, #queueAdds)
       assert.are.equal(1, #chatErrors)
@@ -212,27 +212,19 @@ describe("Macro", function()
     end)
 
     it("rejects a non-number enchantId with a chat error and does not queue", function()
-      GM_AddToCombatQueue(1000, "x", 0, 13)
+      GM_AddToCombatQueue(1000, "x", 13)
 
       assert.are.equal(0, #queueAdds)
       assert.are.equal(1, #chatErrors)
       assert.is_truthy(chatErrors[1]:find("#2", 1, true))
     end)
 
-    it("rejects a non-number runeAbilityId with a chat error and does not queue", function()
-      GM_AddToCombatQueue(1000, 0, "x", 13)
+    it("rejects a non-number slotId with a chat error and does not queue", function()
+      GM_AddToCombatQueue(1000, 0, "x")
 
       assert.are.equal(0, #queueAdds)
       assert.are.equal(1, #chatErrors)
       assert.is_truthy(chatErrors[1]:find("#3", 1, true))
-    end)
-
-    it("rejects a non-number slotId with a chat error and does not queue", function()
-      GM_AddToCombatQueue(1000, 0, 0, "x")
-
-      assert.are.equal(0, #queueAdds)
-      assert.are.equal(1, #chatErrors)
-      assert.is_truthy(chatErrors[1]:find("#4", 1, true))
     end)
   end)
 

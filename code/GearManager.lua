@@ -195,24 +195,8 @@ local gearSlots = {
           INVTYPE_HOLDABLE - 4984
 
           INVTYPE_SHIELD - 19862
-
-          SOD
-          INVTYPE_WEAPONOFFHAND - 19866
-          SOD
-          INVTYPE_WEAPON - 19166
         ]]--
-        local invType = {
-          "INVTYPE_HOLDABLE",
-          "INVTYPE_SHIELD"
-        }
-
-        -- SOD dual wield support
-        if mod.season.IsSodActive() then
-          table.insert(invType, "INVTYPE_WEAPONOFFHAND")
-          table.insert(invType, "INVTYPE_WEAPON")
-        end
-
-        return invType
+        return {"INVTYPE_HOLDABLE", "INVTYPE_SHIELD"}
       elseif class == "WARRIOR" then
         return {"INVTYPE_HOLDABLE", "INVTYPE_SHIELD", "INVTYPE_WEAPON", "INVTYPE_WEAPONOFFHAND"}
       else

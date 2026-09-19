@@ -6,3 +6,5 @@
 # Breaking Changes
 * The Default profile is now your editable home profile instead of a frozen copy of the factory settings: it is never deleted or renamed, but loading it brings back what you last had in it. Use Reset to defaults to get the factory settings back
 * The Save current as... and Apply buttons are gone; Create new Profile and Load replace them. On the first login after the update the profile you had applied and not edited since becomes the active one, otherwise Default takes over your current settings - nothing is lost either way
+* Season of Discovery rune support is gone: the rune slots on the GearBar, the "Enable rune slots" option and the engraved-item tracking are removed because GearMenu Forever targets WoW Forever, which has no runes
+* `GM_AddToCombatQueue` no longer takes a runeAbilityId: the macro signature is now `GM_AddToCombatQueue(itemId, enchantId, slotId)` - update existing macros by dropping the third argument (for example `/run GM_AddToCombatQueue(233734, 0, 14)`)

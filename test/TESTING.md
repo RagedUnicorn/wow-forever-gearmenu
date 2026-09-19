@@ -44,11 +44,6 @@ The dev checkout in `Interface/AddOns/GearMenu` is what gets tested - no package
 | Classic Era               | 11508     | Full manual catalog ([test/manual/](manual/))         |
 | TBC Anniversary           | 20506     | Smoke checklist (below)                               |
 | MoP Classic               | 50504     | Smoke checklist (below)                               |
-| Season of Discovery (Era) | 11508     | `TC-SOD-*` cases - conditional, see note below        |
-
-The `TC-SOD-*` cases are **conditional**: run them only if a Season of Discovery character
-is available or if SoD-related code (`code/Season.lua`, `code/Engrave.lua`,
-`gui/EngraveFrame.lua`) was touched since the last release.
 
 ## 3. Smoke checklist (TBC Anniversary / MoP Classic)
 
@@ -181,14 +176,6 @@ One file per test case under [test/manual/](manual/). Case IDs follow `TC-<AREA>
 | ID                                              | Case                  |
 |-------------------------------------------------|-----------------------|
 | [TC-CMD-01](manual/TC-CMD-01-slash-commands.md) | /rggm command surface |
-
-### Season of Discovery (conditional)
-
-| ID                                                          | Case                                    |
-|-------------------------------------------------------------|-----------------------------------------|
-| [TC-SOD-01](manual/TC-SOD-01-rune-display.md)               | Rune display on items                   |
-| [TC-SOD-02](manual/TC-SOD-02-engraved-swap-combat-queue.md) | Engraved item swap through combat queue |
-| [TC-SOD-03](manual/TC-SOD-03-macro-rune-ability-id.md)      | Macro with runeAbilityId                |
 
 ## 5. Notes
 

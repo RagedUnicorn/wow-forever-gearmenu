@@ -54,13 +54,10 @@ end
     itemId to consider when equipping the item
   @param {number} enchantId
     Optional enchantId to consider when equipping the item
-  @param {number} runeAbilityId
-    Optional runeAbilityId
-
   @param {number} slotId
     The slotId to add the item to
 ]]--
-function me.AddToQueue(itemId, enchantId, runeAbilityId, slotId)
+function me.AddToQueue(itemId, enchantId, slotId)
   if not itemId or not slotId then return end
 
   assert(type(itemId) == "number", string.format(
@@ -71,20 +68,15 @@ function me.AddToQueue(itemId, enchantId, runeAbilityId, slotId)
       "bad argument #2 to `AddToQueue` (expected number got %s)", type(enchantId)))
   end
 
-  if runeAbilityId ~= nil then
-    assert(type(runeAbilityId) == "number", string.format(
-      "bad argument #3 to `AddToQueue` (expected number got %s)", type(runeAbilityId)))
-  end
-
   assert(type(slotId) == "number", string.format(
-    "bad argument #4 to `AddToQueue` (expected number got %s)", type(slotId)))
+    "bad argument #3 to `AddToQueue` (expected number got %s)", type(slotId)))
 
-  combatQueueStore[slotId] = { itemId, enchantId, runeAbilityId }
+  combatQueueStore[slotId] = { itemId, enchantId }
 
   mod.logger.LogDebug(me.tag, "Added item with itemId " .. itemId .. " and enchantId " .. (enchantId or "nil") ..
     " in slotId " .. slotId .. " to combatQueueStore")
 
-  mod.gearBar.UpdateCombatQueue(itemId, enchantId, runeAbilityId, slotId)
+  mod.gearBar.UpdateCombatQueue(itemId, enchantId, slotId)
   mod.ticker.StartTickerCombatQueue()
   mod.macro.FireSwapEvent(RGGM_CONSTANTS.SWAP_EVENT_QUEUED, slotId, itemId)
 end
@@ -113,7 +105,7 @@ function me.RemoveFromQueue(slotId)
   combatQueueStore[slotId] = nil
   mod.logger.LogDebug(me.tag, "Removed item with id " .. itemId .. " in slotId "
     .. slotId .. " from combatQueueStore")
-  mod.gearBar.UpdateCombatQueue(nil, nil, nil, slotId)
+  mod.gearBar.UpdateCombatQueue(nil, nil, slotId)
   mod.macro.FireSwapEvent(RGGM_CONSTANTS.SWAP_EVENT_UNQUEUED, slotId, itemId)
 end
 
@@ -165,7 +157,6 @@ function me.ProcessQueue()
       local item = {}
       item.itemId = combatQueueStore[gearSlot.slotId][1]
       item.enchantId = combatQueueStore[gearSlot.slotId][2] or nil
-      item.runeAbilityId = combatQueueStore[gearSlot.slotId][3] or nil
       item.slotId = gearSlot.slotId
       mod.itemManager.EquipItemByItemAndEnchantId(item)
     end

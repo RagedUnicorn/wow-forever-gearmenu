@@ -115,7 +115,6 @@ GearMenuConfiguration = {
   trinketMenuColumns = 4,
   trinketMenuSlotSize = 40,
   uiTheme = 2,
-  enableRuneSlots = true,
   profiles = {}
 }
 

@@ -9,7 +9,6 @@ Complete the test procedure in [test/TESTING.md](test/TESTING.md) before creatin
 * Automated gates - luacheck and busted must be green (locally and in CI)
 * Full manual test case catalog ([test/manual/](test/manual/)) on Classic Era
 * Smoke checklist on TBC Anniversary and MoP Classic
-* `TC-SOD-*` cases if a Season of Discovery character is available or SoD code was touched
 
 ## Deployment
 

@@ -224,7 +224,6 @@ function me.CreateGearSlotBase(gearBarFrame, gearBar, position, template)
 
   mod.uiHelper.CreateItemTexture(gearSlot, gearBar.gearSlotSize)
   gearSlot.combatQueueSlot = me.CreateCombatQueueSlot(gearSlot, gearBar.gearSlotSize)
-  gearSlot.runeSlot = mod.engraveFrame.CreateRuneSlot(gearSlot, gearBar.gearSlotSize)
   gearSlot.keyBindingText = me.CreateKeyBindingText(gearSlot, gearBar.gearSlotSize)
   gearSlot.position = position
 
@@ -356,7 +355,6 @@ end
 ]]--
 function me.UpdateGearBarVisual(gearBar)
   me.UpdateGearBarGearSlotTextures(gearBar)
-  mod.engraveFrame.UpdateGearBarRuneSlotTextures(gearBar)
   me.UpdateGearBarGearSlotCooldowns(gearBar)
   me.UpdateKeyBindingState(gearBar)
 end
@@ -488,12 +486,10 @@ end
     The itemId to update the combatQueue for
   @param {number} enchantId
     The enchantId to update the combatQueue for
-  @param {number} runeAbilityId
-    The runeAbilityId to update the combatQueue for
   @param {number} slotId
     The slotId to update the combatQueue for
 ]]--
-function me.UpdateCombatQueue(itemId, enchantId, runeAbilityId, slotId)
+function me.UpdateCombatQueue(itemId, enchantId, slotId)
   mod.logger.LogDebug(me.tag, "Updating combatqueues for slotId - " .. slotId)
 
   for _, gearBar in pairs(mod.gearBarStorage.GetGearBars()) do
@@ -504,7 +500,7 @@ function me.UpdateCombatQueue(itemId, enchantId, runeAbilityId, slotId)
         local icon = gearSlots[i].combatQueueSlot.icon
 
         if itemId then
-          local bagNumber, bagPos = mod.itemManager.FindItemInBag(itemId, enchantId, runeAbilityId)
+          local bagNumber, bagPos = mod.itemManager.FindItemInBag(itemId, enchantId)
 
           if bagNumber ~= nil and bagPos ~= nil then
             local itemInfo = C_Container.GetContainerItemInfo(bagNumber, bagPos)
@@ -752,7 +748,6 @@ function me.UpdateGearBarGearSlots(gearBar)
 
   -- update visual elements of the gearBar
   me.UpdateGearBarGearSlotTextures(gearBar)
-  mod.engraveFrame.UpdateGearBarRuneSlotTextures(gearBar)
   me.UpdateGearBarGearSlotCooldowns(gearBar)
   me.UpdateKeyBindingState(gearBar)
   me.UpdateGearBarSize(gearBar)
@@ -1013,22 +1008,9 @@ function me.GearSlotOnReceiveDrag(self)
 
       if cursorType ~= "item" or itemLink == nil then return end
 
-      --[[
-        Limited support for runeAbilityId. We cannot extract the rune just from the info we
-        get from the cursor info. This means that the item first has to be searched in the bags.
-        Based on that the rune can then be extracted. If two items have the same itemId and enchantId
-        however the one that is first found in the bags will be used.
-      ]]--
       local itemInfo = mod.common.GetItemInfo(itemLink)
-      local bagNumber, bagPos = mod.itemManager.FindItemInBagForCursor(itemInfo)
-      local rune = mod.engrave.GetRuneForInventorySlot(bagNumber, bagPos)
 
-      mod.combatQueue.AddToQueue(
-        itemInfo.itemId,
-        itemInfo.enchantId,
-        rune and rune.skillLineAbilityID or nil,
-        gearSlotMetaData.slotId
-      )
+      mod.combatQueue.AddToQueue(itemInfo.itemId, itemInfo.enchantId, gearSlotMetaData.slotId)
       ClearCursor()
     else
       EquipCursorItem(gearSlotMetaData.slotId)

@@ -54,7 +54,7 @@ describe("ItemManager swap failures", function()
   local userChatWarnMessages
   --[[
     bag fixture: bags[bagNumber] is a list where each entry is either an item table
-    ({ itemId, enchantId, rune, locked }) or false for an empty bag slot. Unlisted bags have
+    ({ itemId, enchantId, locked }) or false for an empty bag slot. Unlisted bags have
     zero slots.
   ]]--
   local bags
@@ -82,7 +82,6 @@ describe("ItemManager swap failures", function()
       L = rggm.L,
       logger = rggm.logger,
       common = rggm.common,
-      engrave = rggm.engrave,
       configuration = rggm.configuration,
       gearManager = rggm.gearManager,
       gearBar = rggm.gearBar,
@@ -156,12 +155,6 @@ describe("ItemManager swap failures", function()
       IsPlayerCasting = function() return false end,
       IsPlayerReallyDead = function() return false end
     }
-    rggm.engrave = {
-      GetRuneForInventorySlot = function(bagNumber, bagPos)
-        local item = bags[bagNumber] and bags[bagNumber][bagPos]
-        return item and item.rune or nil
-      end
-    }
     rggm.configuration = {
       IsFallbackToBaseItemEnabled = function() return fallbackEnabled end
     }
@@ -195,7 +188,6 @@ describe("ItemManager swap failures", function()
     rggm.L = previousModules.L
     rggm.logger = previousModules.logger
     rggm.common = previousModules.common
-    rggm.engrave = previousModules.engrave
     rggm.configuration = previousModules.configuration
     rggm.gearManager = previousModules.gearManager
     rggm.gearBar = previousModules.gearBar
@@ -210,7 +202,7 @@ describe("ItemManager swap failures", function()
     it("returns nil and reports nothing when the swap succeeds", function()
       bags[0] = { { itemId = 12345 } }
 
-      local reason = itemManager.SwitchItems(12345, nil, nil, 13)
+      local reason = itemManager.SwitchItems(12345, nil, 13)
 
       assert.is_nil(reason)
       assert.are.equal(0, #userChatMessages)
@@ -219,7 +211,7 @@ describe("ItemManager swap failures", function()
     it("fires the completed swap event when the bag swap succeeds", function()
       bags[0] = { { itemId = 12345 } }
 
-      itemManager.SwitchItems(12345, nil, nil, 13)
+      itemManager.SwitchItems(12345, nil, 13)
 
       assert.are.equal(1, #swapEvents)
       assert.are.same({
@@ -231,9 +223,9 @@ describe("ItemManager swap failures", function()
 
     it("fires unqueued then completed when a queued swap succeeds", function()
       bags[0] = { { itemId = 12345 } }
-      combatQueue.AddToQueue(12345, nil, nil, 13)
+      combatQueue.AddToQueue(12345, nil, 13)
 
-      itemManager.SwitchItems(12345, nil, nil, 13)
+      itemManager.SwitchItems(12345, nil, 13)
 
       assert.are.equal(3, #swapEvents)
       assert.are.equal(RGGM_CONSTANTS.SWAP_EVENT_QUEUED, swapEvents[1].eventName)
@@ -246,7 +238,7 @@ describe("ItemManager swap failures", function()
       -- switched into slot 14, exercising the equipped-item switch path
       equipped[13] = 12345
 
-      itemManager.SwitchItems(12345, nil, nil, 14)
+      itemManager.SwitchItems(12345, nil, 14)
 
       assert.are.equal(1, #swapEvents)
       assert.are.same({
@@ -257,7 +249,7 @@ describe("ItemManager swap failures", function()
     end)
 
     it("fires no completed swap event when the swap fails", function()
-      local reason = itemManager.SwitchItems(12345, nil, nil, 13)
+      local reason = itemManager.SwitchItems(12345, nil, 13)
 
       assert.are.equal(itemManager.failureReason.itemNotFound, reason)
       assert.are.equal(0, #swapEvents)
@@ -266,7 +258,7 @@ describe("ItemManager swap failures", function()
     it("reports CURSOR_BUSY when another item is on the cursor", function()
       cursorHasItem = true
 
-      local reason = itemManager.SwitchItems(12345, nil, nil, 13)
+      local reason = itemManager.SwitchItems(12345, nil, 13)
 
       assert.are.equal(itemManager.failureReason.cursorBusy, reason)
       assert.are.equal(1, #userChatMessages)
@@ -277,7 +269,7 @@ describe("ItemManager swap failures", function()
     it("reports SPELL_TARGETING while a spell requests a target", function()
       spellIsTargeting = true
 
-      local reason = itemManager.SwitchItems(12345, nil, nil, 13)
+      local reason = itemManager.SwitchItems(12345, nil, 13)
 
       assert.are.equal(itemManager.failureReason.spellTargeting, reason)
       assert.are.equal(1, #userChatMessages)
@@ -286,7 +278,7 @@ describe("ItemManager swap failures", function()
     end)
 
     it("reports ITEM_NOT_FOUND when the item is neither in the bags nor equipped", function()
-      local reason = itemManager.SwitchItems(12345, nil, nil, 13)
+      local reason = itemManager.SwitchItems(12345, nil, 13)
 
       assert.are.equal(itemManager.failureReason.itemNotFound, reason)
       assert.are.equal(1, #userChatMessages)
@@ -297,7 +289,7 @@ describe("ItemManager swap failures", function()
     it("reports ITEM_LOCKED when the container item is locked", function()
       bags[0] = { { itemId = 12345, locked = true } }
 
-      local reason = itemManager.SwitchItems(12345, nil, nil, 13)
+      local reason = itemManager.SwitchItems(12345, nil, 13)
 
       assert.are.equal(itemManager.failureReason.itemLocked, reason)
       assert.are.equal(1, #userChatMessages)
@@ -309,7 +301,7 @@ describe("ItemManager swap failures", function()
       bags[0] = { { itemId = 12345 } }
       inventoryLocked = true
 
-      local reason = itemManager.SwitchItems(12345, nil, nil, 13)
+      local reason = itemManager.SwitchItems(12345, nil, 13)
 
       assert.are.equal(itemManager.failureReason.itemLocked, reason)
       assert.are.equal(1, #userChatMessages)
@@ -318,7 +310,7 @@ describe("ItemManager swap failures", function()
     end)
 
     it("falls back to the itemId when the item name is not cached", function()
-      local reason = itemManager.SwitchItems(99999, nil, nil, 13)
+      local reason = itemManager.SwitchItems(99999, nil, 13)
 
       assert.are.equal(itemManager.failureReason.itemNotFound, reason)
       assert.are.equal(
@@ -326,19 +318,19 @@ describe("ItemManager swap failures", function()
     end)
 
     it("drops the queued entry after notifying a terminal failure", function()
-      combatQueue.AddToQueue(12345, nil, nil, 13)
+      combatQueue.AddToQueue(12345, nil, 13)
 
-      itemManager.SwitchItems(12345, nil, nil, 13)
+      itemManager.SwitchItems(12345, nil, 13)
 
       assert.is_true(combatQueue.IsCombatQueueEmpty())
       assert.are.equal(1, #userChatMessages)
     end)
 
     it("keeps the queued entry on a cursor-busy abort so it can retry", function()
-      combatQueue.AddToQueue(12345, nil, nil, 13)
+      combatQueue.AddToQueue(12345, nil, 13)
       cursorHasItem = true
 
-      itemManager.SwitchItems(12345, nil, nil, 13)
+      itemManager.SwitchItems(12345, nil, 13)
 
       assert.is_false(combatQueue.IsCombatQueueEmpty())
     end)
@@ -346,8 +338,8 @@ describe("ItemManager swap failures", function()
     it("notifies on every attempt for a direct swap without a queued entry", function()
       cursorHasItem = true
 
-      itemManager.SwitchItems(12345, nil, nil, 13)
-      itemManager.SwitchItems(12345, nil, nil, 13)
+      itemManager.SwitchItems(12345, nil, 13)
+      itemManager.SwitchItems(12345, nil, 13)
 
       assert.are.equal(2, #userChatMessages)
     end)
@@ -357,7 +349,7 @@ describe("ItemManager swap failures", function()
       equipped[INVSLOT_OFFHAND] = 22222
       bags[0] = { { itemId = 67890 } }
 
-      local reason = itemManager.SwitchItems(67890, nil, nil, INVSLOT_MAINHAND)
+      local reason = itemManager.SwitchItems(67890, nil, INVSLOT_MAINHAND)
 
       assert.are.equal(itemManager.failureReason.noBagSpace, reason)
       assert.are.equal(0, #pickedUpInventorySlots)
@@ -369,9 +361,9 @@ describe("ItemManager swap failures", function()
     it("drops the queued entry when the 2H bag-space precheck aborts the swap", function()
       equipped[INVSLOT_OFFHAND] = 22222
       bags[0] = { { itemId = 67890 } }
-      combatQueue.AddToQueue(67890, nil, nil, INVSLOT_MAINHAND)
+      combatQueue.AddToQueue(67890, nil, INVSLOT_MAINHAND)
 
-      itemManager.SwitchItems(67890, nil, nil, INVSLOT_MAINHAND)
+      itemManager.SwitchItems(67890, nil, INVSLOT_MAINHAND)
 
       assert.is_true(combatQueue.IsCombatQueueEmpty())
       assert.are.equal(1, #userChatMessages)
@@ -381,7 +373,7 @@ describe("ItemManager swap failures", function()
       equipped[INVSLOT_OFFHAND] = 22222
       bags[0] = { { itemId = 67890 }, false }
 
-      local reason = itemManager.SwitchItems(67890, nil, nil, INVSLOT_MAINHAND)
+      local reason = itemManager.SwitchItems(67890, nil, INVSLOT_MAINHAND)
 
       assert.is_nil(reason)
       assert.are.equal(0, #userChatMessages)
@@ -390,7 +382,7 @@ describe("ItemManager swap failures", function()
     it("equips a 2H with full bags when no offhand is worn", function()
       bags[0] = { { itemId = 67890 } }
 
-      local reason = itemManager.SwitchItems(67890, nil, nil, INVSLOT_MAINHAND)
+      local reason = itemManager.SwitchItems(67890, nil, INVSLOT_MAINHAND)
 
       assert.is_nil(reason)
       assert.are.equal(0, #userChatMessages)
@@ -400,7 +392,7 @@ describe("ItemManager swap failures", function()
       equipped[INVSLOT_OFFHAND] = 22222
       bags[0] = { { itemId = 12345 } }
 
-      local reason = itemManager.SwitchItems(12345, nil, nil, INVSLOT_MAINHAND)
+      local reason = itemManager.SwitchItems(12345, nil, INVSLOT_MAINHAND)
 
       assert.is_nil(reason)
       assert.are.equal(0, #userChatMessages)
@@ -411,7 +403,7 @@ describe("ItemManager swap failures", function()
     it("keeps strict matching when the toggle is off and only an inexact copy exists", function()
       bags[0] = { { itemId = 12345, enchantId = 70 } }
 
-      local reason = itemManager.SwitchItems(12345, 60, nil, 13)
+      local reason = itemManager.SwitchItems(12345, 60, 13)
 
       assert.are.equal(itemManager.failureReason.itemNotFound, reason)
       assert.are.equal(0, #userChatWarnMessages)
@@ -424,7 +416,7 @@ describe("ItemManager swap failures", function()
       fallbackEnabled = true
       bags[0] = { { itemId = 12345 } }
 
-      local reason = itemManager.SwitchItems(12345, 60, nil, 13)
+      local reason = itemManager.SwitchItems(12345, 60, 13)
 
       assert.is_nil(reason)
       assert.are.equal(0, #userChatMessages)
@@ -437,7 +429,7 @@ describe("ItemManager swap failures", function()
       fallbackEnabled = true
       bags[0] = { { itemId = 12345, enchantId = 60 } }
 
-      local reason = itemManager.SwitchItems(12345, 60, nil, 13)
+      local reason = itemManager.SwitchItems(12345, 60, 13)
 
       assert.is_nil(reason)
       assert.are.equal(0, #userChatWarnMessages)
@@ -447,7 +439,7 @@ describe("ItemManager swap failures", function()
     it("still reports ITEM_NOT_FOUND when no copy of the itemId exists at all", function()
       fallbackEnabled = true
 
-      local reason = itemManager.SwitchItems(12345, 60, nil, 13)
+      local reason = itemManager.SwitchItems(12345, 60, 13)
 
       assert.are.equal(itemManager.failureReason.itemNotFound, reason)
       assert.are.equal(0, #userChatWarnMessages)
@@ -458,7 +450,7 @@ describe("ItemManager swap failures", function()
       fallbackEnabled = true
       bags[0] = { { itemId = 12345, locked = true } }
 
-      local reason = itemManager.SwitchItems(12345, 60, nil, 13)
+      local reason = itemManager.SwitchItems(12345, 60, 13)
 
       assert.are.equal(itemManager.failureReason.itemLocked, reason)
       assert.are.equal(0, #userChatWarnMessages)
@@ -467,31 +459,9 @@ describe("ItemManager swap failures", function()
         string.format(rggm.L["swap_failure_item_locked"], "Test Item"), userChatMessages[1])
     end)
 
-    it("equips the un-engraved copy and warns when the requested rune copy is missing", function()
-      fallbackEnabled = true
-      bags[0] = { { itemId = 12345 } }
-
-      local reason = itemManager.SwitchItems(12345, nil, 7, 13)
-
-      assert.is_nil(reason)
-      assert.are.equal(0, #userChatMessages)
-      assert.are.equal(1, #userChatWarnMessages)
-      assert.are.equal(
-        string.format(rggm.L["swap_fallback_to_base_item"], "Test Item"), userChatWarnMessages[1])
-    end)
-
-    it("keeps strict rune matching when the toggle is off", function()
-      bags[0] = { { itemId = 12345, rune = { skillLineAbilityID = 8 } } }
-
-      local reason = itemManager.SwitchItems(12345, nil, 7, 13)
-
-      assert.are.equal(itemManager.failureReason.itemNotFound, reason)
-      assert.are.equal(0, #userChatWarnMessages)
-    end)
-
     it("drops the queued entry and warns once when a queued swap falls back", function()
       fallbackEnabled = true
-      combatQueue.AddToQueue(12345, 60, nil, 13)
+      combatQueue.AddToQueue(12345, 60, 13)
       bags[0] = { { itemId = 12345 } }
 
       combatQueue.ProcessQueue()
@@ -504,7 +474,7 @@ describe("ItemManager swap failures", function()
 
   describe("once-per-entry notification through ProcessQueue", function()
     it("notifies a queued swap once per reason while the ticker keeps retrying", function()
-      combatQueue.AddToQueue(12345, nil, nil, 13)
+      combatQueue.AddToQueue(12345, nil, 13)
       cursorHasItem = true
 
       combatQueue.ProcessQueue()
@@ -517,7 +487,7 @@ describe("ItemManager swap failures", function()
     end)
 
     it("notifies again when the failure reason changes and then drops the entry", function()
-      combatQueue.AddToQueue(12345, nil, nil, 13)
+      combatQueue.AddToQueue(12345, nil, 13)
       cursorHasItem = true
 
       combatQueue.ProcessQueue()

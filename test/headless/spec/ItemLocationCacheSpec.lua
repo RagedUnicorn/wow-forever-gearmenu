@@ -38,7 +38,7 @@
 
   The bag contents are driven by a per-test `bags` fixture backing the C_Container stubs
   (bags[bagNumber] is a list where each entry is either an item table
-  ({ itemId, enchantId, rune }) or false for an empty bag slot; unlisted bags have zero slots).
+  ({ itemId, enchantId }) or false for an empty bag slot; unlisted bags have zero slots).
   The stubs count their invocations so the specs can assert how the cache hits the container API.
 ]]--
 
@@ -67,7 +67,7 @@ describe("ItemLocationCache", function()
     Reference reimplementation of the pre-cache ScanBagsForItem/FindItemInBag full bag rescan.
     Iterates the bag fixture directly so it leaves the container call counters untouched.
   ]]--
-  local function referenceScanBagsForItem(itemId, enchantId, runeAbilityId)
+  local function referenceScanBagsForItem(itemId, enchantId)
     for i = 0, 4 do
       for j = 1, (bags[i] and #bags[i] or 0) do
         local item = bags[i][j]
@@ -75,8 +75,7 @@ describe("ItemLocationCache", function()
         if item and item.itemId == itemId then
           local itemInfo = { itemId = item.itemId, enchantId = item.enchantId }
 
-          if itemManager.IsEnchantIdMatching(itemInfo, enchantId)
-            and itemManager.IsRuneAbilityIdMatching(item.rune, runeAbilityId) then
+          if itemManager.IsEnchantIdMatching(itemInfo, enchantId) then
             return i, j
           end
         end
@@ -86,15 +85,15 @@ describe("ItemLocationCache", function()
     return nil, nil
   end
 
-  local function referenceFindItemInBag(itemId, enchantId, runeAbilityId)
-    local bagNumber, bagPos = referenceScanBagsForItem(itemId, enchantId, runeAbilityId)
+  local function referenceFindItemInBag(itemId, enchantId)
+    local bagNumber, bagPos = referenceScanBagsForItem(itemId, enchantId)
 
     if bagNumber ~= nil then
       return bagNumber, bagPos, false
     end
 
-    if fallbackEnabled and not (enchantId == 0 and runeAbilityId == 0) then
-      bagNumber, bagPos = referenceScanBagsForItem(itemId, 0, 0)
+    if fallbackEnabled and enchantId ~= 0 then
+      bagNumber, bagPos = referenceScanBagsForItem(itemId, 0)
 
       if bagNumber ~= nil then
         return bagNumber, bagPos, true
@@ -127,8 +126,7 @@ describe("ItemLocationCache", function()
                 id = item.itemId,
                 equipSlot = info.equipSlot,
                 quality = info.quality,
-                enchantId = item.enchantId,
-                rune = item.rune or nil
+                enchantId = item.enchantId
               })
             end
           end
@@ -149,7 +147,6 @@ describe("ItemLocationCache", function()
     previousModules = {
       logger = rggm.logger,
       common = rggm.common,
-      engrave = rggm.engrave,
       configuration = rggm.configuration,
       itemLocationCache = rggm.itemLocationCache,
       itemManager = rggm.itemManager
@@ -187,12 +184,6 @@ describe("ItemLocationCache", function()
         return { itemId = itemLink.itemId, enchantId = itemLink.enchantId }
       end
     }
-    rggm.engrave = {
-      GetRuneForInventorySlot = function(bagNumber, bagPos)
-        local item = bags[bagNumber] and bags[bagNumber][bagPos]
-        return item and item.rune or nil
-      end
-    }
     rggm.configuration = {
       GetFilterItemQuality = function() return filterItemQuality end,
       IsFallbackToBaseItemEnabled = function() return fallbackEnabled end
@@ -210,7 +201,6 @@ describe("ItemLocationCache", function()
 
     rggm.logger = previousModules.logger
     rggm.common = previousModules.common
-    rggm.engrave = previousModules.engrave
     rggm.configuration = previousModules.configuration
     rggm.itemLocationCache = previousModules.itemLocationCache
     rggm.itemManager = previousModules.itemManager
@@ -268,7 +258,7 @@ describe("ItemLocationCache", function()
       containerCalls.numSlots = 0
       containerCalls.itemLink = 0
 
-      local bagNumber, bagPos = itemManager.FindItemInBag(33333, nil, nil)
+      local bagNumber, bagPos = itemManager.FindItemInBag(33333, nil)
 
       assert.are.equal(0, bagNumber)
       assert.are.equal(3, bagPos)
@@ -288,7 +278,7 @@ describe("ItemLocationCache", function()
       bags[3] = { { itemId = 11111 } }
       itemLocationCache.Invalidate()
 
-      local bagNumber, bagPos = itemManager.FindItemInBag(11111, nil, nil)
+      local bagNumber, bagPos = itemManager.FindItemInBag(11111, nil)
 
       assert.are.equal(3, bagNumber)
       assert.are.equal(1, bagPos)
@@ -303,7 +293,7 @@ describe("ItemLocationCache", function()
       -- the bag content changes without any invalidation (simulates a missed event)
       bags[0] = { { itemId = 99999 } }
 
-      local bagNumber, bagPos = itemManager.FindItemInBag(11111, nil, nil)
+      local bagNumber, bagPos = itemManager.FindItemInBag(11111, nil)
 
       assert.is_nil(bagNumber)
       assert.is_nil(bagPos)
@@ -316,7 +306,7 @@ describe("ItemLocationCache", function()
       -- the item moves within the bag without any invalidation (simulates a missed event)
       bags[0] = { { itemId = 99999 }, { itemId = 11111 } }
 
-      local bagNumber, bagPos = itemManager.FindItemInBag(11111, nil, nil)
+      local bagNumber, bagPos = itemManager.FindItemInBag(11111, nil)
 
       assert.are.equal(0, bagNumber)
       assert.are.equal(2, bagPos)
@@ -328,30 +318,29 @@ describe("ItemLocationCache", function()
       itemInfoById = {
         [11111] = { name = "Plain Trinket", quality = 2, equipSlot = "INVTYPE_TRINKET", icon = 1 },
         [22222] = { name = "Epic Trinket", quality = 4, equipSlot = "INVTYPE_TRINKET", icon = 2 },
-        [33333] = { name = "Runed Chest", quality = 3, equipSlot = "INVTYPE_CHEST", icon = 3 },
+        [33333] = { name = "Plain Chest", quality = 3, equipSlot = "INVTYPE_CHEST", icon = 3 },
         [44444] = { name = "Enchanted Cloak", quality = 3, equipSlot = "INVTYPE_CLOAK", icon = 4 }
       }
-      bags[0] = { { itemId = 11111 }, false, { itemId = 33333, rune = { skillLineAbilityID = 7 } } }
+      bags[0] = { { itemId = 11111 }, false, { itemId = 33333 } }
       bags[1] = { { itemId = 44444, enchantId = 60 }, { itemId = 22222 } }
       bags[3] = { { itemId = 11111, enchantId = 70 }, false, { itemId = 33333 } }
     end)
 
     it("returns identical FindItemInBag results across match modes", function()
       local probes = {
-        { 11111, nil, nil }, -- plain hit
-        { 11111, 70, nil },  -- enchant match
-        { 33333, nil, 7 },   -- rune match
-        { 33333, nil, nil }, -- un-runed copy
-        { 44444, 50, nil },  -- enchant miss
-        { 99999, nil, nil }  -- not in bags
+        { 11111, nil }, -- plain hit
+        { 11111, 70 },  -- enchant match
+        { 33333, nil }, -- second copy in a later bag
+        { 44444, 50 },  -- enchant miss
+        { 99999, nil }  -- not in bags
       }
 
       for _, withFallback in ipairs({ false, true }) do
         fallbackEnabled = withFallback
 
         for _, probe in ipairs(probes) do
-          local expected = { referenceFindItemInBag(probe[1], probe[2], probe[3]) }
-          local actual = { itemManager.FindItemInBag(probe[1], probe[2], probe[3]) }
+          local expected = { referenceFindItemInBag(probe[1], probe[2]) }
+          local actual = { itemManager.FindItemInBag(probe[1], probe[2]) }
 
           assert.are.same(expected, actual)
         end

@@ -72,12 +72,11 @@ describe("CombatQueue", function()
     -- collaborators reached via mod.* -> recorder stubs on the shared rggm namespace
     rggm.logger = { LogDebug = function() end }
     rggm.gearBar = {
-      UpdateCombatQueue = function(itemId, enchantId, runeAbilityId, slotId)
+      UpdateCombatQueue = function(itemId, enchantId, slotId)
         calls.updateCombatQueue.count = calls.updateCombatQueue.count + 1
         calls.updateCombatQueue.last = {
           itemId = itemId,
           enchantId = enchantId,
-          runeAbilityId = runeAbilityId,
           slotId = slotId
         }
       end
@@ -138,34 +137,32 @@ describe("CombatQueue", function()
   end)
 
   describe("AddToQueue", function()
-    it("stores the item keyed by slotId as {itemId, enchantId, runeAbilityId}", function()
-      combatQueue.AddToQueue(12345, 60, 7, 5)
+    it("stores the item keyed by slotId as {itemId, enchantId}", function()
+      combatQueue.AddToQueue(12345, 60, 5)
 
       local entry = combatQueue.GetCombatQueueStore()[5]
       assert.is_table(entry)
       assert.are.equal(12345, entry[1])
       assert.are.equal(60, entry[2])
-      assert.are.equal(7, entry[3])
     end)
 
-    it("stores nil enchantId and runeAbilityId", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+    it("stores nil enchantId", function()
+      combatQueue.AddToQueue(12345, nil, 5)
 
       local entry = combatQueue.GetCombatQueueStore()[5]
       assert.are.equal(12345, entry[1])
       assert.is_nil(entry[2])
-      assert.is_nil(entry[3])
     end)
 
     it("keeps only one item per slot (overwrites)", function()
-      combatQueue.AddToQueue(111, nil, nil, 5)
-      combatQueue.AddToQueue(222, nil, nil, 5)
+      combatQueue.AddToQueue(111, nil, 5)
+      combatQueue.AddToQueue(222, nil, 5)
 
       assert.are.equal(222, combatQueue.GetCombatQueueStore()[5][1])
     end)
 
     it("is a no-op when itemId is nil", function()
-      combatQueue.AddToQueue(nil, nil, nil, 5)
+      combatQueue.AddToQueue(nil, nil, 5)
 
       assert.is_true(combatQueue.IsCombatQueueEmpty())
       assert.are.equal(0, calls.updateCombatQueue.count)
@@ -173,7 +170,7 @@ describe("CombatQueue", function()
     end)
 
     it("is a no-op when slotId is nil", function()
-      combatQueue.AddToQueue(12345, nil, nil, nil)
+      combatQueue.AddToQueue(12345, nil, nil)
 
       assert.is_true(combatQueue.IsCombatQueueEmpty())
       assert.are.equal(0, calls.updateCombatQueue.count)
@@ -181,7 +178,7 @@ describe("CombatQueue", function()
     end)
 
     it("notifies the gear bar and starts the ticker", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
 
       assert.are.equal(1, calls.updateCombatQueue.count)
       assert.are.equal(12345, calls.updateCombatQueue.last.itemId)
@@ -190,7 +187,7 @@ describe("CombatQueue", function()
     end)
 
     it("fires the queued swap event with slotId and itemId", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
 
       assert.are.equal(1, #calls.swapEvents)
       assert.are.same({
@@ -203,7 +200,7 @@ describe("CombatQueue", function()
 
   describe("RemoveFromQueue", function()
     it("removes the queued item for the slot", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
       combatQueue.RemoveFromQueue(5)
 
       assert.is_nil(combatQueue.GetCombatQueueStore()[5])
@@ -211,7 +208,7 @@ describe("CombatQueue", function()
     end)
 
     it("notifies the gear bar with nils on a real removal", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
       combatQueue.RemoveFromQueue(5)
 
       assert.is_nil(calls.updateCombatQueue.last.itemId)
@@ -225,7 +222,7 @@ describe("CombatQueue", function()
     end)
 
     it("fires the unqueued swap event with the removed item's slotId and itemId", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
       combatQueue.RemoveFromQueue(5)
 
       assert.are.equal(2, #calls.swapEvents)
@@ -255,7 +252,7 @@ describe("CombatQueue", function()
     end)
 
     it("is false once an item is queued", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
 
       assert.is_false(combatQueue.IsCombatQueueEmpty())
     end)
@@ -263,7 +260,7 @@ describe("CombatQueue", function()
 
   describe("store isolation between it() blocks", function()
     it("queues an item in the first block", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
 
       assert.is_false(combatQueue.IsCombatQueueEmpty())
     end)
@@ -283,7 +280,7 @@ describe("CombatQueue", function()
     end)
 
     it("does not equip while in combat", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
       rggm.gearManager.GetGearSlots = function() return { { slotId = 5 } } end
       inCombat = true
 
@@ -293,7 +290,7 @@ describe("CombatQueue", function()
     end)
 
     it("does not equip while casting", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
       rggm.gearManager.GetGearSlots = function() return { { slotId = 5 } } end
       isCasting = true
 
@@ -303,7 +300,7 @@ describe("CombatQueue", function()
     end)
 
     it("does not equip while really dead", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
       rggm.gearManager.GetGearSlots = function() return { { slotId = 5 } } end
       isDead = true
 
@@ -313,7 +310,7 @@ describe("CombatQueue", function()
     end)
 
     it("does not equip while an equipment change is blocked by loss of control", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
       rggm.gearManager.GetGearSlots = function() return { { slotId = 5 } } end
       -- raise the block flag via a relevant locType, then leave it set for ProcessQueue
       local restoreLoc = wowStubs.install({
@@ -329,7 +326,7 @@ describe("CombatQueue", function()
     end)
 
     it("equips the queued item for a matching gear slot when unblocked", function()
-      combatQueue.AddToQueue(12345, 60, 7, 5)
+      combatQueue.AddToQueue(12345, 60, 5)
       rggm.gearManager.GetGearSlots = function() return { { slotId = 5 } } end
 
       combatQueue.ProcessQueue()
@@ -338,7 +335,6 @@ describe("CombatQueue", function()
       local item = calls.equipped[1]
       assert.are.equal(12345, item.itemId)
       assert.are.equal(60, item.enchantId)
-      assert.are.equal(7, item.runeAbilityId)
       assert.are.equal(5, item.slotId)
     end)
   end)
@@ -350,20 +346,20 @@ describe("CombatQueue", function()
     end)
 
     it("allows the first message for a queued entry", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
 
       assert.is_true(combatQueue.ShouldNotifySwapFailure(5, "CURSOR_BUSY"))
     end)
 
     it("suppresses a repeated reason for the same queued entry", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
 
       assert.is_true(combatQueue.ShouldNotifySwapFailure(5, "CURSOR_BUSY"))
       assert.is_false(combatQueue.ShouldNotifySwapFailure(5, "CURSOR_BUSY"))
     end)
 
     it("allows the message again when the reason changes", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
 
       assert.is_true(combatQueue.ShouldNotifySwapFailure(5, "CURSOR_BUSY"))
       assert.is_true(combatQueue.ShouldNotifySwapFailure(5, "ITEM_NOT_FOUND"))
@@ -371,17 +367,17 @@ describe("CombatQueue", function()
     end)
 
     it("resets the guard when the entry is re-queued", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
       assert.is_true(combatQueue.ShouldNotifySwapFailure(5, "CURSOR_BUSY"))
 
-      combatQueue.AddToQueue(12345, nil, nil, 5)
+      combatQueue.AddToQueue(12345, nil, 5)
 
       assert.is_true(combatQueue.ShouldNotifySwapFailure(5, "CURSOR_BUSY"))
     end)
 
     it("tracks the guard per slot", function()
-      combatQueue.AddToQueue(12345, nil, nil, 5)
-      combatQueue.AddToQueue(54321, nil, nil, 7)
+      combatQueue.AddToQueue(12345, nil, 5)
+      combatQueue.AddToQueue(54321, nil, 7)
 
       assert.is_true(combatQueue.ShouldNotifySwapFailure(5, "CURSOR_BUSY"))
       assert.is_true(combatQueue.ShouldNotifySwapFailure(7, "CURSOR_BUSY"))

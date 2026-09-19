@@ -32,7 +32,7 @@ Make sure to get the newest version of the Addon from the releases tab:
 
 GearMenu's goal is to help the player switch between items on certain slots. Often players have items such as engineering items that have a one-time use followed by a long cooldown. After using them during a fight the player wants to switch back to a more useful item. While changing items during combat is not possible (with some exceptions such as weapons) GearMenu can help with switching them as soon as possible. When a player tries to switch an item during combat it will be put into the combatqueue and switched as soon as possible. If the player leaves combat for just a split second all the items in the combatqueue will be switched. For some classes this might be even easier because they can use spells such as rogue - vanish or hunter - feign death.
 
-GearMenu supports World of Warcraft Classic Era, TBC Anniversary and Mists of Pandaria Classic, including Hardcore and Season of Discovery.
+GearMenu supports World of Warcraft Classic Era, TBC Anniversary and Mists of Pandaria Classic, including Hardcore.
 
 **Supported slots:**
 
@@ -129,14 +129,6 @@ With drag and drop enabled the TrinketMenu also works in both directions: a trin
 
 ![](docs/gm_trinketmenu_demo.gif)
 
-### Season of Discovery Rune Support
-
-GearMenu has some support for displaying active runes on items that the player is either wearing or has in his inventory. This feature can be deactivated in the options' menu.
-
-![](docs/gm_rune_support.gif)
-
-**Note:** There are some items that are buggy and will not display runes properly. This is a bug in the Blizzard API and cannot be fixed by GearMenu.
-
 ### Macro Support
 
 If you prefer having certain items in your actionslots GearMenu can still be of use. By using the macro-bridge you get all the advantages of the combatQueue in a normal macro.
@@ -144,16 +136,13 @@ If you prefer having certain items in your actionslots GearMenu can still be of 
 #### Add Item to CombatQueue
 
 ```
-/run GM_AddToCombatQueue(itemId, enchantId, runeAbilityId, slotId)
+/run GM_AddToCombatQueue(itemId, enchantId, slotId)
 
 # Example - Equip Hand of Justice into the lower trinket slot
-/run GM_AddToCombatQueue(233734, 0, 0, 14)
+/run GM_AddToCombatQueue(233734, 0, 14)
 ```
 
 **Note:** The enchantId is optional. If you don't have multiple items with different enchantIds in your inventory, set it to 0.
-
-**Note:** Season of Discovery requires the runeAbilityId to be set. This affects
-Classic Era as well. Just set it to 0 if you don't have a runeAbilityId or you don't care about the rune (usually the case if you don't have multiple items with different runes).
 
 > Note: It is not recommended using this for weapons because addons cannot switch weapons during combat (GearMenu will put the item into the combatQueue). With a normal weaponswitch macro however this is still possible.
 

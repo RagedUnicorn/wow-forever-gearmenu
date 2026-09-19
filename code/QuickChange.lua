@@ -70,15 +70,11 @@ function me.AddQuickChangeRule(quickChangeRule, delay)
     ["changeFromName"] = changeFromName,
     ["changeFromItemId"] = changeFromItemId,
     ["changeFromItemEnchantId"] = quickChangeRule.from.enchantId,
-    ["changeFromRuneAbilityId"] = quickChangeRule.from.runeAbilityId,
-    ["changeFromRuneName"] = quickChangeRule.from.runeName,
     ["changeFromItemIcon"] = itemFromTexture,
     ["changeFromItemQuality"] = itemFromQuality,
     ["changeToName"] = changeToName,
     ["changeToItemId"] = changeToItemId,
     ["changeToItemEnchantId"] = quickChangeRule.to.enchantId,
-    ["changeToRuneAbilityId"] = quickChangeRule.to.runeAbilityId,
-    ["changeToRuneName"] = quickChangeRule.to.runeName,
     ["changeToItemIcon"] = itemToTexture,
     ["changeToItemQuality"] = itemToQuality,
     ["equipSlot"] = equipFromSlot,
@@ -222,7 +218,6 @@ function me.ExecuteQuickChangeRule(quickChangeRule, slotIds)
         local item = {}
         item.itemId = quickChangeRule.changeToItemId
         item.enchantId = quickChangeRule.changeToItemEnchantId
-        item.runeAbilityId = quickChangeRule.changeToRuneAbilityId
         item.slotId = slotMetadata.slotId
         mod.itemManager.EquipItemByItemAndEnchantId(item)
       end)

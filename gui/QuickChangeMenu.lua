@@ -494,7 +494,7 @@ end
   Whether the passed row shows the currently selected quickchange rule
 
   @param {table} rule
-    The currently selected quickchange rule ({from, to} with itemId/enchantId/runeAbilityId)
+    The currently selected quickchange rule ({from, to} with itemId/enchantId)
   @param {table} row
 ]]--
 function me.IsRuleMatching(rule, row)
@@ -509,8 +509,6 @@ function me.IsRuleMatching(rule, row)
     and (from.itemId == row.fromItemId)
     and (to.enchantId == row.toItemEnchantId)
     and (from.enchantId == row.fromItemEnchantId)
-    and (to.runeAbilityId == row.toRuneAbilityId)
-    and (from.runeAbilityId == row.fromRuneAbilityId)
 end
 
 --[[
@@ -537,15 +535,11 @@ function me.RulesListOnUpdate(listContainer)
       row.fromItemName:SetText(ruleData.changeFromName)
       row.fromItemId = ruleData.changeFromItemId
       row.fromItemEnchantId = ruleData.changeFromItemEnchantId
-      row.fromRuneAbilityId = ruleData.changeFromRuneAbilityId
-      row.fromRuneName = ruleData.changeFromRuneName
       row.toItemIcon:SetTexture(ruleData.changeToItemIcon)
       row.toItemIcon.iconHolder.itemId = ruleData.changeToItemId
       row.toItemName:SetText(ruleData.changeToName)
       row.toItemId = ruleData.changeToItemId
       row.toItemEnchantId = ruleData.changeToItemEnchantId
-      row.toRuneAbilityId = ruleData.changeToRuneAbilityId
-      row.toRuneName = ruleData.changeToRuneName
       row.delay:SetText(ruleData.delay)
 
       if me.IsRuleMatching(quickchangeRule, row) then
@@ -621,15 +615,12 @@ function me.FromListOnUpdate(listContainer, slotId)
       row.name:SetText(fromCachedQuickChangeItems[i].name)
       row.itemId = fromCachedQuickChangeItems[i].id
       row.enchantId = fromCachedQuickChangeItems[i].enchantId or nil
-      row.runeAbilityId = fromCachedQuickChangeItems[i].runeAbilityId or nil
-      row.runeName = fromCachedQuickChangeItems[i].runeName or nil
       row.side = RGGM_CONSTANTS.QUICK_CHANGE_SIDE_FROM
 
       local isMatchingFromRule =
         selectedRule.from ~= nil and
         selectedRule.from.itemId == row.itemId and
-        selectedRule.from.enchantId == row.enchantId and
-        selectedRule.from.runeAbilityId == row.runeAbilityId
+        selectedRule.from.enchantId == row.enchantId
 
       if isMatchingFromRule then
         me.ShowHighLight(row)
@@ -704,15 +695,12 @@ function me.ToListOnUpdate(listContainer, slotId)
       row.name:SetText(toCachedQuickChangeItems[i].name)
       row.itemId = toCachedQuickChangeItems[i].id
       row.enchantId = toCachedQuickChangeItems[i].enchantId or nil
-      row.runeAbilityId = toCachedQuickChangeItems[i].runeAbilityId or nil
-      row.runeName = toCachedQuickChangeItems[i].runeName or nil
       row.side = RGGM_CONSTANTS.QUICK_CHANGE_SIDE_TO
 
       local isMatchingToRule =
         selectedRule.to ~= nil and
         selectedRule.to.itemId == row.itemId and
-        selectedRule.to.enchantId == row.enchantId and
-        selectedRule.to.runeAbilityId == row.runeAbilityId
+        selectedRule.to.enchantId == row.enchantId
 
       if isMatchingToRule then
         me.ShowHighLight(row)
@@ -794,32 +782,24 @@ function me.SetupRowEvents(row)
     if self.side == RGGM_CONSTANTS.QUICK_CHANGE_SIDE_FROM then
       selectedRule.from = {
         ["itemId"] = self.itemId,
-        ["enchantId"] = self.enchantId or nil,
-        ["runeAbilityId"] = self.runeAbilityId or nil,
-        ["runeName"] = self.runeName or nil
+        ["enchantId"] = self.enchantId or nil
       }
 
       me.FromListOnUpdate(fromList)
     elseif self.side == RGGM_CONSTANTS.QUICK_CHANGE_SIDE_TO then
       selectedRule.to = {
         ["itemId"] = self.itemId,
-        ["enchantId"] = self.enchantId or nil,
-        ["runeAbilityId"] = self.runeAbilityId or nil,
-        ["runeName"] = self.runeName or nil
+        ["enchantId"] = self.enchantId or nil
       }
       me.ToListOnUpdate(toList)
     else
       quickchangeRule.from = {
         ["itemId"] = self.fromItemId,
-        ["enchantId"] = self.fromItemEnchantId or nil,
-        ["runeAbilityId"] = self.fromRuneAbilityId or nil,
-        ["runeName"] = self.fromRuneName or nil
+        ["enchantId"] = self.fromItemEnchantId or nil
       }
       quickchangeRule.to = {
         ["itemId"] = self.toItemId,
-        ["enchantId"] = self.toItemEnchantId or nil,
-        ["runeAbilityId"] = self.toRuneAbilityId or nil,
-        ["runeName"] = self.toRuneName or nil
+        ["enchantId"] = self.toItemEnchantId or nil
       }
 
       me.RulesListOnUpdate(rulesList)

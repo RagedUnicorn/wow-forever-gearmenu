@@ -29,10 +29,8 @@
   or a keyBinding written onto the static entry).
 
   The static gearSlots table is built at file load: the off-hand entry runs an IIFE that calls
-  UnitClass (and, only on the SHAMAN branch, rggm.season.IsSodActive). Both are stubbed before the
-  dofile -- UnitClass returns a non-shaman class so the season path is skipped, but rggm.season is
-  provided anyway for robustness. The real rggm.common.Clone (dofile'd from code/Common.lua) is used
-  so the test exercises the actual copy path rather than a stand-in.
+  UnitClass, which is stubbed on _G before the dofile. The real rggm.common.Clone (dofile'd from
+  code/Common.lua) is used so the test exercises the actual copy path rather than a stand-in.
 
   busted runs each spec chunk sandboxed, so WoW-global stubs are written on _G (a bareword assignment
   would land in the sandbox, not the _G the dofile'd module sees). The rggm.* collaborators we install
@@ -56,17 +54,14 @@ describe("GearManager", function()
 
   before_each(function()
     previousModules = {
-      common = rggm.common,
-      season = rggm.season
+      common = rggm.common
     }
     previousUnitClass = _G.UnitClass
 
     -- real deep-copy helper under test (defines rggm.common; no WoW deps at load)
     dofile("code/Common.lua")
-    -- off-hand IIFE reads the player class at load; a non-shaman class skips the season branch
+    -- off-hand IIFE reads the player class at load
     _G.UnitClass = function() return "Warrior", "WARRIOR" end
-    -- provided for robustness even though the non-shaman class avoids the IsSodActive call
-    rggm.season = { IsSodActive = function() return false end }
 
     -- fresh module table (the dofile convention documented in test/headless/Bootstrap.lua); the
     -- static gearSlots table is rebuilt here, after the stubs above are in place
@@ -76,7 +71,6 @@ describe("GearManager", function()
 
   after_each(function()
     rggm.common = previousModules.common
-    rggm.season = previousModules.season
     _G.UnitClass = previousUnitClass
   end)
 

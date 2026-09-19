@@ -9,8 +9,8 @@
 
 ## Steps
 
-1. Create a macro: `/run GM_AddToCombatQueue(<itemId>, 0, 0, 14)`
-   (14 = lower trinket slot; enchantId/runeAbilityId 0)
+1. Create a macro: `/run GM_AddToCombatQueue(<itemId>, 0, 14)`
+   (14 = lower trinket slot; enchantId 0)
 2. Out of combat: run the macro
 3. Enter combat and run the macro with a different eligible item
 

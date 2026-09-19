@@ -23,9 +23,9 @@
 ]]--
 
 --[[
-  Spec for the pure matcher helpers in code/ItemManager.lua: IsEnchantIdMatching, IsRuneAbilityIdMatching
-  and IsDuplicateItem. These helpers take plain Lua tables/numbers and touch neither mod.* collaborators
-  nor WoW globals, so the spec only re-dofiles the module (per the isolation convention documented in
+  Spec for the pure matcher helpers in code/ItemManager.lua: IsEnchantIdMatching and IsDuplicateItem.
+  These helpers take plain Lua tables/numbers and touch neither mod.* collaborators nor WoW globals,
+  so the spec only re-dofiles the module (per the isolation convention documented in
   test/headless/Bootstrap.lua) and asserts return values -- no stubs and no WowStubs are required.
 
   The bag-scanning bulk of ItemManager is dominated by C_Container.* and is intentionally out of scope.
@@ -64,94 +64,45 @@ describe("ItemManager matchers", function()
     end)
   end)
 
-  describe("IsRuneAbilityIdMatching", function()
-    it("matches regardless of the rune when the passed runeAbilityId is 0", function()
-      assert.is_true(itemManager.IsRuneAbilityIdMatching({ skillLineAbilityID = 99 }, 0))
-      assert.is_true(itemManager.IsRuneAbilityIdMatching(nil, 0))
-    end)
-
-    it("matches when both the rune and the runeAbilityId are nil", function()
-      assert.is_true(itemManager.IsRuneAbilityIdMatching(nil, nil))
-    end)
-
-    it("matches when the rune skillLineAbilityID equals the passed runeAbilityId", function()
-      assert.is_true(itemManager.IsRuneAbilityIdMatching({ skillLineAbilityID = 7 }, 7))
-    end)
-
-    it("does not match when the rune skillLineAbilityID differs from the passed runeAbilityId", function()
-      assert.is_false(itemManager.IsRuneAbilityIdMatching({ skillLineAbilityID = 7 }, 8))
-    end)
-
-    it("does not match when there is no rune but a non-zero runeAbilityId is requested", function()
-      assert.is_false(itemManager.IsRuneAbilityIdMatching(nil, 7))
-    end)
-  end)
-
   describe("IsDuplicateItem", function()
     it("is false for an empty item list", function()
-      assert.is_false(itemManager.IsDuplicateItem({}, 12345, nil, nil))
+      assert.is_false(itemManager.IsDuplicateItem({}, 12345, nil))
     end)
 
-    it("treats a same-id item with no enchant and no rune as a duplicate", function()
-      local items = { { id = 12345, enchantId = nil, runeAbilityId = nil } }
+    it("treats a same-id item with no enchant as a duplicate", function()
+      local items = { { id = 12345, enchantId = nil } }
 
-      assert.is_true(itemManager.IsDuplicateItem(items, 12345, nil, nil))
+      assert.is_true(itemManager.IsDuplicateItem(items, 12345, nil))
     end)
 
     it("treats a same-id item with the same enchant as a duplicate", function()
-      local items = { { id = 12345, enchantId = 60, runeAbilityId = nil } }
+      local items = { { id = 12345, enchantId = 60 } }
 
-      assert.is_true(itemManager.IsDuplicateItem(items, 12345, 60, nil))
+      assert.is_true(itemManager.IsDuplicateItem(items, 12345, 60))
     end)
 
     it("does not treat a same-id item with a different enchant as a duplicate", function()
-      local items = { { id = 12345, enchantId = 60, runeAbilityId = nil } }
+      local items = { { id = 12345, enchantId = 60 } }
 
-      assert.is_false(itemManager.IsDuplicateItem(items, 12345, 70, nil))
+      assert.is_false(itemManager.IsDuplicateItem(items, 12345, 70))
+    end)
+
+    it("does not treat a same-id item as a duplicate when only one has an enchant", function()
+      local items = { { id = 12345, enchantId = 60 } }
+
+      assert.is_false(itemManager.IsDuplicateItem(items, 12345, nil))
     end)
 
     it("does not treat a different-id item as a duplicate", function()
-      local items = { { id = 12345, enchantId = nil, runeAbilityId = nil } }
+      local items = { { id = 12345, enchantId = nil } }
 
-      assert.is_false(itemManager.IsDuplicateItem(items, 99999, nil, nil))
+      assert.is_false(itemManager.IsDuplicateItem(items, 99999, nil))
     end)
 
-    it("does not treat two different-id items sharing the same rune as duplicates", function()
-      -- regression: the condition once parsed as (id == itemId and enchant) or (rune present),
-      -- so a matching rune alone made distinct items collide and the second was silently dropped
-      local items = { { id = 12345, enchantId = nil, runeAbilityId = 7 } }
+    it("does not treat two different-id items sharing the same enchant as duplicates", function()
+      local items = { { id = 12345, enchantId = 60 } }
 
-      assert.is_false(itemManager.IsDuplicateItem(items, 99999, nil, 7))
-    end)
-
-    it("treats a same-id item with the same rune as a duplicate", function()
-      local items = { { id = 12345, enchantId = nil, runeAbilityId = 7 } }
-
-      assert.is_true(itemManager.IsDuplicateItem(items, 12345, nil, 7))
-    end)
-
-    it("does not treat a same-id item with a different rune as a duplicate", function()
-      local items = { { id = 12345, enchantId = nil, runeAbilityId = 7 } }
-
-      assert.is_false(itemManager.IsDuplicateItem(items, 12345, nil, 8))
-    end)
-
-    it("does not treat a same-id, same-rune item as a duplicate when only one has an enchant", function()
-      local items = { { id = 12345, enchantId = 60, runeAbilityId = 7 } }
-
-      assert.is_false(itemManager.IsDuplicateItem(items, 12345, nil, 7))
-    end)
-
-    it("does not treat a same-id, same-rune item with a different enchant as a duplicate", function()
-      local items = { { id = 12345, enchantId = 60, runeAbilityId = 7 } }
-
-      assert.is_false(itemManager.IsDuplicateItem(items, 12345, 70, 7))
-    end)
-
-    it("treats a same-id item with matching enchant and rune as a duplicate", function()
-      local items = { { id = 12345, enchantId = 60, runeAbilityId = 7 } }
-
-      assert.is_true(itemManager.IsDuplicateItem(items, 12345, 60, 7))
+      assert.is_false(itemManager.IsDuplicateItem(items, 99999, 60))
     end)
   end)
 end)
