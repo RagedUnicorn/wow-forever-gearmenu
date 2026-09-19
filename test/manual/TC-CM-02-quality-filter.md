@@ -1,6 +1,6 @@
 # TC-CM-02 — Item quality filter
 
-**Area:** ChangeMenu | **Client:** Era | **Mandatory:** yes
+**Area:** ChangeMenu | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

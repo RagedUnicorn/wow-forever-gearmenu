@@ -1,6 +1,6 @@
 # TC-SV-01 — Fresh install seeds defaults
 
-**Area:** SavedVariables | **Client:** Era | **Mandatory:** yes
+**Area:** SavedVariables | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

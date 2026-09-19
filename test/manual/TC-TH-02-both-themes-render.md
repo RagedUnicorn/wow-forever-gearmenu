@@ -1,6 +1,6 @@
 # TC-TH-02 — Slots render correctly in both themes
 
-**Area:** Themes | **Client:** Era | **Mandatory:** yes
+**Area:** Themes | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

@@ -53,8 +53,8 @@ local gearBarSubCategoryId
 local settingsRefreshBounceCategoryId
 --[[
   Category ids captured at registration, keyed by a stable name ("main", "general",
-  "trinketMenu", "quickChange", "profile", "gearBar"). Settings.OpenToCategory requires
-  the numeric id - category names error on Classic Era - so callers resolve through
+  "trinketMenu", "quickChange", "profile", "gearBar"). Settings.OpenToCategory is called
+  with the numeric id rather than the category name, so callers resolve through
   me.GetCategoryId instead of hardcoding ids.
   {table}
 ]]--

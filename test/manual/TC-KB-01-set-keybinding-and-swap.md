@@ -1,6 +1,6 @@
 # TC-KB-01 — Set keybinding, label shows, key swaps
 
-**Area:** Keybinding | **Client:** Era | **Mandatory:** yes
+**Area:** Keybinding | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

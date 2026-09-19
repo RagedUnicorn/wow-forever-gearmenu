@@ -1,6 +1,6 @@
 # TC-PR-01 — Create a profile from the current settings
 
-**Area:** Profiles | **Client:** Era | **Mandatory:** yes
+**Area:** Profiles | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

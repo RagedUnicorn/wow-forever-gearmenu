@@ -1,6 +1,6 @@
 # TC-SV-02 — Upgrade from previous release migrates cleanly
 
-**Area:** SavedVariables | **Client:** Era | **Mandatory:** yes
+**Area:** SavedVariables | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

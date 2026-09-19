@@ -1,6 +1,6 @@
 # TC-CM-01 — Hover lists eligible bag items
 
-**Area:** ChangeMenu | **Client:** Era | **Mandatory:** yes
+**Area:** ChangeMenu | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

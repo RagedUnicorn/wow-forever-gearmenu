@@ -1,6 +1,6 @@
 # TC-GB-02 — Delete a gearbar
 
-**Area:** GearBar | **Client:** Era | **Mandatory:** yes
+**Area:** GearBar | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

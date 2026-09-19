@@ -1,6 +1,6 @@
 # TC-GB-07 — Orientation and ChangeMenu direction
 
-**Area:** GearBar | **Client:** Era | **Mandatory:** yes
+**Area:** GearBar | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

@@ -64,8 +64,8 @@ local RESTORE_DELAY = 1.0
 local BATCH_INTERVAL = 2.5
 
 --[[
-  Default UI elements hidden for a clean capture. Guarded by existence - the set
-  differs between Classic Era, TBC Anniversary and MoP Classic.
+  Default UI elements hidden for a clean capture. Guarded by existence - not every
+  element exists on every client build.
 ]]--
 local CHROME = {
   -- the primary action buttons do not follow MainMenuBar:Hide() on this client

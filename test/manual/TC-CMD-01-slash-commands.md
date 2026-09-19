@@ -1,6 +1,6 @@
 # TC-CMD-01 — /rggm command surface
 
-**Area:** Slash commands | **Client:** Era | **Mandatory:** yes
+**Area:** Slash commands | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

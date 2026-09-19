@@ -1,6 +1,6 @@
 # TC-GB-05 — GearSlot size slider
 
-**Area:** GearBar | **Client:** Era | **Mandatory:** yes
+**Area:** GearBar | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

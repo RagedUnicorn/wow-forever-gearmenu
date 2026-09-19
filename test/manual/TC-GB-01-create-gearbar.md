@@ -1,6 +1,6 @@
 # TC-GB-01 — Create a new gearbar
 
-**Area:** GearBar | **Client:** Era | **Mandatory:** yes
+**Area:** GearBar | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

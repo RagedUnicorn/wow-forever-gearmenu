@@ -1,6 +1,6 @@
 # TC-MA-01 — GM_AddToCombatQueue macro
 
-**Area:** Macro API | **Client:** Era | **Mandatory:** yes
+**Area:** Macro API | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

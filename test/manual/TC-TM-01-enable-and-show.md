@@ -1,6 +1,6 @@
 # TC-TM-01 — Enable and show TrinketMenu
 
-**Area:** TrinketMenu | **Client:** Era | **Mandatory:** yes
+**Area:** TrinketMenu | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

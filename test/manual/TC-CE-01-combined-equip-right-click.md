@@ -1,6 +1,6 @@
 # TC-CE-01 — Right-click equips into opposite slot
 
-**Area:** CombinedEquip | **Client:** Era | **Mandatory:** yes
+**Area:** CombinedEquip | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

@@ -101,7 +101,7 @@ function me.CreateScrollList(listName, parent, position, listWidth, listHeight)
     scrollBar:SetHideIfUnscrollable(true)
   else
     --[[
-      Classic Era did not backport ScrollBarMixin:SetHideIfUnscrollable - track the scroll
+      Fallback for a ScrollBarMixin without SetHideIfUnscrollable - track the scroll
       range manually instead
     ]]--
     scrollFrame:HookScript("OnScrollRangeChanged", function(_, _, yRange)

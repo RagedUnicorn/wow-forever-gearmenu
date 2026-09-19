@@ -1,6 +1,6 @@
 # TC-TM-04 — Drag and drop out of and into the TrinketMenu
 
-**Area:** TrinketMenu | **Client:** Era | **Mandatory:** yes
+**Area:** TrinketMenu | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

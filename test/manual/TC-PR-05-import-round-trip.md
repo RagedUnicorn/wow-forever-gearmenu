@@ -1,6 +1,6 @@
 # TC-PR-05 — Import round-trip
 
-**Area:** Profiles | **Client:** Era | **Mandatory:** yes
+**Area:** Profiles | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

@@ -1,6 +1,6 @@
 # TC-GB-10 — Click an empty gearslot
 
-**Area:** GearBar | **Client:** Era | **Mandatory:** yes
+**Area:** GearBar | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

@@ -1,6 +1,6 @@
 # TC-CQ-03 — Cancel queued swap via right-click
 
-**Area:** CombatQueue | **Client:** Era | **Mandatory:** yes
+**Area:** CombatQueue | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

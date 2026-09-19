@@ -262,15 +262,12 @@ This repository uses [Renovate](https://renovatebot.com/) for automated dependen
 
 - Maven dependencies (plugins and libraries)
 - GitHub Actions versions
-- World of Warcraft interface versions and related properties
-  - `addon.interface` - WoW interface version
-  - `addon.supported.patch` - WoW patch version
-  - `addon.curseforge.gameVersion` - CurseForge game version ID
+- Docker image tags in `docker-compose.yml`
 
-The WoW: Forever values (`addon.interface.forever`, `addon.supported.patch.forever`,
-`addon.curseforge.gameVersionForever`) are not Renovate-managed yet: wow-renovate-data has no
-Forever variant (the CurseForge game version 17053 is still tagged `unknown` there). Bump them by
-hand in `pom.xml` when the beta reports a new interface version, then regenerate the sources. The
-Wago release stays blocked as long as Wago has no Forever game field.
+The World of Warcraft: Forever values in `pom.xml` (`addon.interface.forever`,
+`addon.supported.patch.forever`, `addon.curseforge.gameVersionForever`) are not Renovate-managed:
+wow-renovate-data has no Forever variant (the CurseForge game version 17053 is still tagged
+`unknown` there). Bump them by hand when the beta reports a new interface version, then regenerate
+the sources. There is no Wago release for this line as long as Wago has no Forever game field.
 
 The configuration can be found in `renovate.json`. Renovate runs on a weekly schedule and creates pull requests for available updates.

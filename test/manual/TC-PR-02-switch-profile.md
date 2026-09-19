@@ -1,6 +1,6 @@
 # TC-PR-02 — Switch profiles without losing edits
 
-**Area:** Profiles | **Client:** Era | **Mandatory:** yes
+**Area:** Profiles | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

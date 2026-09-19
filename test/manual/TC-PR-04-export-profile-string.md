@@ -1,6 +1,6 @@
 # TC-PR-04 — Export produces profile string
 
-**Area:** Profiles | **Client:** Era | **Mandatory:** yes
+**Area:** Profiles | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

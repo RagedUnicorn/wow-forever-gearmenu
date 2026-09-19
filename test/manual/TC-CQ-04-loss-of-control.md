@@ -1,6 +1,6 @@
 # TC-CQ-04 — Queue during loss of control
 
-**Area:** CombatQueue | **Client:** Era | **Mandatory:** yes
+**Area:** CombatQueue | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

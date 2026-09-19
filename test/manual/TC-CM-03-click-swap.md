@@ -1,6 +1,6 @@
 # TC-CM-03 — Click swaps item out of combat
 
-**Area:** ChangeMenu | **Client:** Era | **Mandatory:** yes
+**Area:** ChangeMenu | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

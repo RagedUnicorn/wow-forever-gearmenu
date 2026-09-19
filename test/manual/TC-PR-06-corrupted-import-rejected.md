@@ -1,6 +1,6 @@
 # TC-PR-06 — Corrupted import string rejected
 
-**Area:** Profiles | **Client:** Era | **Mandatory:** yes
+**Area:** Profiles | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

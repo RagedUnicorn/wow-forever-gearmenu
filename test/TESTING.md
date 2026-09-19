@@ -6,8 +6,7 @@
 A release passes when:
 
 * All automated gates are green
-* All mandatory manual test cases in [test/manual/](manual/) pass on Classic Era
-* The smoke checklist passes on TBC Anniversary and MoP Classic
+* All mandatory manual test cases in [test/manual/](manual/) pass on WoW: Forever
 * Zero Lua errors occurred during the whole run
 
 Before starting the in-game runs, enable script errors so nothing is swallowed:
@@ -39,26 +38,11 @@ Both must pass with zero failures before any in-game testing starts.
 
 The dev checkout in `Interface/AddOns/GearMenu` is what gets tested - no packaged build required.
 
-| Client                    | Interface | Coverage                                              |
-|---------------------------|-----------|-------------------------------------------------------|
-| Classic Era               | 11508     | Full manual catalog ([test/manual/](manual/))         |
-| TBC Anniversary           | 20506     | Smoke checklist (below)                               |
-| MoP Classic               | 50504     | Smoke checklist (below)                               |
+| Client       | Interface | Coverage                                      |
+|--------------|-----------|-----------------------------------------------|
+| WoW: Forever | 16001     | Full manual catalog ([test/manual/](manual/)) |
 
-## 3. Smoke checklist (TBC Anniversary / MoP Classic)
-
-A short pass to confirm the addon behaves on the non-primary clients:
-
-- [ ] Addon loads without errors on login
-- [ ] Gearbar renders with configured slots
-- [ ] Hovering a gearslot opens the ChangeMenu and lists eligible bag items
-- [ ] Clicking an item in the ChangeMenu swaps it
-- [ ] A swap attempted during combat is queued and fires after leaving combat
-- [ ] `/rggm opt` opens the options panel; all tabs open without errors
-- [ ] Switching the theme (Custom ↔ Classic) works, bar renders correctly after reload
-- [ ] `/reload` produces no Lua errors
-
-## 4. Manual test case catalog (Classic Era)
+## 3. Manual test case catalog (WoW: Forever)
 
 One file per test case under [test/manual/](manual/). Case IDs follow `TC-<AREA>-<NN>`.
 
@@ -177,7 +161,7 @@ One file per test case under [test/manual/](manual/). Case IDs follow `TC-<AREA>
 |-------------------------------------------------|-----------------------|
 | [TC-CMD-01](manual/TC-CMD-01-slash-commands.md) | /rggm command surface |
 
-## 5. Notes
+## 4. Notes
 
 * Localization is covered by the busted spec `LocalizationParitySpec` (key parity of `deDE`,
   `zhCN`, `ruRU` against `enUS`) - no manual locale pass is required.

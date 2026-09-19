@@ -1,6 +1,6 @@
 # TC-TM-03 — TrinketMenu configuration options
 
-**Area:** TrinketMenu | **Client:** Era | **Mandatory:** yes
+**Area:** TrinketMenu | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

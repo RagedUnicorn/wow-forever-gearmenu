@@ -1,6 +1,6 @@
 # TC-TH-01 — Theme switch confirmation and reload
 
-**Area:** Themes | **Client:** Era | **Mandatory:** yes
+**Area:** Themes | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

@@ -1,6 +1,6 @@
 # TC-DD-02 — Drag from bag onto gearslot
 
-**Area:** DragDrop | **Client:** Era | **Mandatory:** yes
+**Area:** DragDrop | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

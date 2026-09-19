@@ -1,6 +1,6 @@
 # TC-CQ-02 — Queue during cast, fire when cast ends
 
-**Area:** CombatQueue | **Client:** Era | **Mandatory:** yes
+**Area:** CombatQueue | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

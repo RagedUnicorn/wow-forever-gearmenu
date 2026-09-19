@@ -1,6 +1,6 @@
 # TC-QC-01 — Add a QuickChange rule
 
-**Area:** QuickChange | **Client:** Era | **Mandatory:** yes
+**Area:** QuickChange | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

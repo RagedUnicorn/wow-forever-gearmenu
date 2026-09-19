@@ -1,6 +1,6 @@
 # TC-KB-02 — Keybinding persists across /reload
 
-**Area:** Keybinding | **Client:** Era | **Mandatory:** yes
+**Area:** Keybinding | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

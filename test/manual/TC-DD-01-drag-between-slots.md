@@ -1,6 +1,6 @@
 # TC-DD-01 — Drag between gearslots
 
-**Area:** DragDrop | **Client:** Era | **Mandatory:** yes
+**Area:** DragDrop | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

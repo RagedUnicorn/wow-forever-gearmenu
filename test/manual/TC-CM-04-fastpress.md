@@ -1,6 +1,6 @@
 # TC-CM-04 — FastPress (keydown vs keyup)
 
-**Area:** ChangeMenu | **Client:** Era | **Mandatory:** yes
+**Area:** ChangeMenu | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

@@ -1,6 +1,6 @@
 # TC-GB-03 — Add and remove gearslots
 
-**Area:** GearBar | **Client:** Era | **Mandatory:** yes
+**Area:** GearBar | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

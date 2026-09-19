@@ -1,6 +1,6 @@
 # TC-QC-04 — Remove a rule
 
-**Area:** QuickChange | **Client:** Era | **Mandatory:** yes
+**Area:** QuickChange | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

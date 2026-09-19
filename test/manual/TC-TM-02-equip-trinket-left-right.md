@@ -1,6 +1,6 @@
 # TC-TM-02 — Left/right click equips upper/lower trinket
 
-**Area:** TrinketMenu | **Client:** Era | **Mandatory:** yes
+**Area:** TrinketMenu | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

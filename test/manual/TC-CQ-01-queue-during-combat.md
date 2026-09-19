@@ -1,6 +1,6 @@
 # TC-CQ-01 — Queue during combat, fire on leaving combat
 
-**Area:** CombatQueue | **Client:** Era | **Mandatory:** yes
+**Area:** CombatQueue | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

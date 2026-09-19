@@ -1,6 +1,6 @@
 # TC-PR-07 — Default profile is editable, Reset to defaults restores the factory settings
 
-**Area:** Profiles | **Client:** Era | **Mandatory:** yes
+**Area:** Profiles | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

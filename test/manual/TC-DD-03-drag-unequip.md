@@ -1,6 +1,6 @@
 # TC-DD-03 — Unequip by dragging into bag
 
-**Area:** DragDrop | **Client:** Era | **Mandatory:** yes
+**Area:** DragDrop | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

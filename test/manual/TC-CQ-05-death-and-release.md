@@ -1,11 +1,10 @@
 # TC-CQ-05 — Queue survives death, fires when alive
 
-**Area:** CombatQueue | **Client:** Era | **Mandatory:** yes
+**Area:** CombatQueue | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 
 - A queued swap can be produced and the character can safely die (low-level zone)
-- **Do not run on a Hardcore character**
 
 ## Steps
 

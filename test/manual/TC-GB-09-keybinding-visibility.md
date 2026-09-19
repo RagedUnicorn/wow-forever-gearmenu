@@ -1,6 +1,6 @@
 # TC-GB-09 — Keybinding show/hide per bar
 
-**Area:** GearBar | **Client:** Era | **Mandatory:** yes
+**Area:** GearBar | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

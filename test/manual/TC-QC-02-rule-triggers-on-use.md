@@ -1,6 +1,6 @@
 # TC-QC-02 — Rule triggers on item use
 
-**Area:** QuickChange | **Client:** Era | **Mandatory:** yes
+**Area:** QuickChange | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

@@ -1,6 +1,6 @@
 # TC-CE-02 — 2H ↔ MH/OH weapon combinations
 
-**Area:** CombinedEquip | **Client:** Era | **Mandatory:** yes
+**Area:** CombinedEquip | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

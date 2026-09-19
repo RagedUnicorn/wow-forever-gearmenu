@@ -1,6 +1,6 @@
 # TC-PR-03 — Rename and delete a profile, the active one too
 
-**Area:** Profiles | **Client:** Era | **Mandatory:** yes
+**Area:** Profiles | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

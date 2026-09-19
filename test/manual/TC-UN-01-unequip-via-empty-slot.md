@@ -1,6 +1,6 @@
 # TC-UN-01 — Unequip via empty ChangeMenu slot
 
-**Area:** Unequip | **Client:** Era | **Mandatory:** yes
+**Area:** Unequip | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

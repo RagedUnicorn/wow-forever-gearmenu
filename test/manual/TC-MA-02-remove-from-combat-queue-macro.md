@@ -1,6 +1,6 @@
 # TC-MA-02 — GM_RemoveFromCombatQueue macro
 
-**Area:** Macro API | **Client:** Era | **Mandatory:** yes
+**Area:** Macro API | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

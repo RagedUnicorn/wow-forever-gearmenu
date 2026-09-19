@@ -1,6 +1,6 @@
 # TC-GB-04 — Reposition, lock and unlock a gearbar
 
-**Area:** GearBar | **Client:** Era | **Mandatory:** yes
+**Area:** GearBar | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 

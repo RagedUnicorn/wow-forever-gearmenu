@@ -1,6 +1,6 @@
 # TC-EV-01 — Swap listener notifications
 
-**Area:** Public API | **Client:** Era | **Mandatory:** yes
+**Area:** Public API | **Client:** Forever | **Mandatory:** yes
 
 ## Preconditions
 
