@@ -267,4 +267,10 @@ This repository uses [Renovate](https://renovatebot.com/) for automated dependen
   - `addon.supported.patch` - WoW patch version
   - `addon.curseforge.gameVersion` - CurseForge game version ID
 
+The WoW: Forever values (`addon.interface.forever`, `addon.supported.patch.forever`,
+`addon.curseforge.gameVersionForever`) are not Renovate-managed yet: wow-renovate-data has no
+Forever variant (the CurseForge game version 17053 is still tagged `unknown` there). Bump them by
+hand in `pom.xml` when the beta reports a new interface version, then regenerate the sources. The
+Wago release stays blocked as long as Wago has no Forever game field.
+
 The configuration can be found in `renovate.json`. Renovate runs on a weekly schedule and creates pull requests for available updates.

@@ -26,6 +26,8 @@
       Classic - covers: Classic Era, Hardcore, Season of Discovery
       Anniversary TBC - covers: TBC Anniversary Edition
       MoP Classic - covers: Mists of Pandaria Classic
+      Forever - covers: World of Warcraft: Forever (1.60.x). Not Renovate-managed until
+      wow-renovate-data carries a Forever variant (ID 17053 is still tagged unknown there).
     -->
     <!-- renovate: datasource=custom.wow-game-versions-classic depName=wow-gameversion-classic versioning=loose -->
     <addon.curseforge.gameVersionClassic>16630</addon.curseforge.gameVersionClassic>
@@ -33,6 +35,7 @@
     <addon.curseforge.gameVersionTbcc>16533</addon.curseforge.gameVersionTbcc>
     <!-- renovate: datasource=custom.wow-game-versions-mop depName=wow-gameversion-mop versioning=loose -->
     <addon.curseforge.gameVersionMop>16168</addon.curseforge.gameVersionMop>
+    <addon.curseforge.gameVersionForever>17053</addon.curseforge.gameVersionForever>
     <addon.wago.projectId>kaNeybN2</addon.wago.projectId>
     <addon.name.short>GM</addon.name.short>
     <addon.tag.version>v${project.version}</addon.tag.version>
@@ -42,13 +45,19 @@
     <addon.interface.tbcc>20506</addon.interface.tbcc>
     <!-- renovate: datasource=custom.wow-versions-mop depName=wow-interface-mop versioning=loose -->
     <addon.interface.mop>50504</addon.interface.mop>
+    <!--
+      WoW: Forever interface version. Not Renovate-managed until wow-renovate-data carries a
+      Forever variant - bump by hand when the beta reports a new C_AddOns.GetAddOnInterfaceVersion.
+    -->
+    <addon.interface.forever>16001</addon.interface.forever>
     <!-- Aggregated interface line consumed by the .toc template. -->
-    <addon.interface>${addon.interface.classic}, ${addon.interface.tbcc}, ${addon.interface.mop}</addon.interface>
+    <addon.interface>${addon.interface.forever}</addon.interface>
     <!--
       Wago patch versions.
       Classic - covers: Classic Era, Hardcore, Season of Discovery
       TBC - covers: TBC Anniversary (Burning Crusade Classic)
       MoP - covers: Mists of Pandaria Classic
+      Forever - covers: World of Warcraft: Forever (badge only, Wago has no Forever field)
     -->
     <!-- renovate: datasource=custom.wow-patch-versions-classic depName=wow-patch-classic versioning=loose -->
     <addon.supported.patch.classic>1.15.9</addon.supported.patch.classic>
@@ -56,6 +65,7 @@
     <addon.supported.patch.tbcc>2.5.6</addon.supported.patch.tbcc>
     <!-- renovate: datasource=custom.wow-patch-versions-mop depName=wow-patch-mop versioning=loose -->
     <addon.supported.patch.mop>5.5.4</addon.supported.patch.mop>
+    <addon.supported.patch.forever>1.60.1</addon.supported.patch.forever>
     <addon.identifier>${project.groupId}.${project.artifactId}</addon.identifier>
     <addon.project.categories>Action Bars Combat PvP</addon.project.categories>
   </properties>
@@ -170,6 +180,7 @@
                     <gameVersion>${addon.curseforge.gameVersionClassic}</gameVersion>
                     <gameVersion>${addon.curseforge.gameVersionTbcc}</gameVersion>
                     <gameVersion>${addon.curseforge.gameVersionMop}</gameVersion>
+                    <gameVersion>${addon.curseforge.gameVersionForever}</gameVersion>
                   </gameVersions>
                   <releaseType>release</releaseType>
                   <file>${project.basedir}/target/${addon.folderName}.zip</file>
@@ -309,6 +320,7 @@
                     <include>wow_badge_classic.svg</include>
                     <include>wow_badge_tbc.svg</include>
                     <include>wow_badge_mop.svg</include>
+                    <include>wow_badge_forever.svg</include>
                   </includes>
                 </resource>
               </resources>

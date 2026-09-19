@@ -7,6 +7,7 @@
 ![](docs/wow_badge_classic.svg)
 ![](docs/wow_badge_tbc.svg)
 ![](docs/wow_badge_mop.svg)
+![](docs/wow_badge_forever.svg)
 ![](docs/license_mit.svg)
 ![Lint](https://github.com/RagedUnicorn/wow-classic-gearmenu/actions/workflows/lint.yaml/badge.svg?branch=master)
 ![Test](https://github.com/RagedUnicorn/wow-classic-gearmenu/actions/workflows/test.yaml/badge.svg?branch=master)

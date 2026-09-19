@@ -37,5 +37,11 @@
       <filtered>true</filtered>
       <destName>wow_badge_mop.svg</destName>
     </file>
+    <file>
+      <source>build-resources/wow-badge-forever.svg.tpl</source>
+      <outputDirectory>./</outputDirectory>
+      <filtered>true</filtered>
+      <destName>wow_badge_forever.svg</destName>
+    </file>
   </files>
 </assembly>
