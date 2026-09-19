@@ -182,7 +182,8 @@ OnUnitSpellCastStop = function(unit)
 end
 
 --[[
-  Player is alive again or left combat - work through all combat queues.
+  Player is alive again or left combat - finish gearBar drags that combat interrupted and
+  work through all combat queues.
 ]]--
 OnPlayerAliveOrLeftCombat = function()
   me.gearBar.StopPendingDragFrames()
