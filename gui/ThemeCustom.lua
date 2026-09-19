@@ -23,7 +23,7 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- luacheck: globals CreateFrame C_Timer MouseIsOver
+-- luacheck: globals CreateFrame C_Timer
 
 local mod = rggm
 local me = {}
@@ -240,7 +240,7 @@ function me.GearSlotOnClick(self, button)
   end
 
   C_Timer.After(.5, function()
-    if MouseIsOver(self:GetParent()) then
+    if self:GetParent():IsMouseOver() then
       self.highlightFrame:SetBackdropBorderColor(unpack(RGGM_CONSTANTS.HIGHLIGHT.hover))
     else
       self.highlightFrame:Hide()

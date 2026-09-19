@@ -23,7 +23,7 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- luacheck: globals CreateFrame MouseIsOver C_Container STANDARD_TEXT_FONT CooldownFrame_Clear
+-- luacheck: globals CreateFrame C_Container STANDARD_TEXT_FONT CooldownFrame_Clear
 -- luacheck: globals CooldownFrame_Set UIParent
 
 local mod = rggm
@@ -111,7 +111,7 @@ function me.UpdateChangeMenu(gearSlotPosition, gearBarId)
 
     mod.ticker.StartTickerChangeMenu()
 
-    if uiGearBar and MouseIsOver(uiGearBar.gearBarReference) or MouseIsOver(changeMenuFrame) then
+    if (uiGearBar and uiGearBar.gearBarReference:IsMouseOver()) or changeMenuFrame:IsMouseOver() then
       changeMenuFrame:Show()
     end
   end
@@ -494,7 +494,7 @@ function me.ChangeMenuOnUpdate()
     return
   end
 
-  if not MouseIsOver(gearBar.gearBarReference) and not MouseIsOver(changeMenuFrame) then
+  if not gearBar.gearBarReference:IsMouseOver() and not changeMenuFrame:IsMouseOver() then
     me.CloseChangeMenu()
   end
 end
