@@ -36,22 +36,11 @@ RGGM_CONSTANTS = {
   ]]--
   UNIT_ID_PLAYER = "player",
   UNIT_ID_TARGET = "target",
-  MODIFIER_KEYS = { "LCTRL", "RCTRL", "LALT", "RALT", "LSHIFT", "RSHIFT" },
-  MODIFIER_KEY_MAPPING = {
-    ["LCTRL"] = "CTRL",
-    ["RCTRL"] = "CTRL",
-    ["LALT"] = "ALT",
-    ["RALT"] = "ALT",
-    ["LSHIFT"] = "SHIFT",
-    ["RSHIFT"] = "SHIFT"
-  },
   --[[
     UI-Styles
   ]]--
   UI_THEME_CLASSIC = 1,
   UI_THEME_CUSTOM = 2,
-  MOUSEWHEELUP = 1,
-  MOUSEWHEELDOWN = -1,
   ITEMQUALITY = {
     poor = 0,
     common = 1,
@@ -75,7 +64,6 @@ RGGM_CONSTANTS = {
   CHANGE_MENU_UPDATE_INTERVAL = 0.1,
   COMBAT_QUEUE_UPDATE_INTERVAL = 0.1,
   RANGE_CHECK_UPDATE_INTERVAL = 0.1,
-  KEYBIND_UPDATE_DELAY = 1.0,
   BAG_UPDATE_DEBOUNCE_DELAY = 0.1,
   --[[
     Public swap-lifecycle event names passed to third-party listeners registered through
@@ -101,6 +89,18 @@ RGGM_CONSTANTS = {
   ELEMENT_GEAR_BAR_BASE_FRAME_NAME = "GM_GearBarFrame_",
   ELEMENT_GEAR_BAR_SLOT = "$parentSlot_",
   ELEMENT_GEAR_BAR_COMBAT_QUEUE_SLOT = "$parent_CombatQueueSlot",
+  --[[
+    Key-bind proxies (gui/KeyBindProxy.lua). One hidden secure button exists for every possible
+    gearSlot - MAX_GEAR_BARS x MAX_GEAR_BAR_SLOTS - named by the bar's bindIndex and the slot
+    position. Those stable names are what Bindings.xml declares as CLICK actions and what a key is
+    bound to; the real gearSlot frames (random bar ids in their names) are never binding targets.
+    The format strings take (bindIndex, position) and must match Bindings.xml.
+  ]]--
+  ELEMENT_KEY_BIND_PROXY_NAME = "GM_KeyBindBar%dSlot%d",
+  KEY_BIND_PROXY_ACTION = "CLICK GM_KeyBindBar%dSlot%d:LeftButton",
+  -- the Bindings.xml category token and the per-bar PREFACE_ text row token (takes bindIndex)
+  KEY_BIND_CATEGORY = "BINDING_HEADER_GEARMENU",
+  KEY_BIND_BAR_PREFACE = "PREFACE_GEARMENU_BAR%d",
 
   ELEMENT_GEAR_BAR_SLOT_ICON_TEXTURE_NAME = "$parent_Icon",
   GEAR_BAR_COMBAT_QUEUE_SLOT_SIZE_MODIFIER = .55,
@@ -266,7 +266,9 @@ RGGM_CONSTANTS = {
   ELEMENT_GEAR_BAR_CONFIGURATION_SLOTS_SCROLL_FRAME = "$parentScrollFrame",
   ELEMENT_GEAR_BAR_CONFIGURATION_SLOTS_ROW_FRAME = "GM_GearBarSlotConfigurationRowFrame_",
   ELEMENT_GEAR_BAR_CONFIGURATION_SLOTS_GEAR_SLOT_DROPDOWN = "GM_GearBarSlotConfigurationGearSlotDropdown_",
-  ELEMENT_GEAR_BAR_CONFIGURATION_SLOTS_KEY_BINDING_BUTTON = "$parentKeyBindingButton_",
+  ELEMENT_GEAR_BAR_CONFIGURATION_KEY_BINDINGS_BUTTON = "$parentKeyBindingsButton",
+  ELEMENT_GEAR_BAR_CONFIGURATION_QUICK_KEYBIND_BUTTON = "$parentQuickKeybindButton",
+  ELEMENT_GEAR_BAR_CONFIGURATION_SLOTS_UNBIND_BUTTON = "$parentUnbindButton_",
   ELEMENT_GEAR_BAR_CONFIGURATION_SLOTS_KEY_BINDING_TEXT = "$parentKeyBindingText",
   ELEMENT_GEAR_BAR_CONFIGURATION_OPT_LOCK_GEAR_BAR = "GM_GearBarConfigurationOptTooltipLockGearBar_",
   ELEMENT_GEAR_BAR_CONFIGURATION_OPT_SHOW_KEY_BINDINGS = "GM_GearBarConfigurationOptTooltipShowKeyBindings_",

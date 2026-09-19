@@ -196,13 +196,15 @@ active profile.
 makes it active. `DeleteProfile(name)` of the active profile applies Default and
 returns a second value `fellBack`, with no mirror before or after (it would resurrect
 the deleted profile). Every page path that applies a snapshot - Load, Reset to
-defaults, deleting the active profile - is wrapped in the key-binding dance:
-`keyBind.ClearGearBarKeyBindings(gearBarManager.GetGearBars())` before (the outgoing
-bars' WoW bindings would otherwise keep firing slots that no longer exist),
-`keyBind.ApplyGearBarKeyBindings()` after (the profile carries the binding labels, not
-WoW's binding cache), then `ReloadUI()` so every GearBar, the ChangeMenu and the
-TrinketMenu rebuild from the applied state (the post-reload logout mirror re-writes the
-`SetupConfiguration`-normalised copy - harmless). Export mirrors first and then exports
+defaults, deleting the active profile - is refused in combat and wrapped in the
+key-binding dance: `keyBind.ClearGearBarKeyBindings()` before (clears the keys of every
+GearMenu proxy action, so the outgoing profile's keys do not linger on slots the incoming
+one leaves unbound), `keyBind.ApplyGearBarKeyBindings()` after (binds the `keyBinding`
+mirror of every slot to its proxy action - the profile carries the keys, not WoW's
+binding set), then `ReloadUI()` so every GearBar, the ChangeMenu and the TrinketMenu
+rebuild from the applied state (the post-reload logout mirror re-writes the
+`SetupConfiguration`-normalised copy - harmless). The reload is not needed for the
+bindings themselves any more - the proxy names are static. Export mirrors first and then exports
 the stored copy of the selected row, so the active row exports the live settings; an
 import is stored inactive. Accepted quirk: a stored profile from an older schema lacks
 the newer fields, `ApplySnapshot` keeps the live value for those and the first mirror
@@ -227,7 +229,7 @@ after it, right before the `ReloadUI()`.
 | Reset to defaults (`RGGM_PROFILE_RESET`) | `ResetActiveProfile()`, key-binding dance around it | never | yes |
 | Export | `SaveActiveProfile()`, then `ExportString(GetProfile(name), name)` | nothing selected | no |
 | Import (`RGGM_PROFILE_IMPORT`, name prompt prefilled from the string) | `ImportString(text)`, then `SaveProfile(name, payload)` - stored inactive | never | no |
-| Key-binding dance (every reload above) | `keyBind.ClearGearBarKeyBindings(gearBarManager.GetGearBars())` before, `keyBind.ApplyGearBarKeyBindings()` after | - | precedes `ReloadUI()` |
+| Key-binding dance (every reload above) | `keyBind.ClearGearBarKeyBindings()` before, `keyBind.ApplyGearBarKeyBindings()` after | in combat | precedes `ReloadUI()` |
 
 **Profile data flow**
 
@@ -255,6 +257,48 @@ flowchart TD
   fallback --> mirror
   mirror --> done(["the active profile equals<br/>the live configuration"])
 ```
+
+## Key Bindings
+
+GearMenu binds keys through the game's own keybinding system; it has no key capture of its
+own. Three modules share the work:
+
+- **`gui/KeyBindProxy.lua`** creates one hidden `SecureActionButtonTemplate` button per
+  possible GearSlot at initialization - `MAX_GEAR_BARS x MAX_GEAR_BAR_SLOTS`, named
+  `GM_KeyBindBar<bindIndex>Slot<position>` - and keeps each one's macro pointed at the
+  `/use <slotId>` of the slot configured at that `(bindIndex, position)` (`Update()`, called
+  by `GearBarManager` after every bar / slot change). The real GearSlot frames carry a random
+  bar id in their name and are never binding targets. Every gearBar holds a persisted
+  `bindIndex` (1..`MAX_GEAR_BARS`, lowest free one on creation, backfilled by
+  `EnsureBindIndices` in `SetupConfiguration`) so deleting another bar does not shift its keys.
+- **`Bindings.xml`** (repo root, auto-loaded by the client, not in the TOC, included by both
+  assembly descriptors) declares the 200 `CLICK GM_KeyBindBar<b>Slot<p>:LeftButton` actions
+  under `BINDING_HEADER_GEARMENU` with a `PREFACE_GEARMENU_BAR<b>` text row per bar. The
+  names come from `keybind_category` / `keybind_bar_preface` / `keybind_slot_name` in the
+  localization and are set as globals by `KeyBindProxy` at file load. Positional names on
+  purpose - the list is only rebuilt on `ADDON_LOADED` / reload.
+- **`gui/KeyBind.lua`** reads and writes bindings against those actions with WoW's binding
+  set as the single source of truth: the label on a slot and in the configuration row is
+  `GetBindingKey(proxyAction)`, refreshed on `UPDATE_BINDINGS` (gated) and once at
+  initialization; `slot.keyBinding` is only a mirror kept as the profile export payload.
+  GearMenu writes bindings in three cases - the row's `Unbind` button, the key shift after a
+  slot removal (`OnGearSlotRemoved`, keys follow the slots that move up) and the profile dance
+  (`ClearGearBarKeyBindings` / `ApplyGearBarKeyBindings`) - and every write goes through
+  `WhenOutOfCombat`: refused by the client during combat lockdown, so it is queued and run on
+  `PLAYER_REGEN_ENABLED` (`FlushPending`, dispatched from `Core`), with one chat notice.
+
+**Quick Keybind Mode.** GearSlots inherit `QuickKeybindButtonTemplate` (listed before
+`SecureActionButtonTemplate` so the secure `OnClick` wins) and carry
+`commandName = proxyAction`; `GearBar` forwards `OnEnter` / `OnLeave` to the
+`QuickKeybindButtonTemplateMixin` and hooks `QuickKeybindFrame` `OnShow` / `OnHide` to toggle
+the highlight (`DoModeChange`) on every slot. The configuration's `Key Bindings` button opens
+Settings > Keybindings at the GearMenu section (`Settings.OpenToCategory` with the section
+expanded, the way Blizzard's ping settings do), `Quick Keybind Mode` closes the settings and
+shows `QuickKeybindFrame` (refused in combat).
+
+Headless coverage: `KeyBindProxySpec` (creation, mapping, deferral), `KeyBindReconcileSpec`
+(reads, writes, shift, profile pair, deferral queue) against the in-memory `BindingSet` and
+`FrameRegistry` stubs in `test/headless/WowStubs.lua`.
 
 ## Dependency Management
 

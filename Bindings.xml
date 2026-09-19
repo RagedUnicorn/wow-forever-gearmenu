@@ -1,0 +1,229 @@
+<!--
+  Key bindings exposed in the game Settings > Keybindings list under a GearMenu category.
+
+  Bindings.xml is picked up by the client from the addon root automatically - it is NOT
+  listed in the .toc. Every binding is a CLICK action on one of the hidden, always-present
+  SecureActionButtonTemplate proxy buttons that gui/KeyBindProxy.lua creates at login -
+  one per possible gearSlot (MAX_GEAR_BARS x MAX_GEAR_BAR_SLOTS) - and keeps pointed at
+  the "/use <slotId>" macro of the gearSlot configured at (bar bindIndex, slot position).
+  The real gearSlot frames carry a random gearBar id in their name and can never be
+  declared here, which is why the proxies exist.
+
+  The PREFACE_ entries render as a text row per gearBar. The names of the actions and the
+  rows come from the BINDING_HEADER_GEARMENU / PREFACE_GEARMENU_BAR<b> / BINDING_NAME_
+  globals gui/KeyBindProxy.lua sets from the localization at load time. The button names
+  must match RGGM_CONSTANTS.ELEMENT_KEY_BIND_PROXY_NAME and the bar / slot bounds
+  RGGM_CONSTANTS.MAX_GEAR_BARS / MAX_GEAR_BAR_SLOTS in code/Constants.lua.
+-->
+<Bindings>
+  <Binding name="PREFACE_GEARMENU_BAR1" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot1:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot2:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot3:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot4:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot5:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot6:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot7:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot8:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot9:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot10:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot11:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot12:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot13:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot14:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot15:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot16:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot17:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot18:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot19:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar1Slot20:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="PREFACE_GEARMENU_BAR2" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot1:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot2:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot3:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot4:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot5:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot6:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot7:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot8:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot9:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot10:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot11:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot12:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot13:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot14:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot15:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot16:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot17:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot18:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot19:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar2Slot20:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="PREFACE_GEARMENU_BAR3" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot1:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot2:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot3:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot4:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot5:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot6:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot7:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot8:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot9:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot10:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot11:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot12:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot13:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot14:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot15:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot16:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot17:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot18:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot19:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar3Slot20:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="PREFACE_GEARMENU_BAR4" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot1:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot2:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot3:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot4:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot5:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot6:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot7:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot8:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot9:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot10:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot11:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot12:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot13:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot14:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot15:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot16:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot17:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot18:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot19:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar4Slot20:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="PREFACE_GEARMENU_BAR5" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot1:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot2:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot3:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot4:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot5:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot6:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot7:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot8:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot9:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot10:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot11:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot12:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot13:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot14:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot15:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot16:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot17:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot18:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot19:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar5Slot20:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="PREFACE_GEARMENU_BAR6" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot1:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot2:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot3:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot4:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot5:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot6:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot7:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot8:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot9:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot10:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot11:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot12:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot13:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot14:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot15:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot16:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot17:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot18:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot19:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar6Slot20:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="PREFACE_GEARMENU_BAR7" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot1:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot2:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot3:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot4:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot5:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot6:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot7:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot8:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot9:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot10:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot11:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot12:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot13:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot14:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot15:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot16:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot17:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot18:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot19:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar7Slot20:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="PREFACE_GEARMENU_BAR8" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot1:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot2:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot3:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot4:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot5:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot6:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot7:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot8:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot9:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot10:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot11:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot12:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot13:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot14:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot15:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot16:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot17:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot18:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot19:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar8Slot20:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="PREFACE_GEARMENU_BAR9" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot1:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot2:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot3:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot4:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot5:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot6:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot7:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot8:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot9:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot10:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot11:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot12:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot13:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot14:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot15:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot16:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot17:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot18:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot19:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar9Slot20:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="PREFACE_GEARMENU_BAR10" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot1:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot2:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot3:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot4:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot5:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot6:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot7:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot8:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot9:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot10:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot11:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot12:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot13:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot14:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot15:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot16:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot17:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot18:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot19:LeftButton" category="BINDING_HEADER_GEARMENU" />
+  <Binding name="CLICK GM_KeyBindBar10Slot20:LeftButton" category="BINDING_HEADER_GEARMENU" />
+</Bindings>

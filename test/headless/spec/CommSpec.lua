@@ -90,9 +90,15 @@ describe("Comm", function()
       logger = rggm.logger,
       configuration = rggm.configuration,
       comm = rggm.comm,
+      gearBarManager = rggm.gearBarManager,
       L = rggm.L
     }
     previousConfig = _G.GearMenuConfiguration
+
+    -- SetupConfiguration backfills the per-bar bindIndex through this (covered by GearBarManagerSpec)
+    rggm.gearBarManager = {
+      EnsureBindIndices = function() end
+    }
 
     -- silence the configuration module's logging and capture the user facing notice
     rggm.logger = {
@@ -138,6 +144,7 @@ describe("Comm", function()
     rggm.logger = previousModules.logger
     rggm.configuration = previousModules.configuration
     rggm.comm = previousModules.comm
+    rggm.gearBarManager = previousModules.gearBarManager
     rggm.L = previousModules.L
     _G.GearMenuConfiguration = previousConfig
   end)

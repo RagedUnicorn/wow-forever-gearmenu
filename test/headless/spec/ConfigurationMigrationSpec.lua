@@ -103,7 +103,9 @@ describe("Configuration migration", function()
         local gearBar = { id = 1, slots = {} }
         table.insert(_G.GearMenuConfiguration.gearBars, gearBar)
         return gearBar
-      end
+      end,
+      -- SetupConfiguration backfills the per-bar bindIndex through this (covered by GearBarManagerSpec)
+      EnsureBindIndices = function() end
     }
     -- GetGearSlotForSlotId returns a fresh gearSlot the migration inserts into gearBar.slots
     rggm.gearManager = {

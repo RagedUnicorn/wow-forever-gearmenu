@@ -79,7 +79,9 @@ describe("GearBarManager", function()
       updateGearBars = 0,
       registerTicker = {},
       unregisterTicker = {},
-      checkKeyBindingSlots = {},
+      slotRemoved = {},       -- keyBind.OnGearSlotRemoved(gearBarId, position)
+      barRemoved = {},        -- keyBind.OnGearBarRemoved(bindIndex)
+      proxyUpdates = 0,       -- keyBindProxy.Update()
       gearSlotsRequested = {}
     }
 
@@ -88,7 +90,8 @@ describe("GearBarManager", function()
       gearBar = rggm.gearBar,
       gearManager = rggm.gearManager,
       ticker = rggm.ticker,
-      keyBind = rggm.keyBind
+      keyBind = rggm.keyBind,
+      keyBindProxy = rggm.keyBindProxy
     }
     -- snapshot the global the module mutates so it does not leak into other specs
     previousConfig = _G.GearMenuConfiguration
@@ -130,7 +133,15 @@ describe("GearBarManager", function()
       UnregisterForTickerRangeCheck = function(id) calls.unregisterTicker[#calls.unregisterTicker + 1] = id end
     }
     rggm.keyBind = {
-      CheckKeyBindingSlots = function(id) calls.checkKeyBindingSlots[#calls.checkKeyBindingSlots + 1] = id end
+      OnGearSlotRemoved = function(id, position)
+        calls.slotRemoved[#calls.slotRemoved + 1] = { gearBarId = id, position = position }
+      end,
+      OnGearBarRemoved = function(bindIndex)
+        calls.barRemoved[#calls.barRemoved + 1] = bindIndex
+      end
+    }
+    rggm.keyBindProxy = {
+      Update = function() calls.proxyUpdates = calls.proxyUpdates + 1 end
     }
 
     -- fresh module table (mirrors the isolation convention used by the other specs)
@@ -144,6 +155,7 @@ describe("GearBarManager", function()
     rggm.gearManager = previousModules.gearManager
     rggm.ticker = previousModules.ticker
     rggm.keyBind = previousModules.keyBind
+    rggm.keyBindProxy = previousModules.keyBindProxy
     _G.GearMenuConfiguration = previousConfig
   end)
 
@@ -202,6 +214,17 @@ describe("GearBarManager", function()
       assert.are.equal("BarA", _G.GearMenuConfiguration.gearBars[1].displayName)
       assert.are.equal("BarB", _G.GearMenuConfiguration.gearBars[2].displayName)
     end)
+
+    it("allocates bindIndex 1, 2, 3 to consecutive bars and re-points the key-bind proxies", function()
+      local barA = gearBarManager.AddGearBar("BarA", false)
+      local barB = gearBarManager.AddGearBar("BarB", false)
+      local barC = gearBarManager.AddGearBar("BarC", false)
+
+      assert.are.equal(1, barA.bindIndex)
+      assert.are.equal(2, barB.bindIndex)
+      assert.are.equal(3, barC.bindIndex)
+      assert.are.equal(3, calls.proxyUpdates)
+    end)
   end)
 
   describe("RemoveGearBar", function()
@@ -221,6 +244,83 @@ describe("GearBarManager", function()
       gearBarManager.RemoveGearBar(99999999)
 
       assert.are.equal(1, #_G.GearMenuConfiguration.gearBars)
+    end)
+
+    it("keeps the bindIndex of the remaining bars and frees the removed one for reuse", function()
+      addBar("BarA")
+      local idB = addBar("BarB")
+      addBar("BarC")
+
+      gearBarManager.RemoveGearBar(idB)
+      local barD = gearBarManager.AddGearBar("BarD", false)
+
+      assert.are.equal(1, _G.GearMenuConfiguration.gearBars[1].bindIndex)
+      assert.are.equal(3, _G.GearMenuConfiguration.gearBars[2].bindIndex)
+      assert.are.equal(2, barD.bindIndex)
+    end)
+
+    it("clears the keys of the removed bindIndex and re-points the proxies", function()
+      local idA = addBar("BarA")
+      local idB = addBar("BarB")
+      calls.proxyUpdates = 0
+
+      gearBarManager.RemoveGearBar(idB)
+      gearBarManager.RemoveGearBar(idA)
+
+      assert.are.same({ 2, 1 }, calls.barRemoved)
+      assert.are.equal(2, calls.proxyUpdates)
+    end)
+  end)
+
+  describe("AllocateBindIndex / EnsureBindIndices", function()
+    it("returns nil once every bindIndex is taken", function()
+      for _ = 1, RGGM_CONSTANTS.MAX_GEAR_BARS do
+        addBar("Bar")
+      end
+
+      assert.is_nil(gearBarManager.AllocateBindIndex())
+    end)
+
+    it("backfills a missing bindIndex with the lowest free one", function()
+      _G.GearMenuConfiguration.gearBars = {
+        { id = 1, slots = {}, bindIndex = 1 },
+        { id = 2, slots = {} },
+        { id = 3, slots = {}, bindIndex = 3 }
+      }
+
+      gearBarManager.EnsureBindIndices()
+
+      assert.are.equal(1, _G.GearMenuConfiguration.gearBars[1].bindIndex)
+      assert.are.equal(2, _G.GearMenuConfiguration.gearBars[2].bindIndex)
+      assert.are.equal(3, _G.GearMenuConfiguration.gearBars[3].bindIndex)
+    end)
+
+    it("re-allocates a duplicate or out-of-range bindIndex and keeps the first holder", function()
+      _G.GearMenuConfiguration.gearBars = {
+        { id = 1, slots = {}, bindIndex = 2 },
+        { id = 2, slots = {}, bindIndex = 2 },
+        { id = 3, slots = {}, bindIndex = RGGM_CONSTANTS.MAX_GEAR_BARS + 5 },
+        { id = 4, slots = {}, bindIndex = "3" }
+      }
+
+      gearBarManager.EnsureBindIndices()
+
+      assert.are.equal(2, _G.GearMenuConfiguration.gearBars[1].bindIndex)
+      assert.are.equal(1, _G.GearMenuConfiguration.gearBars[2].bindIndex)
+      assert.are.equal(3, _G.GearMenuConfiguration.gearBars[3].bindIndex)
+      assert.are.equal(4, _G.GearMenuConfiguration.gearBars[4].bindIndex)
+    end)
+
+    it("leaves a consistent set untouched", function()
+      _G.GearMenuConfiguration.gearBars = {
+        { id = 1, slots = {}, bindIndex = 4 },
+        { id = 2, slots = {}, bindIndex = 1 }
+      }
+
+      gearBarManager.EnsureBindIndices()
+
+      assert.are.equal(4, _G.GearMenuConfiguration.gearBars[1].bindIndex)
+      assert.are.equal(1, _G.GearMenuConfiguration.gearBars[2].bindIndex)
     end)
   end)
 
@@ -436,16 +536,20 @@ describe("GearBarManager", function()
       assert.are.equal(1, #gearBarManager.GetGearBar(id).slots)
     end)
 
-    it("refreshes the gear bar, keybinding slots and keybinding state", function()
-      local id = addBar("BarA")
-      gearBarManager.AddGearSlot(id, true)
+    it("re-points the proxies, refreshes the gear bar, moves the keys of the shifted slots and refreshes the labels",
+      function()
+        local id = addBar("BarA")
+        gearBarManager.AddGearSlot(id, true)
+        gearBarManager.AddGearSlot(id, true)
+        calls.proxyUpdates = 0
 
-      gearBarManager.RemoveGearSlot(id, 1)
+        gearBarManager.RemoveGearSlot(id, 1)
 
-      assert.are.equal(1, calls.updateGearSlots)
-      assert.are.same({ id }, calls.checkKeyBindingSlots)
-      assert.are.equal(1, calls.updateKeyBindingState)
-    end)
+        assert.are.equal(1, calls.proxyUpdates)
+        assert.are.equal(1, calls.updateGearSlots)
+        assert.are.same({ { gearBarId = id, position = 1 } }, calls.slotRemoved)
+        assert.are.equal(1, calls.updateKeyBindingState)
+      end)
 
     it("returns false for an unknown gearBar id", function()
       assert.is_false(gearBarManager.RemoveGearSlot(99999999, 1))
@@ -631,22 +735,44 @@ describe("GearBarManager", function()
   end)
 
   describe("SetSlotKeyBinding", function()
-    it("writes the keybinding onto the slot and fans the update out across bars", function()
+    it("writes the keybinding mirror onto the slot without touching the ui", function()
       local id = addBar("BarA")
       gearBarManager.AddGearSlot(id, true)
 
       gearBarManager.SetSlotKeyBinding(id, 1, "SHIFT-1")
 
       assert.are.equal("SHIFT-1", gearBarManager.GetGearSlot(id, 1).keyBinding)
-      assert.are.equal(1, calls.updateGearBars)
+      assert.are.equal(0, calls.updateGearBars)
+    end)
+
+    it("clears the mirror when passed nil", function()
+      local id = addBar("BarA")
+      gearBarManager.AddGearSlot(id, true)
+      gearBarManager.SetSlotKeyBinding(id, 1, "SHIFT-1")
+
+      gearBarManager.SetSlotKeyBinding(id, 1, nil)
+
+      assert.is_nil(gearBarManager.GetGearSlot(id, 1).keyBinding)
     end)
 
     it("is a no-op when the slot position does not exist", function()
       local id = addBar("BarA")
 
-      gearBarManager.SetSlotKeyBinding(id, 1, "SHIFT-1")
+      assert.has_no.errors(function() gearBarManager.SetSlotKeyBinding(id, 1, "SHIFT-1") end)
+    end)
+  end)
 
-      assert.are.equal(0, calls.updateGearBars)
+  describe("key-bind proxy re-points", function()
+    it("re-points the proxies when a slot is added or updated, with or without a ui update", function()
+      local id = addBar("BarA")
+      calls.proxyUpdates = 0
+
+      gearBarManager.AddGearSlot(id, true)
+      gearBarManager.AddGearSlot(id, false)
+      gearBarManager.UpdateGearSlot(id, 1, { slotId = INVSLOT_TRINKET1 }, true)
+      gearBarManager.UpdateGearSlot(id, 2, { slotId = INVSLOT_TRINKET1 }, false)
+
+      assert.are.equal(4, calls.proxyUpdates)
     end)
   end)
 end)

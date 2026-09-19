@@ -97,7 +97,7 @@ RGGM_SHOTS = {
     hideFrames = { "GM_TrinketMenuFrame", "GM_GearBarFrame_2" },
     hideChrome = true,
     padding = 250,
-    shows = "Binding a key to a gearSlot in the per-bar slot configuration and using it in the world"
+    shows = "Binding a key to a gearSlot in Settings > Keybindings (GearMenu section) and using it in the world"
   },
   {
     name = "gm_drag_and_drop_slots",

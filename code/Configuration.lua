@@ -95,6 +95,11 @@ local CONFIGURATION_DEFAULTS = {
       ["id"] = {number},
         A unique identifier for the gearBar. This identifier can be directly matched to the GearBar
         UI-Element once it is created
+      ["bindIndex"] = {number},
+        The stable key-bind slot of the gearBar in 1..MAX_GEAR_BARS. Keys are bound to the proxy
+        action of (bindIndex, slot position) - see gui/KeyBindProxy.lua - so it must not change
+        when another gearBar is deleted. Allocated by GearBarManager.AddGearBar, backfilled by
+        GearBarManager.EnsureBindIndices in me.SetupConfiguration
       ["displayName"] = {string},
         A user friendly display name for the user to recognize
       ["isLocked"] = {boolean},
@@ -278,6 +283,10 @@ function me.SetupConfiguration()
       gearBar.changeMenuDirection = mod.gearBarManager.GetDefaultChangeMenuDirection(gearBar.orientation)
     end
   end
+
+  -- every gearBar needs a unique bindIndex for its key bindings (a bar from before the field
+  -- existed or a profile export without it gets one here)
+  mod.gearBarManager.EnsureBindIndices()
 
   --[[
     Set saved variables with addon version. This can be used later to determine whether
@@ -604,6 +613,7 @@ end
 function me.EnableFastPress()
   GearMenuConfiguration.enableFastPress = true
   mod.gearBar.UpdateClickHandler()
+  mod.keyBindProxy.UpdateClickHandler()
 end
 
 --[[
@@ -612,6 +622,7 @@ end
 function me.DisableFastPress()
   GearMenuConfiguration.enableFastPress = false
   mod.gearBar.UpdateClickHandler()
+  mod.keyBindProxy.UpdateClickHandler()
 end
 
 --[[

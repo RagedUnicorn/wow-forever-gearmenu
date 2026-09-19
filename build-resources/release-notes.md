@@ -1,9 +1,13 @@
 # New Features
+* Key bindings are now set in the game's own keybinding UI: Settings > Keybindings lists a "GearMenu" section with an entry per GearBar and GearSlot (up to two keys each), and Quick Keybind Mode binds a slot by hovering it and pressing a key. A GearBar's configuration has "Key Bindings" and "Quick Keybind Mode" buttons that open both, and each slot row shows its key with an "Unbind" button
+* Keys bound to a GearBar's slots keep working when a slot before them is removed - the keys follow the slots that move up - and a key binding changed while in combat is applied as soon as you leave combat instead of failing silently
+* Applying a profile no longer needs the UI reload for its key bindings; profiles cannot be switched while in combat
 * Profiles now follow the live active profile model: the profile you are on is marked "(active)" in gold and every change you make belongs to it - it is saved automatically when you switch profiles, at logout and reload, on export and at every login, so there is no Save / Update step to remember
 * Create new Profile copies the current settings into a new profile and makes it active; Load switches to the selected profile and reloads the UI, the profile you leave keeping your settings as they are; deleting the active profile falls back to Default
 * Add a Reset to defaults button that restores the factory settings into the active profile - the shipped options and the starter GearBar, exactly like a fresh install
 
 # Breaking Changes
+* GearMenu's own keybinding popup ("Set/Unset Keybinding" in the slot configuration) is gone - bind keys in Settings > Keybindings or Quick Keybind Mode instead. Keys are bound to positional entries ("GearBar 2 - Slot 3"), not to the slot frames, so there is nothing to migrate on this fresh WoW: Forever line
 * The Default profile is now your editable home profile instead of a frozen copy of the factory settings: it is never deleted or renamed, but loading it brings back what you last had in it. Use Reset to defaults to get the factory settings back
 * The Save current as... and Apply buttons are gone; Create new Profile and Load replace them. On the first login after the update the profile you had applied and not edited since becomes the active one, otherwise Default takes over your current settings - nothing is lost either way
 * Season of Discovery rune support is gone: the rune slots on the GearBar, the "Enable rune slots" option and the engraved-item tracking are removed because GearMenu Forever targets WoW Forever, which has no runes

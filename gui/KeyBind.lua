@@ -23,41 +23,24 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- luacheck: globals StaticPopupDialogs StaticPopup_Show SetBindingClick STANDARD_TEXT_FONT
--- luacheck: globals GetBindingAction SetBinding GetCurrentBindingSet SaveBindings
--- luacheck: globals StaticPopup_Hide
+-- luacheck: globals GetBindingKey SetBinding GetCurrentBindingSet SaveBindings InCombatLockdown
+-- luacheck: globals Settings SettingsPanel QuickKeybindFrame
 
 --[[
-  The keyBind (GM_KeyBind) is responsible for recording and setting keyBindings to gearSlots
-  on the gearBar.
+  The keyBind (GM_KeyBind) module reads and writes the key bindings of gearSlots.
 
-  Note that a keyBind belongs to exactly one button even if a user decides to use the same gearSlot
-  on multiple gearBars
+  Keys are bound in the game's own ui - Settings > Keybindings (category "GearMenu") or Quick
+  Keybind Mode by hovering a gearSlot - to the proxy actions of gui/KeyBindProxy.lua:
+  "CLICK GM_KeyBindBar<bindIndex>Slot<position>:LeftButton". WoW's binding set is the single
+  source of truth: the label on a gearSlot and in the configuration row is GetBindingKey of the
+  slot's proxy action, refreshed on UPDATE_BINDINGS, and the slot's keyBinding field is only a
+  mirror of it kept as the profile export payload.
 
-  KeyBinding rules:
-  - A keyBinding can consist of multiple keys
-  - Keys need to be combined with "-"
-  - Keybindings differentiate between normale keys and modifiers
-    Modifiers:
-    - A keyBinding can have the following modifiers RGGM_CONSTANTS.MODIFIER_KEYS
-    - A keyBinding can have multiple modifiers but not the same one multiple times
-      CTRL-CTRL-T (invalid)
-      CTRL-SHIFT-T (valid)
-      `lastRecordedKey` takes care of that
-    - Modifiers need to be mapped to their actual value in a keyBinding text RGGM_CONSTANTS.MODIFIER_KEY_MAPPING
-    Normal Keys:
-    - Once a normal key was added to a keyBinding text it cannot be followed by
-      a modifier `prohibitModifier` takes care of that
-
-  Examples:
-    T (valid)
-    CTRL-T (valid)
-    CTRL-SHIFT-T (valid)
-
-    CTRL (invalid)
-    CTRL-CTRL (invalid)
-    CTRL-CTRL-T (invalid)
-    T-CTRL (invalid)
+  GearMenu itself writes bindings in three cases only: unbinding a slot from the configuration
+  row, moving the keys of the slots that shift up when a slot is deleted, and applying a
+  profile (clear every proxy action, bind the profile's keys). Setting or clearing a binding is a
+  protected action during combat lockdown - the client refuses it without a Lua error - so every
+  write goes through WhenOutOfCombat and is queued until PLAYER_REGEN_ENABLED when in combat.
 ]]--
 
 local mod = rggm
@@ -66,440 +49,134 @@ mod.keyBind = me
 
 me.tag = "KeyBind"
 
+-- binding writes queued during combat lockdown, run in order by FlushPending
+local pendingWrites = {}
+-- whether the user was told about the deferral for the current combat
+local deferralAnnounced = false
+
 --[[
-  Whether the keyBinding is considered a valid one or not. Accept button to save
-  the keyBinding is only enabled after the keyBinding is considered valid.
+  Run a binding write now, or queue it until combat ends when InCombatLockdown. The user is told
+  once per combat that the change is applied later.
+
+  @param {function} write
+
+  @return {boolean}
+    true - if the write ran immediately
+    false - if it was queued
 ]]--
-local isKeyBindingValid = false
+function me.WhenOutOfCombat(write)
+  if not InCombatLockdown() then
+    write()
+
+    return true
+  end
+
+  table.insert(pendingWrites, write)
+
+  if not deferralAnnounced then
+    deferralAnnounced = true
+    mod.logger.PrintUserMessage(rggm.L["keybind_deferred_combat"])
+  end
+
+  return false
+end
+
 --[[
-  The keyBinding that was recorded so far
+  Run the binding writes queued during combat, in order. Invoked once the player leaves combat.
 ]]--
-local recordedKeyBinding = ""
+function me.FlushPending()
+  if InCombatLockdown() then return end
+
+  deferralAnnounced = false
+
+  if #pendingWrites == 0 then return end
+
+  local queued = pendingWrites
+  pendingWrites = {}
+
+  mod.logger.LogInfo(me.tag, "Running " .. #queued .. " key binding change(s) deferred during combat")
+
+  for _, write in ipairs(queued) do
+    write()
+  end
+end
+
 --[[
-  Track if modifiers are prohibited in the current recording. Keybinds can start with
-  a modifier but once something different than a modifier is recorded they are no longer
-  allowed in the sequence.
-
-  E.g
-
-  T-CTRL (invalid)
-  CTRL-T (valid)
+  @return {boolean}
+    whether binding writes are waiting for the end of combat
 ]]--
-local prohibitModifier = false
+function me.HasPendingWrites()
+  return #pendingWrites > 0
+end
+
 --[[
-  Locks the keyBinding from any further changes
+  The keys bound to a gearSlot (up to two - the Keybindings list allows a primary and a
+  secondary key per action)
+
+  @param {table} gearBar
+  @param {number} position
+
+  @return {string | nil, string | nil}
 ]]--
-local lockKeyBinding = false
---[[
-  Stores the last key that was recorded and added to the keyBindingText. Helps prevent
-  adding multiple modifiers of the same name.
+function me.GetSlotKeys(gearBar, position)
+  if gearBar == nil or gearBar.bindIndex == nil then return nil end
 
-  E.g. CTRL-CTRL-T (invalid)
+  return GetBindingKey(mod.keyBindProxy.GetProxyAction(gearBar.bindIndex, position))
+end
+
+--[[
+  The primary key bound to a gearSlot - what the slot label and the configuration row show
+
+  @param {table} gearBar
+  @param {number} position
+
+  @return {string | nil}
 ]]--
-local lastRecordedKey = ""
+function me.GetSlotKeyBinding(gearBar, position)
+  local key = me.GetSlotKeys(gearBar, position)
+
+  return key
+end
+
 --[[
-  The gearBarId of the gearBar that is being configured
+  Clear every key bound to an action
+
+  @param {string} action
+
+  @return {number}
+    the amount of keys that were cleared
 ]]--
-local currentGearBarId
---[[
-  The gearSlot position that invoked the setting of a keyBinding
-]]--
-local currentGearSlotPosition
+local function ClearActionKeys(action)
+  local keys = { GetBindingKey(action) }
+
+  for _, key in ipairs(keys) do
+    SetBinding(key)
+  end
+
+  return #keys
+end
 
 --[[
-  Popup dialog for setting a new keybind
-]]--
+  Bind a key to an action, replacing whatever the key was bound to. A refused bind (SetBinding
+  returns false for a key the client does not accept) is logged and reported to the user.
 
-StaticPopupDialogs["RGGM_SET_KEYBIND"] = {
-  text = rggm.L["gear_bar_configuration_key_binding_dialog"]
-    .. rggm.L["gear_bar_configuration_key_binding_dialog_initial"],
-  button1 = rggm.L["gear_bar_configuration_key_binding_dialog_accept"],
-  button2 = rggm.L["gear_bar_configuration_key_binding_dialog_cancel"],
-
-  OnShow = function(self)
-    me.ResetKeyBindingRecording()
-    -- setup scripts
-    mod.gearBarConfigurationSubMenu.RegisterScriptWithContentFrame("OnKeyDown", function(_, key)
-      me.OnKeyDown(self, key)
-    end)
-
-    mod.gearBarConfigurationSubMenu.RegisterScriptWithContentFrame("OnMouseDown", function(_, key)
-      me.OnMouseDown(self, key)
-    end)
-
-    mod.gearBarConfigurationSubMenu.RegisterScriptWithContentFrame("OnMouseWheel", function(_, key)
-      me.OnMouseWheel(self, key)
-    end)
-  end,
-  OnHide = function()
-    -- remove script
-    mod.gearBarConfigurationSubMenu.UnregisterScriptWithContentFrame("OnKeyDown")
-    mod.gearBarConfigurationSubMenu.UnregisterScriptWithContentFrame("OnMouseDown")
-    mod.gearBarConfigurationSubMenu.UnregisterScriptWithContentFrame("OnMouseWheel")
-  end,
-  OnAccept = function()
-    local gearBar = mod.gearBarManager.GetGearBar(currentGearBarId)
-    local gearSlot = gearBar.slots[currentGearSlotPosition]
-
-    if gearSlot ~= nil then
-      me.SetKeyBinding(gearBar.id, currentGearSlotPosition, recordedKeyBinding)
-    else
-      mod.logger.LogError(
-        me.tag,
-        "Failed to update keyBinding for gearBar with id: " .. gearBar.id
-        .. " at position: " .. currentGearSlotPosition
-      )
-    end
-  end,
-  OnCancel = function()
-    me.ResetKeyBindingRecording()
-  end,
-  timeout = 0,
-  whileDead = true,
-  preferredIndex = 3
-}
-
---[[
-  Popup dialog for confirming the overriding of another keybind
-]]--
-StaticPopupDialogs["RGGM_SET_KEYBIND_OVERRIDE"] = {
-  text = rggm.L["gear_bar_configuration_key_binding_override_dialog"],
-  button1 = rggm.L["gear_bar_configuration_key_binding_dialog_override_yes"],
-  button2 = rggm.L["gear_bar_configuration_key_binding_dialog_override_no"],
-  OnShow = function()
-    StaticPopup_Hide("RGGM_SET_KEYBIND")
-  end,
-  OnAccept = function()
-    me.SetKeyBindingToGearSlot(currentGearBarId, recordedKeyBinding, currentGearSlotPosition)
-    StaticPopup_Hide("RGGM_SET_KEYBIND")
-  end,
-  OnCancel = function()
-    StaticPopup_Hide("RGGM_SET_KEYBIND")
-  end,
-  timeout = 0,
-  whileDead = true,
-  preferredIndex = 4
-}
-
---[[
-  Function is called after each keydown and records them together to a full keyBind
-
-  @param {table} self
   @param {string} key
+  @param {string} action
+
+  @return {boolean}
+    whether the key was bound
 ]]--
-function me.OnKeyDown(self, key)
-  me.KeyBindingOnKey(self, me.ConvertPressedKey(key))
-end
+local function BindKey(key, action)
+  if SetBinding(key, action) then
+    mod.logger.LogInfo(me.tag, "Bound " .. key .. " to " .. action)
 
---[[
-  Function is called after mousewheel up or down
-
-  @param {table} self
-  @param {string} direction
-    1 MOUSEWHEELUP
-    -1 MOUSEWHEELDOWN
-]]--
-function me.OnMouseWheel(self, direction)
-  if direction == RGGM_CONSTANTS.MOUSEWHEELUP then
-    me.KeyBindingOnKey(self, "MOUSEWHEELUP")
-  elseif direction == RGGM_CONSTANTS.MOUSEWHEELDOWN then
-    me.KeyBindingOnKey(self, "MOUSEWHEELDOWN")
-  else
-    mod.logger.LogError(me.tag, "Unable to determine mousewheel direction")
-  end
-end
-
---[[
-  Function is called after each keydown and records them together to a full keyBind
-
-  @param {table} self
-  @param {string} key
-]]--
-function me.KeyBindingOnKey(self, key)
-  if lockKeyBinding then
-    mod.logger.LogInfo(me.tag, "KeyBinding is already locked no further changes allowed")
-    return
+    return true
   end
 
-  if lastRecordedKey == key then
-    mod.logger.LogDebug(me.tag, "Double key detected - ignoring")
-    return
-  end
+  mod.logger.LogWarn(me.tag, "Failed to bind " .. tostring(key) .. " to " .. action)
+  mod.logger.PrintUserError(string.format(rggm.L["keybind_set_failed"], tostring(key)))
 
-  lastRecordedKey = key
-
-  if recordedKeyBinding ~= "" then
-    recordedKeyBinding = recordedKeyBinding .. "-"
-  end
-
-  if not prohibitModifier then
-    for _, modifierKey in pairs(RGGM_CONSTANTS.MODIFIER_KEYS) do
-      if key == modifierKey then
-        recordedKeyBinding = recordedKeyBinding .. RGGM_CONSTANTS.MODIFIER_KEY_MAPPING[key]
-        isKeyBindingValid = false
-        me.UpdateDialogText(self)
-        me.UpdateDialog(self)
-
-        return
-      end
-    end
-  end
-
-  recordedKeyBinding = recordedKeyBinding .. key
-
-  me.LockKeyBinding()
-  prohibitModifier = true
-  isKeyBindingValid = true -- at least one "normal key" was added
-
-  me.UpdateDialogText(self)
-  me.UpdateDialog(self)
-
-  mod.logger.LogInfo(me.tag, "Keybinding recorded: " .. recordedKeyBinding)
-end
-
---[[
-  @param {string} key
-
-  @return {string}
-    The converted key
-]]--
-function me.ConvertPressedKey(key)
-  -- special case middle mouse button needs to be converted
-  if key == "MiddleButton" then
-    return "BUTTON3"
-  end
-
-  return string.upper(key)
-end
-
---[[
-  Reset keyBinding recording
-]]--
-function me.ResetKeyBindingRecording()
-  recordedKeyBinding = ""
-  prohibitModifier = false
-  lockKeyBinding = false
-  lastRecordedKey = ""
-  isKeyBindingValid = false
-end
-
---[[
-  Lock keyBinding and stop recording any further keys
-
-  @param {table} dialog
-]]--
-function me.LockKeyBinding()
-  mod.gearBarConfigurationSubMenu.UnregisterScriptWithContentFrame("OnKeyDown")
-  lockKeyBinding = true
-end
-
---[[
-  Update the dialogs text
-
-  @param {table} dialog
-]]--
-function me.UpdateDialogText(dialog)
-  local dialogText = _G[dialog:GetName() .. "Text"]
-
-  if dialogText ~= nil then
-    dialogText:SetText(rggm.L["gear_bar_configuration_key_binding_dialog"] .. " " .. recordedKeyBinding)
-  end
-end
-
---[[
-  Update dialog related button
-
-  @param {table} dialog
-]]--
-function me.UpdateDialog(dialog)
-  local button1 = dialog:GetButton1()
-
-  if button1 == nil then return end
-
-  if isKeyBindingValid then
-    button1:Enable() -- enable accept button
-  else
-    button1:Disable() -- disable accept button
-  end
-end
-
---[[
-  Set keybinds
-
-  @param {number} gearBarId
-  @param {table} gearSlotPosition
-  @param {string} keyBinding
-    The keyBinding to set. Will reset the gearSlot if nil or empty
-]]--
-function me.SetKeyBinding(gearBarId, gearSlotPosition, keyBinding)
-  -- unbind keybindings on gearSlot
-  if keyBinding == nil or keyBinding == "" then
-    me.UnsetKeyBinding(gearBarId, gearSlotPosition)
-
-    return
-  end
-
-  local action = GetBindingAction(keyBinding)
-
-  if action ~= "" and action ~= nil then
-    --[[
-      This keybind is already in use somewhere. Make sure to log this information and reset
-      the keybinding.
-    ]]--
-    mod.logger.LogInfo(me.tag, "Keybinding is already in use: " .. action)
-    StaticPopup_Show("RGGM_SET_KEYBIND_OVERRIDE")
-  else
-    mod.logger.LogDebug(me.tag, "Keybinding is not in use")
-    me.SetKeyBindingToGearSlot(gearBarId, keyBinding, gearSlotPosition)
-  end
-end
-
---[[
-  Unset keybinding e.g. when a gearSlot with a binding is deleted or if keyBinding
-  was left empty when accepting the keyBinding
-
-  Will be ignored when trying to unset a gearSlot that does not have a keybinding
-
-  @param {number} gearBarId
-  @param {number} gearSlotPosition
-
-]]--
-function me.UnsetKeyBinding(gearBarId, gearSlotPosition)
-  local gearSlot = mod.gearBarManager.GetGearSlot(gearBarId, gearSlotPosition)
-
-  if gearSlot.keyBinding == nil then
-    mod.logger.LogInfo(me.tag, "GearSlot has no keybinding set. Nothing to reset")
-    return
-  end
-
-  mod.logger.LogInfo(me.tag,
-    "Keybinding - resetting gearBar{" .. gearBarId .. "}gearSlot{" .. gearSlotPosition .. "} keybind")
-
-  mod.logger.LogDebug(me.tag, "Current keybinding before resetting: " .. gearSlot.keyBinding)
-  SetBinding(gearSlot.keyBinding)
-  mod.gearBarManager.SetSlotKeyBinding(gearBarId, gearSlotPosition, nil)
-  mod.gearBarConfigurationSubMenu.UpdateGearBarConfigurationMenu()
-  me.SaveBindings()
-end
-
---[[
-  Remove keybinding from slot if the keybinding is ours
-
-  @param {table} gearSlot
-]]--
-function me.UnsetKeyBindingFromGearSlot(gearSlot)
-  local action = GetBindingAction(gearSlot.keyBinding)
-
-  if action ~= "" and action ~= nil then
-    mod.logger.LogInfo(me.tag, "GearSlot has keyBinding set: " .. action)
-
-    local match = string.match(action, RGGM_CONSTANTS.ELEMENT_GEAR_BAR_BASE_FRAME_NAME)
-
-    if match then
-      mod.logger.LogInfo(me.tag, "Action found does match GearMenus keyBinding pattern. Removing...")
-      SetBinding(gearSlot.keyBinding)
-      me.SaveBindings()
-    else
-      mod.logger.LogDebug("Action does not match GearMenus keyBinding pattern. Ignoring keyBinding...")
-    end
-  end
-end
-
---[[
-  Set keyBind to a specific gearSlot
-  Note: Will override keyBinds if already set
-
-  @param {number} gearBarId
-  @param {string} keyBinding
-  @param {number} gearSlotPosition
-]]--
-function me.SetKeyBindingToGearSlot(gearBarId, keyBinding, gearSlotPosition)
-  local uiGearBar = mod.gearBarStorage.GetGearBar(gearBarId)
-  local uiGearSlot = uiGearBar.gearSlotReferences[gearSlotPosition]
-
-  mod.logger.LogInfo(me.tag, "Set new keybinding " .. keyBinding .. " to " .. uiGearSlot:GetName())
-  SetBinding(keyBinding) -- reset binding
-
-  if SetBinding(keyBinding, "CLICK " .. uiGearSlot:GetName() .. ":LeftButton") then
-    mod.logger.LogInfo(me.tag, "Successfully changed keyBind")
-    mod.gearBarManager.SetSlotKeyBinding(gearBarId, gearSlotPosition, keyBinding)
-    -- clear the keyBinding from any other slot before refreshing the configuration sub menu
-    me.CleanupKeyBindingOnSlots(gearBarId, gearSlotPosition, keyBinding)
-
-    -- update the configuration sub menu (show proper keyBinding after change)
-    mod.gearBarConfigurationSubMenu.UpdateGearBarConfigurationMenu()
-    -- save keyBindings to wow-cache
-    me.SaveBindings()
-  else
-    mod.logger.LogWarn(me.tag, "Failed to update keybinding: " .. keyBinding .. " to " .. uiGearSlot:GetName())
-    mod.logger.PrintUserError(rggm.L["gear_bar_configuration_key_binding_user_error"])
-  end
-end
-
---[[
-  Search through all gearBars for leftover keyBinding text. After a new button receives a
-  keyBinding we check other slots (and other gearBars) for the same keyBinding. At this point
-  the keyBinding is already overwritten but visually it will still be displayed if not cleaned up
-
-  @param {number} newGearBarId
-    The gearBarId where the gearSlot belongs to with the new keyBinding
-  @param {number} newGearSlotPosition
-    The gearSlot position of the slot that received the new keyBinding
-  @param {string} keyBinding
-    The keyBinding that was set
-]]--
-function me.CleanupKeyBindingOnSlots(newGearBarId, newGearSlotPosition, keyBinding)
-  for _, gearBar in pairs(mod.gearBarManager.GetGearBars()) do
-    for position, gearSlot in pairs(gearBar.slots) do
-      if gearBar.id ~= newGearBarId or position ~= newGearSlotPosition then
-        if gearSlot.keyBinding == keyBinding then
-          mod.logger.LogInfo(
-            me.tag, "Leftover keyBinding found - resetting {" .. gearBar.id .. "} slotPos {" .. position .. "}")
-          mod.gearBarManager.SetSlotKeyBinding(gearBar.id, position, nil)
-        end
-      end
-    end
-  end
-end
-
---[[
-  After deleting a gearSlot from the configuration it can happen that a slot moves to another position to avoid
-  any gaps. This however means that keyBindings might point to the wrong slot. To prevent that we check if the action
-  for the shortcut matches the expectation and if not we fix it by silently updating the keybind to the proper slot
-
-  @param {number} gearBarId
-]]--
-function me.CheckKeyBindingSlots(gearBarId)
-  local gearBar = mod.gearBarManager.GetGearBar(gearBarId)
-
-  for position, gearSlot in pairs(gearBar.slots) do
-    if gearSlot.keyBinding ~= "" and gearSlot.keyBinding ~= nil then
-      mod.logger.LogDebug(me.tag, "Checking slot{" .. position .. "} with keyBinding " .. gearSlot.keyBinding)
-
-      local action = GetBindingAction(gearSlot.keyBinding)
-
-      if action ~= "" and action ~= nil then
-        local _, _, _, slotPosition = string.find(
-          action, RGGM_CONSTANTS.ELEMENT_GEAR_BAR_BASE_FRAME_NAME .. "(%d+)Slot_(%d+)")
-
-        if tonumber(slotPosition) ~= position then
-          mod.logger.LogDebug(me.tag, "Expected action to have position: " .. position
-            .. " but was : " .. (slotPosition or "nil"))
-
-          local uiGearBar = mod.gearBarStorage.GetGearBar(gearBarId)
-          local uiGearSlot = uiGearBar.gearSlotReferences[position]
-
-          if SetBinding(gearSlot.keyBinding, "CLICK " .. uiGearSlot:GetName() .. ":LeftButton") then
-            mod.logger.LogDebug(me.tag, "Fixed keyBinding action")
-            -- update the configuration sub menu (show proper keyBinding after change)
-            mod.gearBarConfigurationSubMenu.UpdateGearBarConfigurationMenu()
-            -- save keyBindings to wow-cache
-            me.SaveBindings()
-          end
-        end
-      end
-    end
-  end
+  return false
 end
 
 --[[
@@ -512,98 +189,225 @@ function me.SaveBindings()
 end
 
 --[[
-  Clear the WoW key bindings of the passed gearBars. Used before applying a profile so
-  the outgoing profile's own keyBindings do not linger in WoW's binding cache and keep
-  firing a slot that no longer exists (or a recreated slot at the same id/position).
+  Unbind every key of a gearSlot. Ui entrypoint of the configuration row's unbind button
 
-  Only bindings whose action matches GearMenus own pattern are cleared - a user key that
-  merely happens to share the keyBinding text is left untouched (see UnsetKeyBindingFromGearSlot).
-
-  @param {table} gearBars
-    a list of gearBars as returned by mod.gearBarManager.GetGearBars
+  @param {number} gearBarId
+  @param {number} position
 ]]--
-function me.ClearGearBarKeyBindings(gearBars)
-  if type(gearBars) ~= "table" then return end
+function me.UnsetKeyBinding(gearBarId, position)
+  local gearBar = mod.gearBarManager.GetGearBar(gearBarId)
 
-  for _, gearBar in pairs(gearBars) do
-    for _, gearSlot in pairs(gearBar.slots) do
-      if gearSlot.keyBinding ~= nil and gearSlot.keyBinding ~= "" then
-        me.UnsetKeyBindingFromGearSlot(gearSlot)
-      end
-    end
+  if gearBar == nil or gearBar.bindIndex == nil or gearBar.slots[position] == nil then
+    mod.logger.LogError(me.tag, "Unable to unbind - no gearSlot at position " .. tostring(position)
+      .. " on gearBar with id: " .. tostring(gearBarId))
+
+    return
   end
+
+  local action = mod.keyBindProxy.GetProxyAction(gearBar.bindIndex, position)
+
+  me.WhenOutOfCombat(function()
+    if ClearActionKeys(action) > 0 then
+      mod.logger.LogInfo(me.tag, "Unbound " .. action)
+      me.SaveBindings()
+    else
+      mod.logger.LogInfo(me.tag, "GearSlot has no keybinding set. Nothing to reset")
+    end
+
+    me.RefreshKeyBindingLabels()
+  end)
 end
 
 --[[
-  Make the keyBinding labels stored on the live gearBars real WoW bindings. Used after a
-  profile is applied: the profile carries the keyBinding display text but not WoWs binding
-  cache, so without this the labels render (UpdateKeyBindingState) but do nothing.
+  After a gearSlot was removed from a gearBar the slots behind it moved up one position. Move
+  their keys along - the keys of position p+1 become the keys of position p, from the removed
+  position up to the last possible one - so every key keeps triggering the slot it was bound
+  to (the same repair the former CheckKeyBindingSlots did against the slot frames).
 
-  Binds purely from configuration data (gearBar.id + slot position build the slot frame
-  name), so it does not depend on the gearSlot ui frames existing yet and can run before
-  the ReloadUI that follows a profile apply.
+  @param {number} gearBarId
+  @param {number} position
+    the position the slot was removed from
+]]--
+function me.OnGearSlotRemoved(gearBarId, position)
+  local gearBar = mod.gearBarManager.GetGearBar(gearBarId)
+
+  if gearBar == nil or gearBar.bindIndex == nil then return end
+
+  local bindIndex = gearBar.bindIndex
+
+  me.WhenOutOfCombat(function()
+    local changed = false
+
+    for current = position, RGGM_CONSTANTS.MAX_GEAR_BAR_SLOTS do
+      local action = mod.keyBindProxy.GetProxyAction(bindIndex, current)
+      local nextKeys = {}
+
+      if current < RGGM_CONSTANTS.MAX_GEAR_BAR_SLOTS then
+        nextKeys = { GetBindingKey(mod.keyBindProxy.GetProxyAction(bindIndex, current + 1)) }
+      end
+
+      if ClearActionKeys(action) > 0 then
+        changed = true
+      end
+
+      for _, key in ipairs(nextKeys) do
+        if BindKey(key, action) then
+          changed = true
+        end
+      end
+    end
+
+    if changed then
+      me.SaveBindings()
+    end
+
+    me.RefreshKeyBindingLabels()
+  end)
+end
+
+--[[
+  Clear the keys of every proxy action of a bindIndex. Invoked when a gearBar is removed so a
+  later gearBar taking over the freed bindIndex does not inherit its keys.
+
+  @param {number} bindIndex
+]]--
+function me.OnGearBarRemoved(bindIndex)
+  if bindIndex == nil then return end
+
+  me.WhenOutOfCombat(function()
+    local changed = false
+
+    for position = 1, RGGM_CONSTANTS.MAX_GEAR_BAR_SLOTS do
+      if ClearActionKeys(mod.keyBindProxy.GetProxyAction(bindIndex, position)) > 0 then
+        changed = true
+      end
+    end
+
+    if changed then
+      mod.logger.LogInfo(me.tag, "Cleared the keybindings of bindIndex " .. bindIndex)
+      me.SaveBindings()
+    end
+  end)
+end
+
+--[[
+  Clear the keys of every GearMenu proxy action. Used before applying a profile so the outgoing
+  profile's keys do not linger on proxies the incoming profile leaves unbound. Keys bound to
+  other actions are never touched.
+]]--
+function me.ClearGearBarKeyBindings()
+  me.WhenOutOfCombat(function()
+    local cleared = 0
+
+    for bindIndex = 1, RGGM_CONSTANTS.MAX_GEAR_BARS do
+      for position = 1, RGGM_CONSTANTS.MAX_GEAR_BAR_SLOTS do
+        cleared = cleared + ClearActionKeys(mod.keyBindProxy.GetProxyAction(bindIndex, position))
+      end
+    end
+
+    if cleared > 0 then
+      mod.logger.LogInfo(me.tag, "Cleared " .. cleared .. " GearMenu keybinding(s)")
+      me.SaveBindings()
+    end
+  end)
+end
+
+--[[
+  Bind the keyBinding mirror of every configured gearSlot to its proxy action. Used after a
+  profile is applied: the profile carries the key per slot but not WoW's binding set, so
+  without this the keys would show nowhere and do nothing. Binds purely from configuration
+  data, so it does not depend on the gearSlot ui frames and runs before the ReloadUI that
+  follows a profile apply.
 ]]--
 function me.ApplyGearBarKeyBindings()
-  local gearBars = mod.gearBarManager.GetGearBars()
-  local didBind = false
+  me.WhenOutOfCombat(function()
+    local didBind = false
 
-  for i = 1, #gearBars do
-    for position, gearSlot in pairs(gearBars[i].slots) do
-      if gearSlot.keyBinding ~= nil and gearSlot.keyBinding ~= "" then
-        local action = "CLICK " .. RGGM_CONSTANTS.ELEMENT_GEAR_BAR_BASE_FRAME_NAME
-          .. gearBars[i].id .. "Slot_" .. position .. ":LeftButton"
-
-        if SetBinding(gearSlot.keyBinding, action) then
-          mod.logger.LogInfo(me.tag, "Applied keyBinding " .. gearSlot.keyBinding .. " to " .. action)
-          didBind = true
-        else
-          mod.logger.LogWarn(me.tag, "Failed to apply keyBinding " .. gearSlot.keyBinding .. " to " .. action)
+    for _, gearBar in pairs(mod.gearBarManager.GetGearBars()) do
+      if gearBar.bindIndex ~= nil then
+        for position, gearSlot in pairs(gearBar.slots) do
+          if gearSlot.keyBinding ~= nil and gearSlot.keyBinding ~= "" then
+            if BindKey(gearSlot.keyBinding, mod.keyBindProxy.GetProxyAction(gearBar.bindIndex, position)) then
+              didBind = true
+            end
+          end
         end
       end
     end
-  end
 
-  if didBind then
-    me.SaveBindings()
-  end
+    if didBind then
+      me.SaveBindings()
+    end
+
+    me.RefreshKeyBindingLabels()
+  end)
 end
 
 --[[
-  Show Keybinding dialog to record and save keyBinding to the passed gearSlot
-  UI Interface entrypoint
-
-  @param {table} gearBarId
-  @param {number} gearSlotPosition
+  Bring everything that shows a key in line with WoW's binding set: the keyBinding mirror of
+  every gearSlot, the labels on the gearSlots and the rows of the open gearBar configuration.
 ]]--
-function me.SetKeyBindingForGearSlot(gearBarId, gearSlotPosition)
-  currentGearBarId = gearBarId
-  currentGearSlotPosition = gearSlotPosition
-  StaticPopup_Show("RGGM_SET_KEYBIND")
+function me.RefreshKeyBindingLabels()
+  for _, gearBar in pairs(mod.gearBarManager.GetGearBars()) do
+    for position, _ in pairs(gearBar.slots) do
+      mod.gearBarManager.SetSlotKeyBinding(gearBar.id, position, me.GetSlotKeyBinding(gearBar, position))
+    end
+  end
+
+  mod.gearBar.UpdateGearBars(mod.gearBar.UpdateKeyBindingState)
+  mod.gearBarConfigurationSubMenu.UpdateGearBarConfigurationMenu()
 end
 
 --[[
-  Callback for UPDATE_BINDINGS event. Iterate all keyBindings in all gearBars and check if they
-  are still valid. KeyBinds could have been changed outside of gearMenu. If this is the case a warning is logged. This
-  seems to be happening in some cases but it is not clear what the cause is.
+  Callback for the UPDATE_BINDINGS event - bindings changed, in GearMenu or anywhere else (the
+  Keybindings list, Quick Keybind Mode, a binding set switch). Also run once at initialization.
 ]]--
 function me.OnUpdateKeyBindings()
-  mod.logger.LogDebug(me.tag, "UPDATE_BINDINGS event. Checking gearMenus keyBinds")
+  mod.logger.LogDebug(me.tag, "UPDATE_BINDINGS event. Refreshing gearMenus keyBinding labels")
+  me.RefreshKeyBindingLabels()
+end
 
-  local gearBars = mod.gearBarManager.GetGearBars()
-  -- iterate all keybindings of all gearBars and check if they are still bound correctly
-  for i = 1, #gearBars do
-    for position, gearSlot in pairs(gearBars[i].slots) do
-      if gearSlot.keyBinding ~= nil then
-        mod.logger.LogDebug(me.tag, "gearSlot: " .. position .. " has a keyBinding set: " .. gearSlot.keyBinding)
+--[[
+  Open Settings > Keybindings with the GearMenu section expanded. Ui entrypoint of the
+  gearBar configuration
+]]--
+function me.OpenKeyBindingSettings()
+  if Settings.KEYBINDINGS_CATEGORY_ID == nil then
+    mod.logger.LogError(me.tag, "Keybindings settings category not available")
 
-        local action = GetBindingAction(gearSlot.keyBinding)
+    return
+  end
 
-        if action == nil or action == "" then
-          mod.logger.LogWarn(me.tag, "Found a gearBar keyBinding that is not actually set")
-        end
-      end
+  local sectionName = _G[RGGM_CONSTANTS.KEY_BIND_CATEGORY]
+  local category = SettingsPanel:GetCategory(Settings.KEYBINDINGS_CATEGORY_ID)
+  local layout = SettingsPanel:GetLayout(category)
+
+  -- expand the section before scrolling to it, the way Blizzard's ping system settings do
+  for _, initializer in layout:EnumerateInitializers() do
+    if initializer:GetName() == sectionName then
+      initializer.data.expanded = true
+      break
     end
   end
+
+  Settings.OpenToCategory(Settings.KEYBINDINGS_CATEGORY_ID, sectionName)
+end
+
+--[[
+  Close the settings and open Blizzard's Quick Keybind Mode, in which hovering a gearSlot and
+  pressing a key binds it. Refused in combat - the mode writes bindings and shows the
+  protected QuickKeybindFrame. Ui entrypoint of the gearBar configuration
+]]--
+function me.OpenQuickKeybindMode()
+  if InCombatLockdown() then
+    mod.logger.PrintUserError(rggm.L["gear_bar_configuration_quick_keybind_combat"])
+
+    return
+  end
+
+  local skipTransitionBackToOpeningPanel = true
+  SettingsPanel:Close(skipTransitionBackToOpeningPanel)
+  QuickKeybindFrame:Show()
 end
 
 --[[

@@ -23,81 +23,112 @@
 ]]--
 
 --[[
-  Spec for the profile-apply keyBinding reconciliation added to gui/KeyBind.lua
-  (me.ApplyGearBarKeyBindings / me.ClearGearBarKeyBindings) and for the override
-  flow in me.SetKeyBindingToGearSlot. All build the slot frame name from
-  configuration data (gearBar.id + slot position) rather than from ui frames, so
-  they can be exercised headless with the WoW binding API stubbed.
+  Spec for gui/KeyBind.lua - the binding reads and writes against the proxy actions of
+  gui/KeyBindProxy.lua, with WoW's binding set as the source of truth. Covers the label /
+  mirror refresh (RefreshKeyBindingLabels / OnUpdateKeyBindings), unbinding a slot, the key
+  shift after a slot removal, clearing a removed bar, the profile clear / apply pair and the
+  combat deferral queue every write goes through (WhenOutOfCombat / FlushPending).
 
-  gui/KeyBind.lua registers two StaticPopupDialogs at load time whose text is read
-  from rggm.L, so before the module is dofile'd we install a StaticPopupDialogs
-  table and a permissive rggm.L stub (every key resolves to ""). The collaborators
-  the reconcile functions reach (mod.gearBarManager, mod.logger) are replaced with
-  recorder / no-op stubs and the WoW binding globals come from a local install.
+  The binding globals come from the in-memory BindingSet stub, whose SetBinding refuses while the
+  InCombatLockdown stub reports combat - the client's protected-action behaviour. The real
+  gui/KeyBindProxy.lua is loaded for the action strings (its CreateFrame is never reached);
+  gearBarManager, gearBar, gearBarConfigurationSubMenu and logger are recorder stubs.
 ]]--
 
 -- busted extends `assert` with .same / .equal / etc. at runtime; luacheck cannot verify those
 -- fields statically. Suppress warning 143 (accessing undefined field of a global variable).
 -- luacheck: globals describe it before_each after_each
--- luacheck: globals StaticPopupDialogs
 -- luacheck: ignore 143
 
 local wowStubs = require("WowStubs")
 
-describe("KeyBind reconcile", function()
+local function action(bindIndex, position)
+  return string.format("CLICK GM_KeyBindBar%dSlot%d:LeftButton", bindIndex, position)
+end
+
+describe("KeyBind", function()
   local keyBind
   local previous
   local restore
+  local bindingSet
+  local gearBars
   local calls
 
+  --[[
+    Install a fresh binding set stub (replacing the one installed in before_each)
+
+    @param {table} initial
+      key -> action map
+    @param {table} refusedKeys
+  ]]--
+  local function useBindingSet(initial, refusedKeys)
+    bindingSet = wowStubs.stubs.BindingSet(initial, refusedKeys)
+    wowStubs.install(bindingSet.globals)
+  end
+
   before_each(function()
+    gearBars = {}
     calls = {
-      bound = {},   -- SetBinding(key, action) - two-arg bind
-      unbound = {}, -- SetBinding(key)         - one-arg clear
-      bindingsSaved = 0,
-      bindingActions = {} -- key -> action returned by GetBindingAction (per test)
+      labelUpdates = 0,     -- gearBar.UpdateGearBars(UpdateKeyBindingState)
+      configUpdates = 0,    -- gearBarConfigurationSubMenu.UpdateGearBarConfigurationMenu()
+      userMessages = {},    -- logger.PrintUserMessage(msg)
+      userErrors = {},      -- logger.PrintUserError(msg)
+      warnings = 0          -- logger.LogWarn
     }
 
-    -- snapshot everything the load / functions touch so nothing leaks across specs
     previous = {
       keyBind = rggm.keyBind,
+      keyBindProxy = rggm.keyBindProxy,
       gearBarManager = rggm.gearBarManager,
-      gearBarStorage = rggm.gearBarStorage,
+      gearBar = rggm.gearBar,
       gearBarConfigurationSubMenu = rggm.gearBarConfigurationSubMenu,
+      configuration = rggm.configuration,
       logger = rggm.logger,
-      L = rggm.L,
-      StaticPopupDialogs = _G.StaticPopupDialogs
+      L = rggm.L
     }
 
-    -- KeyBind.lua reads rggm.L at load time to build its popup dialogs
-    rggm.L = setmetatable({}, { __index = function() return "" end })
-    _G.StaticPopupDialogs = {}
+    rggm.L = setmetatable({
+      keybind_deferred_combat = "deferred",
+      keybind_set_failed = "failed %s"
+    }, { __index = function(_, key) return key end })
 
+    rggm.gearBarManager = {
+      GetGearBars = function() return gearBars end,
+      GetGearBar = function(id)
+        for _, gearBar in ipairs(gearBars) do
+          if gearBar.id == id then return gearBar end
+        end
+        return nil
+      end,
+      SetSlotKeyBinding = function(id, position, key)
+        rggm.gearBarManager.GetGearBar(id).slots[position].keyBinding = key
+      end
+    }
+    rggm.gearBar = {
+      UpdateGearBars = function() calls.labelUpdates = calls.labelUpdates + 1 end,
+      UpdateKeyBindingState = function() end
+    }
+    rggm.gearBarConfigurationSubMenu = {
+      UpdateGearBarConfigurationMenu = function() calls.configUpdates = calls.configUpdates + 1 end
+    }
+    rggm.configuration = {
+      IsFastPressEnabled = function() return false end
+    }
     rggm.logger = {
       LogDebug = function() end,
       LogInfo = function() end,
-      LogWarn = function() end,
+      LogWarn = function() calls.warnings = calls.warnings + 1 end,
       LogError = function() end,
-      PrintUserError = function() end
+      PrintUserMessage = function(msg) calls.userMessages[#calls.userMessages + 1] = msg end,
+      PrintUserError = function(msg) calls.userErrors[#calls.userErrors + 1] = msg end
     }
 
-    restore = wowStubs.install({
-      SetBinding = function(key, action)
-        if action ~= nil then
-          calls.bound[#calls.bound + 1] = { key = key, action = action }
-        else
-          calls.unbound[#calls.unbound + 1] = key
-        end
+    bindingSet = wowStubs.stubs.BindingSet({})
+    local stubs = { InCombatLockdown = wowStubs.stubs.InCombatLockdown(false) }
+    for name, value in pairs(bindingSet.globals) do stubs[name] = value end
+    restore = wowStubs.install(stubs)
 
-        return true
-      end,
-      GetBindingAction = function(key)
-        return calls.bindingActions[key] or ""
-      end,
-      GetCurrentBindingSet = function() return 1 end,
-      SaveBindings = function() calls.bindingsSaved = calls.bindingsSaved + 1 end
-    })
-
+    dofile("gui/KeyBindProxy.lua")
     dofile("gui/KeyBind.lua")
     keyBind = rggm.keyBind
   end)
@@ -106,115 +137,310 @@ describe("KeyBind reconcile", function()
     restore()
 
     rggm.keyBind = previous.keyBind
+    rggm.keyBindProxy = previous.keyBindProxy
     rggm.gearBarManager = previous.gearBarManager
-    rggm.gearBarStorage = previous.gearBarStorage
+    rggm.gearBar = previous.gearBar
     rggm.gearBarConfigurationSubMenu = previous.gearBarConfigurationSubMenu
+    rggm.configuration = previous.configuration
     rggm.logger = previous.logger
     rggm.L = previous.L
-    _G.StaticPopupDialogs = previous.StaticPopupDialogs
   end)
 
-  describe("ApplyGearBarKeyBindings", function()
-    it("binds every slot keyBinding to its CLICK action and saves once", function()
-      rggm.gearBarManager = {
-        GetGearBars = function()
-          return {
-            { id = 3, slots = { [1] = { keyBinding = "T" }, [2] = { keyBinding = nil } } },
-            { id = 7, slots = { [1] = { keyBinding = "CTRL-Q" } } }
-          }
-        end
-      }
+  describe("GetSlotKeyBinding / GetSlotKeys", function()
+    it("reads the keys bound to the proxy action of the slot", function()
+      useBindingSet({ ["F1"] = action(2, 3), ["SHIFT-F1"] = action(2, 3) })
+      local gearBar = { id = 7, bindIndex = 2, slots = { {}, {}, {} } }
 
-      keyBind.ApplyGearBarKeyBindings()
-
-      assert.are.equal(2, #calls.bound)
-      -- order of pairs() over slots is unspecified; assert membership
-      local byKey = {}
-      for _, entry in ipairs(calls.bound) do byKey[entry.key] = entry.action end
-
-      assert.are.equal("CLICK GM_GearBarFrame_3Slot_1:LeftButton", byKey["T"])
-      assert.are.equal("CLICK GM_GearBarFrame_7Slot_1:LeftButton", byKey["CTRL-Q"])
-      assert.are.equal(1, calls.bindingsSaved)
+      assert.are.equal("F1", keyBind.GetSlotKeyBinding(gearBar, 3))
+      assert.are.same({ "F1", "SHIFT-F1" }, { keyBind.GetSlotKeys(gearBar, 3) })
+      assert.is_nil(keyBind.GetSlotKeyBinding(gearBar, 1))
     end)
 
-    it("skips slots without a keyBinding and does not save when nothing was bound", function()
-      rggm.gearBarManager = {
-        GetGearBars = function()
-          return { { id = 1, slots = { [1] = { keyBinding = nil }, [2] = { keyBinding = "" } } } }
-        end
+    it("returns nil for a bar without a bindIndex", function()
+      useBindingSet({ ["F1"] = action(1, 1) })
+
+      assert.is_nil(keyBind.GetSlotKeyBinding({ id = 7, slots = { {} } }, 1))
+      assert.is_nil(keyBind.GetSlotKeyBinding(nil, 1))
+    end)
+  end)
+
+  describe("RefreshKeyBindingLabels / OnUpdateKeyBindings", function()
+    it("mirrors the primary key of every slot from the binding set and refreshes the labels", function()
+      -- the stub reports keys in sorted order, so F1 is the primary key of (1, 1)
+      useBindingSet({
+        ["F1"] = action(1, 1),
+        ["SHIFT-F1"] = action(1, 1),
+        ["F3"] = action(3, 2),
+        ["P"] = "TOGGLEWORLDMAP"
+      })
+      gearBars = {
+        { id = 10, bindIndex = 1, slots = { { keyBinding = "STALE" }, { keyBinding = "STALE" } } },
+        { id = 30, bindIndex = 3, slots = { {}, {} } }
       }
 
-      keyBind.ApplyGearBarKeyBindings()
+      keyBind.OnUpdateKeyBindings()
 
-      assert.are.equal(0, #calls.bound)
-      assert.are.equal(0, calls.bindingsSaved)
+      assert.are.equal("F1", gearBars[1].slots[1].keyBinding)
+      assert.is_nil(gearBars[1].slots[2].keyBinding)
+      assert.is_nil(gearBars[2].slots[1].keyBinding)
+      assert.are.equal("F3", gearBars[2].slots[2].keyBinding)
+      assert.are.equal(1, calls.labelUpdates)
+      assert.are.equal(1, calls.configUpdates)
+    end)
+  end)
+
+  describe("UnsetKeyBinding", function()
+    it("clears both keys of the slot, saves once and refreshes", function()
+      useBindingSet({ ["F1"] = action(1, 2), ["ALT-F1"] = action(1, 2), ["F2"] = action(1, 1) })
+      gearBars = { { id = 10, bindIndex = 1, slots = { { keyBinding = "F2" }, { keyBinding = "F1" } } } }
+
+      keyBind.UnsetKeyBinding(10, 2)
+
+      assert.are.same({}, bindingSet.GetKeys(action(1, 2)))
+      assert.are.same({ "F2" }, bindingSet.GetKeys(action(1, 1)))
+      assert.are.equal(1, bindingSet.savedCount)
+      assert.is_nil(gearBars[1].slots[2].keyBinding)
+      assert.are.equal("F2", gearBars[1].slots[1].keyBinding)
+    end)
+
+    it("does not save when the slot had no key", function()
+      useBindingSet({})
+      gearBars = { { id = 10, bindIndex = 1, slots = { {} } } }
+
+      keyBind.UnsetKeyBinding(10, 1)
+
+      assert.are.equal(0, bindingSet.savedCount)
+      assert.are.equal(1, calls.labelUpdates)
+    end)
+
+    it("ignores an unknown slot", function()
+      useBindingSet({ ["F1"] = action(1, 1) })
+      gearBars = { { id = 10, bindIndex = 1, slots = { {} } } }
+
+      keyBind.UnsetKeyBinding(10, 5)
+      keyBind.UnsetKeyBinding(99, 1)
+
+      assert.are.same({ "F1" }, bindingSet.GetKeys(action(1, 1)))
+      assert.are.equal(0, bindingSet.savedCount)
+    end)
+  end)
+
+  describe("OnGearSlotRemoved", function()
+    it("moves the keys of the slots after the removed position up by one and saves once", function()
+      useBindingSet({
+        ["F1"] = action(1, 1),
+        ["F2"] = action(1, 2),
+        ["F3"] = action(1, 3),
+        ["ALT-F3"] = action(1, 3),
+        ["F4"] = action(1, 4)
+      })
+      -- slot 2 was already removed from the configuration; three slots remain
+      gearBars = { { id = 10, bindIndex = 1, slots = { {}, {}, {} } } }
+
+      keyBind.OnGearSlotRemoved(10, 2)
+
+      assert.are.same({ "F1" }, bindingSet.GetKeys(action(1, 1)))
+      assert.are.same({ "ALT-F3", "F3" }, bindingSet.GetKeys(action(1, 2)))
+      assert.are.same({ "F4" }, bindingSet.GetKeys(action(1, 3)))
+      assert.are.same({}, bindingSet.GetKeys(action(1, 4)))
+      assert.is_nil(bindingSet.actions["F2"])
+      assert.are.equal(1, bindingSet.savedCount)
+      assert.are.equal("F1", gearBars[1].slots[1].keyBinding)
+      assert.are.equal("ALT-F3", gearBars[1].slots[2].keyBinding)
+      assert.are.equal("F4", gearBars[1].slots[3].keyBinding)
+    end)
+
+    it("clears the key of the last slot when it is the one removed", function()
+      useBindingSet({ ["F1"] = action(1, 1), ["F2"] = action(1, 2) })
+      gearBars = { { id = 10, bindIndex = 1, slots = { {} } } }
+
+      keyBind.OnGearSlotRemoved(10, 2)
+
+      assert.are.same({ "F1" }, bindingSet.GetKeys(action(1, 1)))
+      assert.are.same({}, bindingSet.GetKeys(action(1, 2)))
+      assert.are.equal(1, bindingSet.savedCount)
+    end)
+
+    it("leaves other bars alone and does not save when nothing was bound", function()
+      useBindingSet({ ["F1"] = action(2, 1) })
+      gearBars = { { id = 10, bindIndex = 1, slots = { {} } }, { id = 20, bindIndex = 2, slots = { {} } } }
+
+      keyBind.OnGearSlotRemoved(10, 1)
+
+      assert.are.same({ "F1" }, bindingSet.GetKeys(action(2, 1)))
+      assert.are.equal(0, bindingSet.savedCount)
+    end)
+  end)
+
+  describe("OnGearBarRemoved", function()
+    it("clears every key of the bindIndex and saves once", function()
+      useBindingSet({ ["F1"] = action(2, 1), ["F2"] = action(2, 20), ["F3"] = action(1, 1) })
+
+      keyBind.OnGearBarRemoved(2)
+
+      assert.is_nil(bindingSet.actions["F1"])
+      assert.is_nil(bindingSet.actions["F2"])
+      assert.are.equal(action(1, 1), bindingSet.actions["F3"])
+      assert.are.equal(1, bindingSet.savedCount)
+    end)
+
+    it("ignores a nil bindIndex", function()
+      useBindingSet({ ["F1"] = action(2, 1) })
+
+      keyBind.OnGearBarRemoved(nil)
+
+      assert.are.equal(action(2, 1), bindingSet.actions["F1"])
+      assert.are.equal(0, bindingSet.savedCount)
     end)
   end)
 
   describe("ClearGearBarKeyBindings", function()
-    it("unbinds only bindings whose action matches GearMenus own pattern", function()
-      -- "T" is one of ours, "P" belongs to some other action and must be left alone
-      calls.bindingActions["T"] = "CLICK GM_GearBarFrame_1Slot_1:LeftButton"
-      calls.bindingActions["P"] = "TOGGLEWORLDMAP"
+    it("clears every GearMenu proxy action and leaves foreign actions alone", function()
+      useBindingSet({
+        ["F1"] = action(1, 1),
+        ["F2"] = action(10, 20),
+        ["P"] = "TOGGLEWORLDMAP",
+        ["T"] = "CLICK SomeOtherAddonButton:LeftButton"
+      })
 
-      local gearBars = {
-        { id = 1, slots = { [1] = { keyBinding = "T" }, [2] = { keyBinding = "P" } } }
-      }
+      keyBind.ClearGearBarKeyBindings()
 
-      keyBind.ClearGearBarKeyBindings(gearBars)
-
-      assert.are.equal(1, #calls.unbound)
-      assert.are.equal("T", calls.unbound[1])
+      assert.are.same({ P = "TOGGLEWORLDMAP", T = "CLICK SomeOtherAddonButton:LeftButton" }, bindingSet.actions)
+      assert.are.equal(1, bindingSet.savedCount)
     end)
 
-    it("ignores a nil argument", function()
-      assert.has_no.errors(function() keyBind.ClearGearBarKeyBindings(nil) end)
-      assert.are.equal(0, #calls.unbound)
+    it("does not save when nothing was bound", function()
+      useBindingSet({ ["P"] = "TOGGLEWORLDMAP" })
+
+      keyBind.ClearGearBarKeyBindings()
+
+      assert.are.equal(0, bindingSet.savedCount)
     end)
   end)
 
-  describe("SetKeyBindingToGearSlot", function()
-    it("clears the keyBinding from the previous owner before refreshing the configuration menu", function()
+  describe("ApplyGearBarKeyBindings", function()
+    it("binds every slot keyBinding to its proxy action, saves once and refreshes", function()
+      useBindingSet({})
+      gearBars = {
+        { id = 3, bindIndex = 1, slots = { [1] = { keyBinding = "T" }, [2] = { keyBinding = nil } } },
+        { id = 7, bindIndex = 4, slots = { [1] = { keyBinding = "CTRL-Q" }, [2] = { keyBinding = "" } } }
+      }
+
+      keyBind.ApplyGearBarKeyBindings()
+
+      assert.are.same({ T = action(1, 1), ["CTRL-Q"] = action(4, 1) }, bindingSet.actions)
+      assert.are.equal(1, bindingSet.savedCount)
+      assert.are.equal(1, calls.labelUpdates)
+    end)
+
+    it("skips a bar without a bindIndex and does not save when nothing was bound", function()
+      useBindingSet({})
+      gearBars = { { id = 3, slots = { [1] = { keyBinding = "T" } } } }
+
+      keyBind.ApplyGearBarKeyBindings()
+
+      assert.are.same({}, bindingSet.actions)
+      assert.are.equal(0, bindingSet.savedCount)
+    end)
+
+    it("reports a key the client refuses and binds the rest", function()
+      useBindingSet({}, { ["BAD"] = true })
+      gearBars = { { id = 3, bindIndex = 1, slots = { { keyBinding = "BAD" }, { keyBinding = "F2" } } } }
+
+      keyBind.ApplyGearBarKeyBindings()
+
+      assert.are.same({ F2 = action(1, 2) }, bindingSet.actions)
+      assert.are.equal(1, calls.warnings)
+      assert.are.same({ "failed BAD" }, calls.userErrors)
+      assert.are.equal(1, bindingSet.savedCount)
+    end)
+  end)
+
+  describe("combat deferral", function()
+    it("runs a write immediately out of combat", function()
+      local ran = 0
+
+      local immediate = keyBind.WhenOutOfCombat(function() ran = ran + 1 end)
+
+      assert.is_true(immediate)
+      assert.are.equal(1, ran)
+      assert.is_false(keyBind.HasPendingWrites())
+    end)
+
+    it("queues writes during combat lockdown, tells the user once and flushes them in order", function()
+      local restoreCombat = wowStubs.install({ InCombatLockdown = wowStubs.stubs.InCombatLockdown(true) })
       local order = {}
 
-      rggm.gearBarStorage = {
-        GetGearBar = function()
-          return {
-            gearSlotReferences = {
-              [1] = { GetName = function() return "GM_GearBarFrame_1Slot_1" end }
-            }
-          }
-        end
-      }
+      local first = keyBind.WhenOutOfCombat(function() order[#order + 1] = "first" end)
+      keyBind.WhenOutOfCombat(function() order[#order + 1] = "second" end)
+      keyBind.FlushPending() -- still in combat: nothing runs
 
-      -- gearBar 2 slot 2 is the previous owner of "T" that CleanupKeyBindingOnSlots must clear
-      rggm.gearBarManager = {
-        GetGearBars = function()
-          return {
-            { id = 1, slots = { [1] = { keyBinding = nil } } },
-            { id = 2, slots = { [2] = { keyBinding = "T" } } }
-          }
-        end,
-        SetSlotKeyBinding = function(gearBarId, position, keyBinding)
-          order[#order + 1] = "set:" .. gearBarId .. ":" .. position .. ":" .. tostring(keyBinding)
-        end
-      }
+      assert.is_false(first)
+      assert.is_true(keyBind.HasPendingWrites())
+      assert.are.same({}, order)
+      assert.are.same({ "deferred" }, calls.userMessages)
 
-      rggm.gearBarConfigurationSubMenu = {
-        UpdateGearBarConfigurationMenu = function()
-          order[#order + 1] = "configMenuUpdate"
-        end
-      }
+      restoreCombat()
+      keyBind.FlushPending()
 
-      keyBind.SetKeyBindingToGearSlot(1, "T", 1)
+      assert.are.same({ "first", "second" }, order)
+      assert.is_false(keyBind.HasPendingWrites())
+    end)
 
-      -- the config menu refresh must run only after the leftover slot's data was cleared,
-      -- otherwise the old slot keeps displaying the keyBinding until a reload
-      assert.are.same({
-        "set:1:1:T",
-        "set:2:2:nil",
-        "configMenuUpdate"
-      }, order)
+    it("announces the deferral again in a later combat", function()
+      local restoreCombat = wowStubs.install({ InCombatLockdown = wowStubs.stubs.InCombatLockdown(true) })
+      keyBind.WhenOutOfCombat(function() end)
+      restoreCombat()
+      keyBind.FlushPending()
+
+      restoreCombat = wowStubs.install({ InCombatLockdown = wowStubs.stubs.InCombatLockdown(true) })
+      keyBind.WhenOutOfCombat(function() end)
+      restoreCombat()
+
+      assert.are.equal(2, #calls.userMessages)
+    end)
+
+    it("issues no binding call in combat and performs the unbind on PLAYER_REGEN_ENABLED", function()
+      useBindingSet({ ["F1"] = action(1, 1) })
+      gearBars = { { id = 10, bindIndex = 1, slots = { { keyBinding = "F1" } } } }
+      local restoreCombat = wowStubs.install({ InCombatLockdown = wowStubs.stubs.InCombatLockdown(true) })
+
+      keyBind.UnsetKeyBinding(10, 1)
+
+      assert.are.equal(action(1, 1), bindingSet.actions["F1"])
+      assert.are.equal(0, bindingSet.savedCount)
+      assert.are.equal(0, calls.labelUpdates)
+
+      restoreCombat()
+      keyBind.FlushPending()
+
+      assert.is_nil(bindingSet.actions["F1"])
+      assert.are.equal(1, bindingSet.savedCount)
+      assert.are.equal(1, calls.labelUpdates)
+      assert.is_nil(gearBars[1].slots[1].keyBinding)
+    end)
+
+    it("defers a profile clear and apply in the order they were requested", function()
+      useBindingSet({ ["F1"] = action(1, 1) })
+      gearBars = { { id = 10, bindIndex = 1, slots = { { keyBinding = "F5" } } } }
+      local restoreCombat = wowStubs.install({ InCombatLockdown = wowStubs.stubs.InCombatLockdown(true) })
+
+      keyBind.ClearGearBarKeyBindings()
+      keyBind.ApplyGearBarKeyBindings()
+
+      assert.are.equal(action(1, 1), bindingSet.actions["F1"])
+
+      restoreCombat()
+      keyBind.FlushPending()
+
+      assert.are.same({ F5 = action(1, 1) }, bindingSet.actions)
+      assert.are.equal(2, bindingSet.savedCount)
+    end)
+  end)
+
+  describe("ConvertKeyBindingText", function()
+    it("shortens the modifier names", function()
+      assert.are.equal("c-s-a-f1", keyBind.ConvertKeyBindingText("CTRL-SHIFT-ALT-F1"))
     end)
   end)
 end)

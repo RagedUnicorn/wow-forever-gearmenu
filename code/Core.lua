@@ -23,7 +23,7 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- luacheck: globals C_AddOns UnitChannelInfo C_Timer
+-- luacheck: globals C_AddOns UnitChannelInfo
 
 rggm = rggm or {}
 local me = rggm
@@ -133,14 +133,12 @@ OnBagUpdateCooldown = function()
 end
 
 --[[
-  Update the displayed keybindings when the keybindings are changed.
+  Refresh the displayed keybindings when the binding set changed - in the Keybindings list, in
+  Quick Keybind Mode or through GearMenu itself. Gated so it only runs once the gearBars exist;
+  Initialize refreshes the labels itself for the bindings loaded before that.
 ]]--
 OnUpdateBindings = function()
-  --[[
-    On starting up the addon often times GetBindingAction will not return the correct keybinding set but rather an
-    empty string. To prevent this a slight delay is required.
-  ]]--
-  C_Timer.After(RGGM_CONSTANTS.KEYBIND_UPDATE_DELAY, me.keyBind.OnUpdateKeyBindings)
+  me.keyBind.OnUpdateKeyBindings()
 end
 
 --[[
@@ -182,11 +180,14 @@ OnUnitSpellCastStop = function(unit)
 end
 
 --[[
-  Player is alive again or left combat - finish gearBar drags that combat interrupted and
-  work through all combat queues.
+  Player is alive again or left combat - finish gearBar drags that combat interrupted, run the
+  key-bind proxy re-points and binding writes deferred during combat and work through all
+  combat queues.
 ]]--
 OnPlayerAliveOrLeftCombat = function()
   me.gearBar.StopPendingDragFrames()
+  me.keyBindProxy.FlushPending()
+  me.keyBind.FlushPending()
 
   if not me.common.IsPlayerReallyDead() then
     me.ticker.StartTickerCombatQueue()
@@ -237,7 +238,7 @@ function me.OnLoad(self)
   -- Fires when a cooldown update call is sent to a bag
   me.event.Register("BAG_UPDATE_COOLDOWN", OnBagUpdateCooldown, { gated = true })
   -- Fires when the keybindings are changed.
-  me.event.Register("UPDATE_BINDINGS", OnUpdateBindings)
+  me.event.Register("UPDATE_BINDINGS", OnUpdateBindings, { gated = true })
   -- Fires when the player is affected by some sort of control loss and when it is updated (or removed)
   me.event.Register(
     { "LOSS_OF_CONTROL_ADDED", "LOSS_OF_CONTROL_UPDATE" },
@@ -305,8 +306,12 @@ Initialize = function()
   me.addonConfiguration.SetupAddonConfiguration()
   -- sync up theme (needs to be happening before accessing ui elements)
   me.themeCoordinator.UpdateTheme()
+  -- create the hidden key-bind proxies the bindings target (before the gearBars that name them)
+  me.keyBindProxy.Setup()
   -- build ui for all gearBars
   me.gearBar.BuildGearBars()
+  -- hook Blizzard's Quick Keybind Mode for the gearSlot highlights
+  me.gearBar.SetupQuickKeybindMode()
   -- build ui for changeMenu
   me.gearBarChangeMenu.BuildChangeMenu()
   -- update initial view of gearBars after addon initialization
@@ -320,6 +325,7 @@ Initialize = function()
   end
 
   me.gearBar.UpdateGearBars(me.gearBar.UpdateGearBarVisual)
+  -- mirror the key bindings loaded before the gearBars existed onto the slot labels
   me.keyBind.OnUpdateKeyBindings()
   -- register addon message prefix for the version broadcast
   me.comm.Initialize()

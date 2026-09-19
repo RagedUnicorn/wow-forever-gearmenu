@@ -26,6 +26,7 @@
 -- luacheck: globals CreateFrame UIParent GetInventoryItemID GetCursorInfo STANDARD_TEXT_FONT
 -- luacheck: globals GetInventoryItemLink C_Item C_Container InCombatLockdown
 -- luacheck: globals CursorCanGoInSlot EquipCursorItem ClearCursor IsInventoryItemLocked PickupInventoryItem
+-- luacheck: globals QuickKeybindButtonTemplateMixin QuickKeybindFrame
 
 --[[
   The gearBar (GM_Gearbar) module is responsible for building and showing gearBars to the user.
@@ -226,6 +227,17 @@ function me.CreateGearSlotBase(gearBarFrame, gearBar, position, template)
   gearSlot.combatQueueSlot = me.CreateCombatQueueSlot(gearSlot, gearBar.gearSlotSize)
   gearSlot.keyBindingText = me.CreateKeyBindingText(gearSlot, gearBar.gearSlotSize)
   gearSlot.position = position
+  --[[
+    Quick Keybind Mode (QuickKeybindButtonTemplate, mixed into the slot by the themes): hovering
+    the slot in that mode binds the pressed key to commandName - the slot's proxy action, which
+    is fixed by the bar's bindIndex and the slot position for the lifetime of the frame. The
+    template's highlight texture ships without anchors; stretch it over the slot
+  ]]--
+  gearSlot.commandName = mod.keyBindProxy.GetProxyAction(gearBar.bindIndex, position)
+
+  if gearSlot.QuickKeybindHighlightTexture ~= nil then
+    gearSlot.QuickKeybindHighlightTexture:SetAllPoints(gearSlot)
+  end
 
   return gearSlot
 end
@@ -575,7 +587,9 @@ end
 
 --[[
   Update the keyBinding text and hide the keyBinding if no text is available on all slots of the
-  passed gearBar
+  passed gearBar. The text is the key bound to the slot's proxy action in WoW's binding set
+  (gui/KeyBind.lua GetSlotKeyBinding) - the binding set is the source of truth, not the
+  configuration.
 
   * Handles the event where the player activates or deactivates showKeyBindings
   * Handles the event where we receive an UPDATE_BINDINGS event
@@ -587,12 +601,13 @@ function me.UpdateKeyBindingState(gearBar)
   local showKeyBindings = mod.gearBarManager.IsShowKeyBindingsEnabled(gearBar.id)
   local hasVisibleKeyBinding = false
 
-  for index, gearSlotMetaData in pairs(gearBar.slots) do
+  for index, _ in pairs(gearBar.slots) do
     local uiGearSlot = uiGearBar.gearSlotReferences[index]
+    local keyBinding = mod.keyBind.GetSlotKeyBinding(gearBar, index)
 
-    if gearSlotMetaData.keyBinding and showKeyBindings then
+    if keyBinding and showKeyBindings then
       hasVisibleKeyBinding = true
-      uiGearSlot.keyBindingText:SetText(mod.keyBind.ConvertKeyBindingText(gearSlotMetaData.keyBinding))
+      uiGearSlot.keyBindingText:SetText(mod.keyBind.ConvertKeyBindingText(keyBinding))
       uiGearSlot.keyBindingText:Show()
     else
       uiGearSlot.keyBindingText:SetText("")
@@ -965,7 +980,10 @@ function me.GearSlotOnClick(self, button, down)
 end
 
 --[[
-  Callback for a gearSlot OnEnter
+  Callback for a gearSlot OnEnter. The QuickKeybindButtonTemplate hover handler is forwarded by
+  hand because this script replaces the template's - in Quick Keybind Mode it selects the slot's
+  commandName for the next key press and shows the binding tooltip (Blizzard's action buttons do
+  the same from their own OnEnter)
 
   @param {table} self
 ]]--
@@ -974,16 +992,48 @@ function me.GearSlotOnEnter(self)
 
   mod.tooltip.UpdateTooltipForSlot(self:GetAttribute("slotId"))
   mod.themeCoordinator.GearSlotOnEnter(self)
+  QuickKeybindButtonTemplateMixin.QuickKeybindButtonOnEnter(self)
 end
 
 --[[
-  Callback for a gearSlot OnLeave
+  Callback for a gearSlot OnLeave (see me.GearSlotOnEnter for the Quick Keybind Mode forward)
 
   @param {table} self
 ]]--
 function me.GearSlotOnLeave(self)
   mod.tooltip.TooltipClear()
   mod.themeCoordinator.GearSlotOnLeave(self)
+  QuickKeybindButtonTemplateMixin.QuickKeybindButtonOnLeave(self)
+end
+
+--[[
+  Hook Blizzard's Quick Keybind Mode so every gearSlot shows the mode's highlight while it is
+  active and its mouse wheel forwards to the mode - the same treatment Blizzard gives its own
+  action buttons through ActionButtonUtil. The frame exists from login on (Blizzard_QuickKeybind
+  is not load-on-demand); the hooks are plain script hooks, nothing protected is called.
+]]--
+function me.SetupQuickKeybindMode()
+  QuickKeybindFrame:HookScript("OnShow", function()
+    me.UpdateQuickKeybindMode(true)
+  end)
+
+  QuickKeybindFrame:HookScript("OnHide", function()
+    me.UpdateQuickKeybindMode(false)
+  end)
+end
+
+--[[
+  Toggle the Quick Keybind Mode visuals of every gearSlot
+
+  @param {boolean} isInQuickKeybindMode
+]]--
+function me.UpdateQuickKeybindMode(isInQuickKeybindMode)
+  for _, uiGearBar in pairs(mod.gearBarStorage.GetGearBars()) do
+    for _, gearSlot in pairs(uiGearBar.gearSlotReferences) do
+      gearSlot:DoModeChange(isInQuickKeybindMode)
+      gearSlot:UpdateMouseWheelHandler()
+    end
+  end
 end
 
 --[[

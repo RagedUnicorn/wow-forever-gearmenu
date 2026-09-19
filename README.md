@@ -86,7 +86,12 @@ Quick change consists of rules that apply when certain items are used. The playe
 
 ### Keybinding
 
-GearMenu allows to keybind to every slot with a keybinding. Keybindings have to be set directly inside GearMenu's configuration.
+Every GearSlot can be bound to a key - up to two keys per slot - through the game's own keybinding UI:
+
+- **Settings > Keybindings** lists a `GearMenu` section with an entry per GearBar and GearSlot (`GearBar 1 - Slot 3`). The `Key Bindings` button in a GearBar's configuration opens the list at that section.
+- **Quick Keybind Mode** (Settings > Keybindings > Quick Keybind Mode, or the `Quick Keybind Mode` button in a GearBar's configuration): hover a GearSlot and press the key you want to bind, Escape unbinds.
+
+The bound key is shown on the GearSlot and in the slot's configuration row, where `Unbind` clears it. Keys are positional - `GearBar 1 - Slot 3` is the third slot of your first GearBar - and follow a slot that moves up when a slot before it is removed. Keys cannot be changed while in combat; a change made in combat is applied as soon as you leave it.
 
 ![](docs/gm_keybinding.gif)
 

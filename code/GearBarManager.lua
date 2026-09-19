@@ -65,6 +65,65 @@ local function GenerateUniqueGearBarId()
 end
 
 --[[
+  Allocate the lowest free bindIndex in 1..MAX_GEAR_BARS. The bindIndex is the stable half of
+  a gearBar's key-bind identity: keys are bound to the proxy action of (bindIndex, position) -
+  see gui/KeyBindProxy.lua - so deleting another gearBar must not shift it (a plain ordinal
+  would). Freed by RemoveGearBar simply by the bar no longer holding it.
+
+  @return {number | nil}
+    the lowest bindIndex no gearBar holds, nil when all MAX_GEAR_BARS are taken
+]]--
+function me.AllocateBindIndex()
+  local taken = {}
+
+  for _, gearBar in pairs(GearMenuConfiguration.gearBars) do
+    if gearBar.bindIndex ~= nil then
+      taken[gearBar.bindIndex] = true
+    end
+  end
+
+  for bindIndex = 1, RGGM_CONSTANTS.MAX_GEAR_BARS do
+    if not taken[bindIndex] then
+      return bindIndex
+    end
+  end
+
+  mod.logger.LogError(me.tag, "No free bindIndex left - all " .. RGGM_CONSTANTS.MAX_GEAR_BARS .. " are taken")
+
+  return nil
+end
+
+--[[
+  Make sure every gearBar holds a unique, valid bindIndex. Backfills a missing one (a bar
+  created before bindIndex existed or a profile export without it) and re-allocates a
+  duplicate or out-of-range one, keeping the first holder. Runs from
+  Configuration.SetupConfiguration, i.e. at login and after a profile is applied.
+]]--
+function me.EnsureBindIndices()
+  local seen = {}
+
+  for _, gearBar in pairs(GearMenuConfiguration.gearBars) do
+    local bindIndex = gearBar.bindIndex
+    local isValid = type(bindIndex) == "number" and bindIndex >= 1
+      and bindIndex <= RGGM_CONSTANTS.MAX_GEAR_BARS and bindIndex == math.floor(bindIndex)
+
+    if isValid and not seen[bindIndex] then
+      seen[bindIndex] = true
+    else
+      gearBar.bindIndex = nil
+    end
+  end
+
+  for _, gearBar in pairs(GearMenuConfiguration.gearBars) do
+    if gearBar.bindIndex == nil then
+      gearBar.bindIndex = me.AllocateBindIndex()
+      mod.logger.LogInfo(me.tag, "Assigned bindIndex " .. tostring(gearBar.bindIndex)
+        .. " to gearBar with id: " .. tostring(gearBar.id))
+    end
+  end
+end
+
+--[[
   Create a new entry for the passed GearBar in the gearbar storage and also create
   the initial default gearSlot
 
@@ -80,6 +139,8 @@ end
 function me.AddGearBar(gearBarName, addDefaultSlot)
   local gearBar = {
     ["id"] = GenerateUniqueGearBarId(),
+    -- the stable key-bind slot of the bar (1..MAX_GEAR_BARS), see me.AllocateBindIndex
+    ["bindIndex"] = me.AllocateBindIndex(),
     ["displayName"] = gearBarName,
     ["isLocked"] = false,
     ["isEnabled"] = true,
@@ -98,17 +159,22 @@ function me.AddGearBar(gearBarName, addDefaultSlot)
   }
 
   table.insert(GearMenuConfiguration.gearBars, gearBar)
-  mod.logger.LogInfo(me.tag, "Created new GearBar with id: " .. gearBar.id)
+  mod.logger.LogInfo(me.tag, "Created new GearBar with id: " .. gearBar.id
+    .. " (bindIndex " .. tostring(gearBar.bindIndex) .. ")")
 
   if addDefaultSlot then
     me.AddGearSlot(gearBar.id, true)
   end
 
+  mod.keyBindProxy.Update()
+
   return gearBar
 end
 
 --[[
-  Remove a gearBar from the gearbar storage. E.g. when it was deleted by the player
+  Remove a gearBar from the gearbar storage. E.g. when it was deleted by the player. The keys
+  bound to the bar's proxy actions are cleared so a later bar taking over the freed bindIndex
+  does not inherit them.
 
   @param {number} gearBarId
     An id of a gearBar
@@ -118,6 +184,8 @@ function me.RemoveGearBar(gearBarId)
     if gearBar.id == gearBarId then
       table.remove(GearMenuConfiguration.gearBars, index)
       mod.logger.LogInfo(me.tag, "Removed GearBar with id: " .. gearBarId)
+      mod.keyBindProxy.Update()
+      mod.keyBind.OnGearBarRemoved(gearBar.bindIndex)
 
       return -- abort
     end
@@ -374,7 +442,9 @@ function me.AddGearSlot(gearBarId, init)
       ]]--
     ["keyBinding"] = nil
       --[[
-        {string}
+        {string} mirror of the primary key bound to the slot's proxy action in WoW's binding
+        set (gui/KeyBind.lua RefreshKeyBindingLabels). Read only as the profile export payload -
+        the binding set itself is the source of truth for what is bound
       ]]--
   }
   local gearBar = me.GetGearBar(gearBarId)
@@ -386,6 +456,7 @@ function me.AddGearSlot(gearBarId, init)
 
   if gearBar ~= nil then
     table.insert(gearBar.slots, gearSlot)
+    mod.keyBindProxy.Update()
     if not init then
       mod.gearBar.UpdateGearBarGearSlots(gearBar)
     end
@@ -399,7 +470,9 @@ function me.AddGearSlot(gearBarId, init)
 end
 
 --[[
-  Remove a gearSlot from a gearBar
+  Remove a gearSlot from a gearBar. The slots after it move up one position; the proxies are
+  re-pointed to the new layout and the keys bound to the moved slots follow them
+  (gui/KeyBind.lua OnGearSlotRemoved), so a key keeps triggering the slot it was bound to.
 
   @param {number} gearBarId
     An id of a gearBar
@@ -414,8 +487,9 @@ function me.RemoveGearSlot(gearBarId, position)
 
   if gearBar ~= nil then
     table.remove(gearBar.slots, position)
+    mod.keyBindProxy.Update()
     mod.gearBar.UpdateGearBarGearSlots(gearBar)
-    mod.keyBind.CheckKeyBindingSlots(gearBarId)
+    mod.keyBind.OnGearSlotRemoved(gearBarId, position)
     mod.gearBar.UpdateKeyBindingState(gearBar)
 
     return true
@@ -466,6 +540,7 @@ function me.UpdateGearSlot(gearBarId, position, updatedGearSlot, init)
 
   if gearBar ~= nil and gearBar.slots[position] ~= nil then
     gearBar.slots[position] = updatedGearSlot
+    mod.keyBindProxy.Update()
     if not init then
       mod.gearBar.UpdateGearBarGearSlots(gearBar)
     end
@@ -679,21 +754,21 @@ function me.GetChangeSlotSize(gearBarId)
 end
 
 --[[
-  Set the keyBinding on a slot. keyBinding can be empty to unset/remove the keyBinding
+  Write the keyBinding mirror of a slot - the primary key bound to the slot's proxy action, or
+  nil when none is. Data only: the mirror is the profile export payload, the slot labels read
+  the binding set directly (gui/KeyBind.lua RefreshKeyBindingLabels keeps both in step).
 
   @param {number} gearBarId
   @param {number} position
-  @param {string} keyBinding
+  @param {string | nil} keyBinding
 ]]--
 function me.SetSlotKeyBinding(gearBarId, position, keyBinding)
   local gearBar = me.GetGearBar(gearBarId)
 
   if gearBar ~= nil and gearBar.slots[position] ~= nil then
     gearBar.slots[position].keyBinding = keyBinding
-    mod.gearBar.UpdateGearBars(mod.gearBar.UpdateKeyBindingState)
   else
     mod.logger.LogError(me.tag, "Failed to update gearBarSlot keybinding {"
     .. position .. "} for gearBar with id: " .. gearBarId)
   end
-
 end

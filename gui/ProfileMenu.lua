@@ -44,7 +44,7 @@
   after, and the UI reloads so every GearBar rebuilds from the applied state.
 ]]--
 
--- luacheck: globals CreateFrame STANDARD_TEXT_FONT StaticPopupDialogs StaticPopup_Show ReloadUI
+-- luacheck: globals CreateFrame STANDARD_TEXT_FONT StaticPopupDialogs StaticPopup_Show ReloadUI InCombatLockdown
 -- luacheck: globals ACCEPT CANCEL YES NO
 
 local mod = rggm
@@ -571,9 +571,28 @@ HandleCreate = function(name)
 end
 
 --[[
+  Refuse a profile apply during combat lockdown. Applying rewrites WoW's key bindings and
+  rebuilds the secure gearSlots through a ReloadUI - both are blocked in combat and a binding
+  write deferred past the reload would be lost.
+
+  @return {boolean}
+    true - if the player is in combat and an error was printed
+    false - otherwise
+]]--
+local function RefuseInCombat()
+  if not InCombatLockdown() then
+    return false
+  end
+
+  mod.logger.PrintUserError(rggm.L["profile_error_combat"])
+
+  return true
+end
+
+--[[
   Switch to a stored profile and reload the UI: the profile that was active keeps the
-  settings as they are now, the loaded one takes over. The outgoing GearBars' key
-  bindings are cleared before the switch and the incoming ones applied after, so the
+  settings as they are now, the loaded one takes over. Every GearMenu key binding is
+  cleared before the switch and the incoming profile's bindings applied after, so the
   bindings follow the profile across the reload. The active profile itself has
   nothing to load.
 
@@ -589,7 +608,9 @@ HandleLoad = function(name)
     return
   end
 
-  mod.keyBind.ClearGearBarKeyBindings(mod.gearBarManager.GetGearBars())
+  if RefuseInCombat() then return end
+
+  mod.keyBind.ClearGearBarKeyBindings()
 
   if not mod.profile.SwitchProfile(name) then
     -- nothing was applied; put the bindings of the still-live GearBars back
@@ -606,7 +627,9 @@ end
   reload the UI, with the key-binding dance around it like a load.
 ]]--
 HandleReset = function()
-  mod.keyBind.ClearGearBarKeyBindings(mod.gearBarManager.GetGearBars())
+  if RefuseInCombat() then return end
+
+  mod.keyBind.ClearGearBarKeyBindings()
   mod.profile.ResetActiveProfile()
   mod.keyBind.ApplyGearBarKeyBindings()
   ReloadUI()
@@ -628,7 +651,9 @@ HandleDelete = function(name)
   local isActive = name == mod.profile.GetActiveProfileName()
 
   if isActive then
-    mod.keyBind.ClearGearBarKeyBindings(mod.gearBarManager.GetGearBars())
+    if RefuseInCombat() then return end
+
+    mod.keyBind.ClearGearBarKeyBindings()
   end
 
   local deleted, fellBack = mod.profile.DeleteProfile(name)

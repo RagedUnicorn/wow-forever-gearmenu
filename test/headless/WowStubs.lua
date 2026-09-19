@@ -184,4 +184,147 @@ function M.stubs.GetLocale(locale)
   end
 end
 
+--[[
+  An in-memory WoW binding set (gui/KeyBind.lua). Returns a table of the binding globals to
+  install - SetBinding / GetBindingKey / GetBindingAction / GetCurrentBindingSet / SaveBindings -
+  plus inspection helpers. SetBinding refuses (returns false, changes nothing) while the
+  InCombatLockdown stub reports combat, mirroring the client's protected-action behaviour; the
+  `refusedKeys` set makes it refuse specific keys out of combat too (a key the client rejects).
+
+    local bindingSet = wowStubs.stubs.BindingSet({ ["F1"] = "CLICK GM_KeyBindBar1Slot1:LeftButton" })
+    restore = wowStubs.install(bindingSet.globals)
+    ...
+    bindingSet.GetKeys(action)   -- list of keys bound to an action (binding order)
+    bindingSet.actions           -- key -> action map
+    bindingSet.savedCount        -- SaveBindings invocations
+
+  @param {table} initial
+    key -> action map to start from
+  @param {table} refusedKeys
+    optional set of keys SetBinding refuses regardless of combat
+  @return {table}
+]]--
+function M.stubs.BindingSet(initial, refusedKeys)
+  local bindingSet = {
+    actions = {},
+    savedCount = 0,
+    savedSets = {},
+    refusedKeys = refusedKeys or {}
+  }
+
+  for key, action in pairs(initial or {}) do
+    bindingSet.actions[key] = action
+  end
+
+  --[[
+    @param {string} action
+    @return {table}
+      the keys bound to the action, in a stable (sorted) order
+  ]]--
+  function bindingSet.GetKeys(action)
+    local keys = {}
+
+    for key, boundAction in pairs(bindingSet.actions) do
+      if boundAction == action then
+        keys[#keys + 1] = key
+      end
+    end
+
+    table.sort(keys)
+
+    return keys
+  end
+
+  bindingSet.globals = {
+    SetBinding = function(key, action)
+      if (_G.InCombatLockdown ~= nil and _G.InCombatLockdown()) or bindingSet.refusedKeys[key] then
+        return false
+      end
+
+      bindingSet.actions[key] = action
+
+      return true
+    end,
+    GetBindingKey = function(action)
+      return unpack(bindingSet.GetKeys(action))
+    end,
+    GetBindingAction = function(key)
+      return bindingSet.actions[key] or ""
+    end,
+    GetCurrentBindingSet = function()
+      return 1
+    end,
+    SaveBindings = function(set)
+      bindingSet.savedCount = bindingSet.savedCount + 1
+      bindingSet.savedSets[#bindingSet.savedSets + 1] = set
+    end
+  }
+
+  return bindingSet
+end
+
+--[[
+  CreateFrame(frameType, name, parent, template) -> a recording frame (gui/KeyBindProxy.lua).
+  Every created frame is registered by name in the returned registry's `frames` map and records
+  its template, RegisterForClicks arguments, Hide / Show calls and attributes.
+
+    local frames = wowStubs.stubs.FrameRegistry()
+    restore = wowStubs.install({ CreateFrame = frames.CreateFrame, UIParent = {} })
+    ...
+    frames.frames["GM_KeyBindBar1Slot1"]:GetAttribute("macrotext")
+
+  @return {table}
+]]--
+function M.stubs.FrameRegistry()
+  local registry = { frames = {}, created = 0 }
+
+  function registry.CreateFrame(frameType, name, parent, template)
+    local frame = {
+      frameType = frameType,
+      name = name,
+      parent = parent,
+      template = template,
+      attributes = {},
+      attributeWrites = 0,
+      clicks = nil,
+      hidden = false
+    }
+
+    function frame:RegisterForClicks(...)
+      self.clicks = { ... }
+    end
+
+    function frame:SetAttribute(attribute, value)
+      self.attributes[attribute] = value
+      self.attributeWrites = self.attributeWrites + 1
+    end
+
+    function frame:GetAttribute(attribute)
+      return self.attributes[attribute]
+    end
+
+    function frame:Hide()
+      self.hidden = true
+    end
+
+    function frame:Show()
+      self.hidden = false
+    end
+
+    function frame:GetName()
+      return self.name
+    end
+
+    registry.created = registry.created + 1
+
+    if name ~= nil then
+      registry.frames[name] = frame
+    end
+
+    return frame
+  end
+
+  return registry
+end
+
 return M

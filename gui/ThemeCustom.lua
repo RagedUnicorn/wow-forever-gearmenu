@@ -71,7 +71,7 @@ function me.CreateGearSlot(gearBarFrame, gearBar, position)
     gearBarFrame,
     gearBar,
     position,
-    "SecureActionButtonTemplate, BackdropTemplate"
+    "QuickKeybindButtonTemplate, SecureActionButtonTemplate, BackdropTemplate"
   )
 
   gearSlot:SetBackdrop(slotBackdrop)

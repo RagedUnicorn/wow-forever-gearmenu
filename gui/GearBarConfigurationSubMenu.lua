@@ -147,7 +147,10 @@ end
 ]]
 function me.BuildGearBarConfigurationSubMenu(parentFrame)
   parentFrame.subMenuTitle = me.CreateConfigurationMenuTitle(parentFrame)
-  me.CreateAddGearSlotButton(parentFrame)
+
+  local addGearSlotButton = me.CreateAddGearSlotButton(parentFrame)
+  local keyBindingsButton = me.CreateKeyBindingsButton(parentFrame, addGearSlotButton)
+  me.CreateQuickKeybindButton(parentFrame, keyBindingsButton)
 
   mod.uiHelper.BuildCheckButtonOption(
     parentFrame,
@@ -272,6 +275,66 @@ function me.CreateAddGearSlotButton(parentFrame)
 
   button:SetWidth(
     buttonFontString:GetStringWidth() + RGGM_CONSTANTS.BUTTON_DEFAULT_PADDING
+  )
+
+  return button
+end
+
+--[[
+  Add a button that opens Settings > Keybindings at the GearMenu section, where every gearSlot
+  of every gearBar can be bound (two keys each)
+
+  @param {table} parentFrame
+  @param {table} anchorButton
+    the button to place this one next to
+
+  @return {table}
+    The created button
+]]--
+function me.CreateKeyBindingsButton(parentFrame, anchorButton)
+  local button = CreateFrame(
+    "Button",
+    RGGM_CONSTANTS.ELEMENT_GEAR_BAR_CONFIGURATION_KEY_BINDINGS_BUTTON,
+    parentFrame,
+    "UIPanelButtonTemplate"
+  )
+
+  button:SetHeight(RGGM_CONSTANTS.BUTTON_DEFAULT_HEIGHT)
+  button:SetText(rggm.L["gear_bar_configuration_key_bindings_button"])
+  button:SetPoint("LEFT", anchorButton, "RIGHT", 10, 0)
+  button:SetScript("OnClick", mod.keyBind.OpenKeyBindingSettings)
+  button:SetWidth(
+    button:GetFontString():GetStringWidth() + RGGM_CONSTANTS.BUTTON_DEFAULT_PADDING
+  )
+
+  return button
+end
+
+--[[
+  Add a button that opens Blizzard's Quick Keybind Mode, in which hovering a gearSlot and
+  pressing a key binds it
+
+  @param {table} parentFrame
+  @param {table} anchorButton
+    the button to place this one next to
+
+  @return {table}
+    The created button
+]]--
+function me.CreateQuickKeybindButton(parentFrame, anchorButton)
+  local button = CreateFrame(
+    "Button",
+    RGGM_CONSTANTS.ELEMENT_GEAR_BAR_CONFIGURATION_QUICK_KEYBIND_BUTTON,
+    parentFrame,
+    "UIPanelButtonTemplate"
+  )
+
+  button:SetHeight(RGGM_CONSTANTS.BUTTON_DEFAULT_HEIGHT)
+  button:SetText(rggm.L["gear_bar_configuration_quick_keybind_button"])
+  button:SetPoint("LEFT", anchorButton, "RIGHT", 10, 0)
+  button:SetScript("OnClick", mod.keyBind.OpenQuickKeybindMode)
+  button:SetWidth(
+    button:GetFontString():GetStringWidth() + RGGM_CONSTANTS.BUTTON_DEFAULT_PADDING
   )
 
   return button
@@ -767,8 +830,8 @@ function me.CreateGearBarConfigurationSlotsListRowFrame(contentFrame, position)
 
   row.slotIcon = me.CreateGearBarConfigurationSlotIcon(row)
   row.gearSlot = me.CreateGearBarConfigurationSlotDropdown(row, position)
-  row.keyBindButton = me.CreateGearBarConfigurationSlotKeybindButton(row, position)
-  row.keyBindText = me.CreateKeyBindingText(row, row.keyBindButton)
+  row.keyBindText = me.CreateKeyBindingText(row)
+  row.unbindButton = me.CreateUnbindKeyBindingButton(row, position)
   row.removeGearSlotButton = me.CreateRemoveGearSlotButton(row)
 
   return row
@@ -889,11 +952,11 @@ function me.OnGearSlotSelect(dropdown, slotId)
   local currentMetaData = mod.gearBarManager.GetGearSlot(row.gearBarId, position)
 
   --[[
-    Preserve keyBinding text if one is present. Note: this is only the text that is displayed. The keyBind itself
-    is automatically preserved because the gearSlot frame is not changing. It does not matter to the keyBind
-    what slotId the gearSlot has. It will simply "click" the gearSlot
+    Carry the keyBinding mirror over. The binding itself is untouched by a slot type change - the
+    key is bound to the proxy action of (bindIndex, position), which stays the same; only the
+    "/use <slotId>" behind the proxy is re-pointed (gui/KeyBindProxy.lua)
   ]]--
-  if currentMetaData ~= nil and currentMetaData.keyBinding ~= nil and currentMetaData ~= "" then
+  if currentMetaData ~= nil and currentMetaData.keyBinding ~= nil and currentMetaData.keyBinding ~= "" then
     gearSlotMetaData.keyBinding = currentMetaData.keyBinding
   end
 
@@ -902,7 +965,28 @@ function me.OnGearSlotSelect(dropdown, slotId)
 end
 
 --[[
-  Create a button that allows the user to set a keyBinding for the gearSlot
+  Create the fontstring showing the key bound to the gearSlot of the row
+
+  @param {table} row
+
+  @return {table}
+    The created fontstring
+]]--
+function me.CreateKeyBindingText(row)
+  local keybindingFontString = row:CreateFontString(
+    RGGM_CONSTANTS.ELEMENT_GEAR_BAR_CONFIGURATION_SLOTS_KEY_BINDING_TEXT, "OVERLAY")
+  keybindingFontString:SetFont(STANDARD_TEXT_FONT, 15)
+  keybindingFontString:SetWidth(RGGM_CONSTANTS.GEAR_BAR_CONFIGURATION_SLOTS_KEY_BINDING_TEXT_WIDTH)
+  keybindingFontString:SetJustifyH("LEFT")
+  keybindingFontString:SetPoint("LEFT", 200, 0)
+  keybindingFontString:SetTextColor(.95, .95, .95)
+
+  return keybindingFontString
+end
+
+--[[
+  Create a button that unbinds every key of the gearSlot of the row. Binding a key happens in
+  the game's own ui (see me.CreateKeyBindingsButton and me.CreateQuickKeybindButton)
 
   @param {table} row
   @param {number} position
@@ -911,19 +995,19 @@ end
   @return {table}
     The created button
 ]]--
-function me.CreateGearBarConfigurationSlotKeybindButton(row, position)
+function me.CreateUnbindKeyBindingButton(row, position)
   local button = CreateFrame(
     "Button",
-    RGGM_CONSTANTS.ELEMENT_GEAR_BAR_CONFIGURATION_SLOTS_KEY_BINDING_BUTTON .. position,
+    RGGM_CONSTANTS.ELEMENT_GEAR_BAR_CONFIGURATION_SLOTS_UNBIND_BUTTON .. position,
     row,
     "UIPanelButtonTemplate"
   )
 
   button:SetHeight(RGGM_CONSTANTS.BUTTON_DEFAULT_HEIGHT)
-  button:SetText(rggm.L["gear_bar_configuration_key_binding_button"])
-  button:SetPoint("TOPLEFT", 200, -11)
+  button:SetText(rggm.L["gear_bar_configuration_key_binding_unbind_button"])
+  button:SetPoint("LEFT", row.keyBindText, "RIGHT", 5, 0)
   button:SetScript("OnClick", function(self)
-    mod.keyBind.SetKeyBindingForGearSlot(gearBarConfiguration.id, self:GetParent().position)
+    mod.keyBind.UnsetKeyBinding(gearBarConfiguration.id, self:GetParent().position)
   end)
 
   button:SetWidth(
@@ -931,32 +1015,6 @@ function me.CreateGearBarConfigurationSlotKeybindButton(row, position)
   )
 
   return button
-end
-
---[[
-  Create fontstring for title of the spell to configure
-
-  @param {table} row
-  @param {table} parentFrame
-
-  @return {table}
-    The created fontstring
-]]--
-function me.CreateKeyBindingText(row, parentFrame)
-  local keybindingFontString = row:CreateFontString(
-    RGGM_CONSTANTS.ELEMENT_GEAR_BAR_CONFIGURATION_SLOTS_KEY_BINDING_TEXT, "OVERLAY")
-  keybindingFontString:SetFont(STANDARD_TEXT_FONT, 15)
-  keybindingFontString:SetWidth(RGGM_CONSTANTS.GEAR_BAR_CONFIGURATION_SLOTS_KEY_BINDING_TEXT_WIDTH)
-  keybindingFontString:SetPoint(
-    "LEFT",
-    parentFrame,
-    "RIGHT",
-    0,
-    0
-  )
-  keybindingFontString:SetTextColor(.95, .95, .95)
-
-  return keybindingFontString
 end
 
 --[[
@@ -1004,13 +1062,8 @@ function me.RemoveGearSlot(self)
     return
   end
 
-  local gearSlot = gearBar.slots[gearSlotPosition]
-
-  if gearSlot.keyBinding ~= nil and gearSlot.keyBinding ~= "" then
-    mod.keyBind.UnsetKeyBindingFromGearSlot(gearSlot)
-  end
-
-  if not mod.gearBarManager.RemoveGearSlot(gearBarConfiguration.id, self:GetParent().position) then
+  -- the keys of the slots that move up follow them, see gearBarManager.RemoveGearSlot
+  if not mod.gearBarManager.RemoveGearSlot(gearBarConfiguration.id, gearSlotPosition) then
     mod.logger.LogError(me.tag, "Failed to remove gearSlot from gearBar with id: " .. gearBarConfiguration.id)
     return
   end
@@ -1043,9 +1096,11 @@ function me.GearBarConfigurationSlotsListOnUpdate(listContainerReference)
       row.slotIcon:SetTexture(slot.textureId)
       -- regenerate so the dropdown text reflects the slot configured for this row
       row.gearSlot:GenerateMenu()
-      -- update keybinding text
-      if slot.keyBinding ~= nil then
-        row.keyBindText:SetText(slot.keyBinding)
+      -- the key bound to the slot in WoW's binding set (the source of truth, not the configuration)
+      local keyBinding = mod.keyBind.GetSlotKeyBinding(gearBarConfiguration, index)
+
+      if keyBinding ~= nil then
+        row.keyBindText:SetText(keyBinding)
       else
         row.keyBindText:SetText(rggm.L["gear_bar_configuration_key_binding_not_set"])
       end
@@ -1062,40 +1117,12 @@ function me.GearBarConfigurationSlotsListOnUpdate(listContainerReference)
 end
 
 --[[
-  Register a script with the currently active content frame. This is used for capturing keybindings.
-
-  @param {string} event
-  @param {function} callback
-]]--
-function me.RegisterScriptWithContentFrame(event, callback)
-  local activeContentFrame = gearBarConfigurationContentFrames[currentActiveGearBarId]
-
-  if activeContentFrame ~= nil then
-    activeContentFrame:SetScript(event, callback)
-  else
-    mod.logger.LogError(me.tag, "Failed to register script with content frame - content frame is nil")
-  end
-end
-
---[[
-  Unregister a script with the currently active content frame. This is used for capturing keybindings.
-
-  @param {string} event
-]]--
-function me.UnregisterScriptWithContentFrame(event)
-  local activeContentFrame = gearBarConfigurationContentFrames[currentActiveGearBarId]
-
-  if activeContentFrame ~= nil then
-    activeContentFrame:SetScript(event, nil)
-  else
-    mod.logger.LogError(me.tag, "Failed to unregister script with content frame - content frame is nil")
-  end
-end
-
---[[
   Function for updating everything related to the configuration menu. Such as when
-  a slot was removed or added
+  a slot was removed or added, or the key bindings changed. A no-op while no gearBar
+  configuration has been built yet (e.g. an UPDATE_BINDINGS before the options were ever opened)
 ]]--
 function me.UpdateGearBarConfigurationMenu()
+  if me.GetCurrentContentFrame() == nil or gearBarConfiguration == nil then return end
+
   me.GearBarConfigurationSlotsListOnUpdate()
 end

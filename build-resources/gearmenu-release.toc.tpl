@@ -48,6 +48,7 @@ code/Macro.lua
 gui/Frame.xml
 gui/UiHelper.lua
 gui/GearBar.lua
+gui/KeyBindProxy.lua
 gui/GearBarChangeMenu.lua
 gui/TrinketMenu.lua
 gui/ThemeCoordinator.lua

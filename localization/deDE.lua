@@ -171,18 +171,19 @@ if (GetLocale() == "deDE") then
   rggm.L["gear_bar_configuration_remove_gearslot"] = "-"
   rggm.L["gear_bar_configuration_delete_gearbar"] = "Lösche GearBar"
   -- gearbar scrollmenu
-  rggm.L["gear_bar_configuration_key_binding_button"] = "Erstelle/Entferne Kürzel"
+  rggm.L["gear_bar_configuration_key_binding_unbind_button"] = "Entfernen"
   rggm.L["gear_bar_configuration_key_binding_not_set"] = "Kein Kürzel gesetzt"
-  rggm.L["gear_bar_configuration_key_binding_dialog"] = "Setze Tastenkürzel zu: "
-  rggm.L["gear_bar_configuration_key_binding_dialog_initial"] = "(drücke das Tastenkürzel das du verwenden willst "
-    .. "oder lasse es leer um das Tastenkürzel zurückzusetzen)"
-  rggm.L["gear_bar_configuration_key_binding_dialog_accept"] = "Akzeptieren"
-  rggm.L["gear_bar_configuration_key_binding_dialog_cancel"] = "Abbrechen"
-  rggm.L["gear_bar_configuration_key_binding_override_dialog"] = "Tastenkürzel wird bereits benutzt. "
-    .. "Willst du es überschreiben?"
-  rggm.L["gear_bar_configuration_key_binding_dialog_override_yes"] = "Ja"
-  rggm.L["gear_bar_configuration_key_binding_dialog_override_no"] = "Nein"
-  rggm.L["gear_bar_configuration_key_binding_user_error"] = "Setzen des neuen Tastenkürzels ist fehlgeschlagen"
+  rggm.L["gear_bar_configuration_key_bindings_button"] = "Tastenkürzel"
+  rggm.L["gear_bar_configuration_quick_keybind_button"] = "Schnellzuweisungsmodus"
+  rggm.L["gear_bar_configuration_quick_keybind_combat"] =
+    "Der Schnellzuweisungsmodus kann im Kampf nicht geöffnet werden"
+  -- key bindings
+  rggm.L["keybind_category"] = "GearMenu"
+  rggm.L["keybind_bar_preface"] = "GearBar %d"
+  rggm.L["keybind_slot_name"] = "GearBar %d - Slot %d"
+  rggm.L["keybind_deferred_combat"] = "Tastenkürzel können im Kampf nicht geändert werden. "
+    .. "Die Änderung wird übernommen, sobald du den Kampf verlässt"
+  rggm.L["keybind_set_failed"] = "Zuweisen von %s ist fehlgeschlagen"
 
   -- macro bridge user errors
   rggm.L["unable_to_find_equipslot"] = "Konnte keinen passenden slot für itemdId %s finden"
@@ -239,6 +240,7 @@ if (GetLocale() == "deDE") then
   rggm.L["profile_error_name_exists"] = "Ein Profil mit diesem Namen existiert bereits"
   rggm.L["profile_error_name_too_long"] = "Der Profilname darf nicht länger als %d Zeichen sein"
   rggm.L["profile_error_no_selection"] = "Kein Profil ausgewählt"
+  rggm.L["profile_error_combat"] = "Profile können im Kampf nicht gewechselt werden"
   rggm.L["profile_error_default_cannot_be_deleted"] = "Das Profil \"%s\" kann nicht gelöscht werden"
   rggm.L["profile_error_default_cannot_be_renamed"] = "Das Profil \"%s\" kann nicht umbenannt werden"
   rggm.L["profile_error_default_cannot_be_overwritten"] = "\"%s\" ist ein reservierter Profilname"

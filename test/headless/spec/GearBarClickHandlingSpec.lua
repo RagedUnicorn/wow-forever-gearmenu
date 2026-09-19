@@ -142,7 +142,12 @@ describe("GearBar click handling", function()
     }
 
     restore = wowStubs.install({
-      InCombatLockdown = wowStubs.stubs.InCombatLockdown(false)
+      InCombatLockdown = wowStubs.stubs.InCombatLockdown(false),
+      -- the Quick Keybind Mode mixin GearBar forwards its hover handlers to (not exercised here)
+      QuickKeybindButtonTemplateMixin = {
+        QuickKeybindButtonOnEnter = function() end,
+        QuickKeybindButtonOnLeave = function() end
+      }
     })
 
     dofile("gui/GearBar.lua")

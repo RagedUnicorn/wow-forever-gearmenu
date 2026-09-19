@@ -51,7 +51,7 @@ function me.CreateGearSlot(gearBarFrame, gearBar, position)
     gearBarFrame,
     gearBar,
     position,
-    "SecureActionButtonTemplate"
+    "QuickKeybindButtonTemplate, SecureActionButtonTemplate"
   )
 
   gearSlot:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
