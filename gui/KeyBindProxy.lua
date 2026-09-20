@@ -155,9 +155,42 @@ local function CreateProxy(bindIndex, position)
   ]]--
   proxy:RegisterForClicks("LeftButtonDown", "LeftButtonUp")
   proxy:SetAttribute("useOnKeyDown", mod.configuration.IsFastPressEnabled())
+  -- insecure feedback on the visible gearSlot; the secure action itself runs on this button
+  proxy:SetScript("PreClick", function(_, button, down)
+    me.OnProxyClick(bindIndex, position, button, down)
+  end)
   proxy:Hide()
 
   return proxy
+end
+
+--[[
+  PreClick of a proxy - a key bound to it was pressed. The secure "/use" runs on the hidden
+  proxy, so the visible gearSlot would show nothing; forward the press to the gearSlot at
+  (bindIndex, position) for the same insecure click feedback a mouse click gives (gui/GearBar.lua
+  GearSlotOnKeyPress). Fires for both click phases like the gearSlot's own PreClick.
+
+  @param {number} bindIndex
+  @param {number} position
+  @param {string} button
+  @param {boolean} down
+]]--
+function me.OnProxyClick(bindIndex, position, button, down)
+  mod.logger.LogDebug(me.tag, "Key press on " .. me.GetProxyName(bindIndex, position)
+    .. " (" .. tostring(button) .. ", down=" .. tostring(down) .. ")")
+
+  for _, gearBar in pairs(mod.gearBarManager.GetGearBars()) do
+    if gearBar.bindIndex == bindIndex then
+      local uiGearBar = mod.gearBarStorage.GetGearBars()[gearBar.id]
+      local uiGearSlot = uiGearBar and uiGearBar.gearSlotReferences[position]
+
+      if uiGearSlot ~= nil then
+        mod.gearBar.GearSlotOnKeyPress(uiGearSlot, button, down)
+      end
+
+      return
+    end
+  end
 end
 
 --[[

@@ -65,6 +65,8 @@ RGGM_CONSTANTS = {
   COMBAT_QUEUE_UPDATE_INTERVAL = 0.1,
   RANGE_CHECK_UPDATE_INTERVAL = 0.1,
   BAG_UPDATE_DEBOUNCE_DELAY = 0.1,
+  -- how long a gearSlot shows its pushed state after a bound key was pressed (seconds)
+  GEAR_SLOT_KEY_PRESS_FLASH_DURATION = 0.15,
   --[[
     Public swap-lifecycle event names passed to third-party listeners registered through
     GM_RegisterSwapListener. Part of the public API contract (see README) - renaming

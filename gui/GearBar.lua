@@ -26,7 +26,7 @@
 -- luacheck: globals CreateFrame UIParent GetInventoryItemID GetCursorInfo STANDARD_TEXT_FONT
 -- luacheck: globals GetInventoryItemLink C_Item C_Container InCombatLockdown
 -- luacheck: globals CursorCanGoInSlot EquipCursorItem ClearCursor IsInventoryItemLocked PickupInventoryItem
--- luacheck: globals QuickKeybindButtonTemplateMixin QuickKeybindFrame
+-- luacheck: globals QuickKeybindButtonTemplateMixin QuickKeybindFrame C_Timer
 
 --[[
   The gearBar (GM_Gearbar) module is responsible for building and showing gearBars to the user.
@@ -977,6 +977,41 @@ function me.GearSlotOnClick(self, button, down)
   end
 
   mod.themeCoordinator.GearSlotOnClick(self, button)
+end
+
+--[[
+  A key bound to the gearSlot was pressed (forwarded from the PreClick of its key-bind proxy,
+  gui/KeyBindProxy.lua OnProxyClick). The secure action runs on the hidden proxy, so the
+  gearSlot itself gets no click - give it the same feedback a mouse click gives: a short pushed
+  state (the classic theme's pushed texture) and the theme's click highlight. Gated to the
+  fastpress phase exactly like me.GearSlotOnClick
+
+  @param {table} self
+    the gearSlot
+  @param {string} button
+  @param {boolean} down
+]]--
+function me.GearSlotOnKeyPress(self, button, down)
+  if down ~= mod.configuration.IsFastPressEnabled() then
+    return
+  end
+
+  me.FlashGearSlot(self)
+  mod.themeCoordinator.GearSlotOnClick(self, button)
+end
+
+--[[
+  Show the pushed state of a gearSlot for a moment. SetButtonState is purely visual, so it is
+  allowed on the protected button in combat
+
+  @param {table} gearSlot
+]]--
+function me.FlashGearSlot(gearSlot)
+  gearSlot:SetButtonState("PUSHED")
+
+  C_Timer.After(RGGM_CONSTANTS.GEAR_SLOT_KEY_PRESS_FLASH_DURATION, function()
+    gearSlot:SetButtonState("NORMAL")
+  end)
 end
 
 --[[

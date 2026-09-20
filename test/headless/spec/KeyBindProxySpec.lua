@@ -52,6 +52,8 @@ describe("KeyBindProxy", function()
   local restore
   local frames
   local gearBars
+  local uiGearBars
+  local keyPresses
   local fastPress
 
   --[[
@@ -67,14 +69,27 @@ describe("KeyBindProxy", function()
   before_each(function()
     fastPress = false
     gearBars = {}
+    uiGearBars = {}
+    keyPresses = {}
     frames = wowStubs.stubs.FrameRegistry()
 
     previous = {
       keyBindProxy = rggm.keyBindProxy,
       gearBarManager = rggm.gearBarManager,
+      gearBarStorage = rggm.gearBarStorage,
+      gearBar = rggm.gearBar,
       configuration = rggm.configuration,
       logger = rggm.logger,
       L = rggm.L
+    }
+
+    rggm.gearBarStorage = {
+      GetGearBars = function() return uiGearBars end
+    }
+    rggm.gearBar = {
+      GearSlotOnKeyPress = function(gearSlot, button, down)
+        keyPresses[#keyPresses + 1] = { gearSlot = gearSlot, button = button, down = down }
+      end
     }
 
     rggm.L = {
@@ -110,6 +125,8 @@ describe("KeyBindProxy", function()
 
     rggm.keyBindProxy = previous.keyBindProxy
     rggm.gearBarManager = previous.gearBarManager
+    rggm.gearBarStorage = previous.gearBarStorage
+    rggm.gearBar = previous.gearBar
     rggm.configuration = previous.configuration
     rggm.logger = previous.logger
     rggm.L = previous.L
@@ -282,6 +299,35 @@ describe("KeyBindProxy", function()
       assert.are.equal(writesBeforeFlush + 3, proxy(1, 1).attributeWrites)
       keyBindProxy.FlushPending()
       assert.are.equal(writesBeforeFlush + 3, proxy(1, 1).attributeWrites)
+    end)
+  end)
+
+  describe("OnProxyClick", function()
+    it("forwards a key press on a proxy to the visible gearSlot at (bindIndex, position)", function()
+      local slotOne, slotTwo = {}, {}
+      gearBars = { { id = 10, bindIndex = 1, slots = { {}, {} } }, { id = 20, bindIndex = 2, slots = { {} } } }
+      uiGearBars = { [10] = { gearSlotReferences = { slotOne, slotTwo } }, [20] = { gearSlotReferences = { {} } } }
+      keyBindProxy.Setup()
+
+      proxy(1, 2).scripts.PreClick(proxy(1, 2), "LeftButton", true)
+      proxy(1, 2).scripts.PreClick(proxy(1, 2), "LeftButton", false)
+
+      assert.are.same({
+        { gearSlot = slotTwo, button = "LeftButton", down = true },
+        { gearSlot = slotTwo, button = "LeftButton", down = false }
+      }, keyPresses)
+    end)
+
+    it("does nothing for a proxy without a bar or a slot behind it", function()
+      gearBars = { { id = 10, bindIndex = 1, slots = { {} } } }
+      uiGearBars = { [10] = { gearSlotReferences = { {} } } }
+      keyBindProxy.Setup()
+
+      assert.has_no.errors(function()
+        keyBindProxy.OnProxyClick(1, 2, "LeftButton", false)
+        keyBindProxy.OnProxyClick(5, 1, "LeftButton", false)
+      end)
+      assert.are.same({}, keyPresses)
     end)
   end)
 

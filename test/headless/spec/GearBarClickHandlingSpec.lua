@@ -86,6 +86,12 @@ CreateFakeGearSlot = function(slotId)
     end
   end
 
+  gearSlot.buttonStates = {} -- SetButtonState invocations
+
+  function gearSlot:SetButtonState(state)
+    self.buttonStates[#self.buttonStates + 1] = state
+  end
+
   return gearSlot
 end
 
@@ -143,6 +149,8 @@ describe("GearBar click handling", function()
 
     restore = wowStubs.install({
       InCombatLockdown = wowStubs.stubs.InCombatLockdown(false),
+      -- FlashGearSlot resets the pushed state through a timer; run the callback immediately
+      C_Timer = { After = function(_, callback) callback() end },
       -- the Quick Keybind Mode mixin GearBar forwards its hover handlers to (not exercised here)
       QuickKeybindButtonTemplateMixin = {
         QuickKeybindButtonOnEnter = function() end,
@@ -239,6 +247,31 @@ describe("GearBar click handling", function()
       gearBar.GearSlotOnClick(gearSlot, "RightButton", false)
 
       assert.are.same({ 13 }, calls.removedFromQueue)
+      assert.are.equal(1, #calls.themeClicks)
+    end)
+  end)
+
+  describe("GearSlotOnKeyPress", function()
+    it("flashes the pushed state and notifies the theme on the phase matching fastpress", function()
+      local gearSlot = CreateFakeGearSlot(13)
+
+      gearBar.GearSlotOnKeyPress(gearSlot, "LeftButton", true)
+      gearBar.GearSlotOnKeyPress(gearSlot, "LeftButton", false)
+
+      assert.are.same({ "PUSHED", "NORMAL" }, gearSlot.buttonStates)
+      assert.are.equal(1, #calls.themeClicks)
+      assert.are.equal(gearSlot, calls.themeClicks[1].self)
+      assert.are.equal(0, #calls.removedFromQueue)
+    end)
+
+    it("acts on the buttonDown phase when fastpress is enabled", function()
+      fastPress = true
+      local gearSlot = CreateFakeGearSlot(13)
+
+      gearBar.GearSlotOnKeyPress(gearSlot, "LeftButton", true)
+      gearBar.GearSlotOnKeyPress(gearSlot, "LeftButton", false)
+
+      assert.are.same({ "PUSHED", "NORMAL" }, gearSlot.buttonStates)
       assert.are.equal(1, #calls.themeClicks)
     end)
   end)

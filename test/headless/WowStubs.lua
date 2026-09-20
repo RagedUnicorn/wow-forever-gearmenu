@@ -287,11 +287,20 @@ function M.stubs.FrameRegistry()
       attributes = {},
       attributeWrites = 0,
       clicks = nil,
+      scripts = {},
       hidden = false
     }
 
     function frame:RegisterForClicks(...)
       self.clicks = { ... }
+    end
+
+    function frame:SetScript(scriptType, handler)
+      self.scripts[scriptType] = handler
+    end
+
+    function frame:GetScript(scriptType)
+      return self.scripts[scriptType]
     end
 
     function frame:SetAttribute(attribute, value)
