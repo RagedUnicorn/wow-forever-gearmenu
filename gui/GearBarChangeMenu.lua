@@ -56,7 +56,7 @@ function me.BuildChangeMenu()
   changeMenuFrame:SetBackdropBorderColor(0, 0, 0, .8)
 
   changeMenuSlotPool = mod.uiHelper.CreateFramePool(function(position)
-    return mod.themeCoordinator.CreateChangeSlot(changeMenuFrame, position)
+    return mod.slotStyle.CreateChangeSlot(changeMenuFrame, position)
   end)
 
   me.CreateChangeSlots()
@@ -164,7 +164,7 @@ end
   @param {number} changeSlotSize
 ]]--
 function me.UpdateChangeSlot(changeSlot, gearSlotMetaData, item, changeSlotSize)
-  mod.themeCoordinator.UpdateSlotTextureAttributes(changeSlot, changeSlotSize)
+  mod.slotStyle.UpdateSlotTextureAttributes(changeSlot, changeSlotSize)
 
   -- update metadata for slot
   changeSlot.slotId = gearSlotMetaData.slotId
@@ -212,7 +212,7 @@ function me.UpdateChangeSlotSize(changeSlotSize, changeMenu, changeSlot, xPos, y
 
   changeSlot:SetPoint(point, changeMenu, point, xOffset, yOffset)
 
-  mod.themeCoordinator.UpdateSlotTextureAttributes(changeSlot, changeSlotSize)
+  mod.slotStyle.UpdateSlotTextureAttributes(changeSlot, changeSlotSize)
   me.UpdateCooldownOverlaySize(changeSlot, changeSlotSize)
 end
 
@@ -258,7 +258,7 @@ function me.UpdateEmptyChangeSlot(changeMenu, itemCount, gearSlotMetaData, empty
 
   me.UpdateChangeSlotSize(
     changeSlotSize, changeMenu, emptyChangeMenuSlot, emptySlotPosition.xPos, emptySlotPosition.yPos)
-  mod.themeCoordinator.UpdateSlotTextureAttributes(emptyChangeMenuSlot, changeSlotSize)
+  mod.slotStyle.UpdateSlotTextureAttributes(emptyChangeMenuSlot, changeSlotSize)
 
   -- update metadata for slot
   emptyChangeMenuSlot.slotId = gearSlotMetaData.slotId
@@ -361,9 +361,7 @@ end
   Reset all changeMenuSlots into their initial state
 ]]--
 function me.ResetChangeMenu()
-  changeMenuSlotPool.ReleaseAll(function(changeMenuSlot)
-    mod.themeCoordinator.ChangeMenuSlotReset(changeMenuSlot)
-  end)
+  changeMenuSlotPool.ReleaseAll()
 
   changeMenuFrame:Hide()
 end
@@ -456,7 +454,6 @@ function me.ChangeSlotOnClick(self, button)
   end
 
   me.CloseChangeMenu()
-  mod.themeCoordinator.ChangeSlotOnClick(self, button)
 end
 
 --[[
@@ -466,17 +463,13 @@ end
 ]]--
 function me.ChangeSlotOnEnter(self)
   mod.tooltip.UpdateTooltipForItem(self)
-  mod.themeCoordinator.ChangeSlotOnEnter(self)
 end
 
 --[[
   Callback for a changeSlot OnLeave
-
-  @param {table} self
 ]]--
-function me.ChangeSlotOnLeave(self)
+function me.ChangeSlotOnLeave()
   mod.tooltip.TooltipClear()
-  mod.themeCoordinator.ChangeSlotOnLeave(self)
 end
 
 --[[

@@ -139,13 +139,13 @@ function me.CreateGearSlot(gearBarFrame, gearBar, position)
     return
   end
 
-  return mod.themeCoordinator.CreateGearSlot(gearBarFrame, gearBar, position)
+  return mod.slotStyle.CreateGearSlot(gearBarFrame, gearBar, position)
 end
 
 --[[
   Anchor a gearSlot within its gearBar based on the bar orientation. This is the single
   source of truth for gearSlot positioning math and is used both when a slot is first
-  created (by the themes) and when a slot is resized (me.UpdateGearSlotSize).
+  created (by gui/SlotStyle.lua) and when a slot is resized (me.UpdateGearSlotSize).
 
   @param {table} gearSlot
     The gearSlot to anchor
@@ -180,11 +180,11 @@ function me.AnchorGearSlot(gearSlot, anchorFrame, position, gearSlotSize, orient
 end
 
 --[[
-  Shared gearSlot construction used by both themes. Creates the secure button, sizes and
-  anchors it, applies the secure macro attributes and wires up the child widgets common to
-  every theme. Theme-specific styling (textures/backdrop, highlightFrame, cooldownOverlay)
-  is layered on top by the calling theme. Because of SetAttribute this CANNOT run in combat;
-  the me.CreateGearSlot dispatcher already guards against that.
+  Bare gearSlot construction for gui/SlotStyle.lua. Creates the secure button, sizes and
+  anchors it, applies the secure macro attributes and wires up the child widgets that do not
+  depend on the slot look. The styling (textures, cooldownOverlay) is layered on top by the
+  slot style. Because of SetAttribute this CANNOT run in combat; the me.CreateGearSlot
+  dispatcher already guards against that.
 
   @param {table} gearBarFrame
     The gearBarFrame where the gearSlot gets attached to
@@ -192,8 +192,7 @@ end
   @param {number} position
     Position on the gearBar
   @param {string} template
-    The frame template the button inherits from (themes differ, e.g. the custom theme
-    additionally mixes in BackdropTemplate)
+    The frame template the button inherits from
 
   @return {table}
     The created gearSlot
@@ -228,7 +227,7 @@ function me.CreateGearSlotBase(gearBarFrame, gearBar, position, template)
   gearSlot.keyBindingText = me.CreateKeyBindingText(gearSlot, gearBar.gearSlotSize)
   gearSlot.position = position
   --[[
-    Quick Keybind Mode (QuickKeybindButtonTemplate, mixed into the slot by the themes): hovering
+    Quick Keybind Mode (QuickKeybindButtonTemplate, mixed into the slot by the slot style): hovering
     the slot in that mode binds the pressed key to commandName - the slot's proxy action, which
     is fixed by the bar's bindIndex and the slot position for the lifetime of the frame. The
     template's highlight texture ships without anchors; stretch it over the slot
@@ -634,7 +633,7 @@ function me.UpdateGearBarGearSlotTextures(gearBar)
     local uiGearSlot = uiGearBar.gearSlotReferences[index]
 
     me.UpdateGearSlotTexture(uiGearSlot, gearSlot)
-    mod.themeCoordinator.UpdateSlotTextureAttributes(uiGearSlot, gearBar.gearSlotSize)
+    mod.slotStyle.UpdateSlotTextureAttributes(uiGearSlot, gearBar.gearSlotSize)
   end
 end
 
@@ -669,7 +668,7 @@ function me.UpdateGearBarGearSlotTexturesAttributes(gearBar)
   for index, _ in pairs(gearBar.slots) do
     local uiGearSlot = uiGearBar.gearSlotReferences[index]
 
-    mod.themeCoordinator.UpdateSlotTextureAttributes(uiGearSlot, gearBar.gearSlotSize)
+    mod.slotStyle.UpdateSlotTextureAttributes(uiGearSlot, gearBar.gearSlotSize)
   end
 end
 
@@ -693,7 +692,7 @@ function me.UpdateGearSlotSizes(gearBar)
     mod.cooldown.UpdateGearSlotCooldownOverlaySize(uiGearSlot, gearBar.gearSlotSize)
     me.UpdateGearSlotCombatQueueSize(uiGearSlot, gearBar.gearSlotSize)
     me.UpdateGearSlotKeyBindingTextSize(uiGearSlot, gearBar.gearSlotSize)
-    mod.themeCoordinator.UpdateSlotTextureAttributes(uiGearSlot, gearBar.gearSlotSize)
+    mod.slotStyle.UpdateSlotTextureAttributes(uiGearSlot, gearBar.gearSlotSize)
   end
 end
 
@@ -975,29 +974,25 @@ function me.GearSlotOnClick(self, button, down)
   if button == "RightButton" then
     mod.combatQueue.RemoveFromQueue(self:GetAttribute("slotId"))
   end
-
-  mod.themeCoordinator.GearSlotOnClick(self, button)
 end
 
 --[[
   A key bound to the gearSlot was pressed (forwarded from the PreClick of its key-bind proxy,
   gui/KeyBindProxy.lua OnProxyClick). The secure action runs on the hidden proxy, so the
   gearSlot itself gets no click - give it the same feedback a mouse click gives: a short pushed
-  state (the classic theme's pushed texture) and the theme's click highlight. Gated to the
-  fastpress phase exactly like me.GearSlotOnClick
+  state (the slot's pushed texture). Gated to the fastpress phase exactly like
+  me.GearSlotOnClick
 
   @param {table} self
     the gearSlot
-  @param {string} button
   @param {boolean} down
 ]]--
-function me.GearSlotOnKeyPress(self, button, down)
+function me.GearSlotOnKeyPress(self, down)
   if down ~= mod.configuration.IsFastPressEnabled() then
     return
   end
 
   me.FlashGearSlot(self)
-  mod.themeCoordinator.GearSlotOnClick(self, button)
 end
 
 --[[
@@ -1026,7 +1021,6 @@ function me.GearSlotOnEnter(self)
   mod.gearBarChangeMenu.UpdateChangeMenu(self.position, self:GetParent().id)
 
   mod.tooltip.UpdateTooltipForSlot(self:GetAttribute("slotId"))
-  mod.themeCoordinator.GearSlotOnEnter(self)
   QuickKeybindButtonTemplateMixin.QuickKeybindButtonOnEnter(self)
 end
 
@@ -1037,7 +1031,6 @@ end
 ]]--
 function me.GearSlotOnLeave(self)
   mod.tooltip.TooltipClear()
-  mod.themeCoordinator.GearSlotOnLeave(self)
   QuickKeybindButtonTemplateMixin.QuickKeybindButtonOnLeave(self)
 end
 

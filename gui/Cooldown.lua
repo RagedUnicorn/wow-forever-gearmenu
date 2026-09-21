@@ -38,12 +38,11 @@ me.tag = "Cooldown"
   @param {table} slot
   @param {string} frameName
   @param {number} slotSize
-  @param {number} uiTheme
 
   @param {table}
     The created cooldownOverlay
 ]]--
-function me.CreateCooldownOverlay(slot, frameName, slotSize, uiTheme)
+function me.CreateCooldownOverlay(slot, frameName, slotSize)
   local cooldownOverlay = CreateFrame(
     "Cooldown",
     frameName,
@@ -51,13 +50,9 @@ function me.CreateCooldownOverlay(slot, frameName, slotSize, uiTheme)
     "CooldownFrameTemplate"
   )
 
-  if uiTheme == RGGM_CONSTANTS.UI_THEME_CLASSIC then
-    cooldownOverlay:ClearAllPoints()
-    cooldownOverlay:SetPoint("CENTER", slot, 0, 0)
-    cooldownOverlay:SetSize(slotSize - 2, slotSize - 2)
-  else
-    cooldownOverlay:SetAllPoints(slot)
-  end
+  cooldownOverlay:ClearAllPoints()
+  cooldownOverlay:SetPoint("CENTER", slot, 0, 0)
+  cooldownOverlay:SetSize(slotSize - 2, slotSize - 2)
 
   -- set fontsize based on slotsize
   cooldownOverlay:GetRegions()

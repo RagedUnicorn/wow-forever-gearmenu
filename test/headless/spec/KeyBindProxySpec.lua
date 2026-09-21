@@ -87,8 +87,8 @@ describe("KeyBindProxy", function()
       GetGearBars = function() return uiGearBars end
     }
     rggm.gearBar = {
-      GearSlotOnKeyPress = function(gearSlot, button, down)
-        keyPresses[#keyPresses + 1] = { gearSlot = gearSlot, button = button, down = down }
+      GearSlotOnKeyPress = function(gearSlot, down)
+        keyPresses[#keyPresses + 1] = { gearSlot = gearSlot, down = down }
       end
     }
 
@@ -313,8 +313,8 @@ describe("KeyBindProxy", function()
       proxy(1, 2).scripts.PreClick(proxy(1, 2), "LeftButton", false)
 
       assert.are.same({
-        { gearSlot = slotTwo, button = "LeftButton", down = true },
-        { gearSlot = slotTwo, button = "LeftButton", down = false }
+        { gearSlot = slotTwo, down = true },
+        { gearSlot = slotTwo, down = false }
       }, keyPresses)
     end)
 

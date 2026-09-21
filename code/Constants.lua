@@ -51,14 +51,6 @@ RGGM_CONSTANTS = {
   },
   INVSLOT_NONE = 99,
   --[[
-    Highlight Frame Status colors
-  ]]--
-  HIGHLIGHT = {
-    ["highlight"] = {1, 0.99, .47, 1},
-    ["hover"] = {0.27, 0.4, 1, 1},
-    ["remove"] = {1, 0.02, 0.22, 1}
-  },
-  --[[
     Update Intervals for tickers
   ]]--
   CHANGE_MENU_UPDATE_INTERVAL = 0.1,

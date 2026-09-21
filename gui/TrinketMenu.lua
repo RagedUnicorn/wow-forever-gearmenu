@@ -71,7 +71,7 @@ function me.BuildTrinketMenu()
   trinketMenuFrame:SetClampedToScreen(true)
 
   trinketMenuSlotPool = mod.uiHelper.CreateFramePool(function(position)
-    return mod.themeCoordinator.CreateTrinketSlot(trinketMenuFrame, position)
+    return mod.slotStyle.CreateTrinketSlot(trinketMenuFrame, position)
   end)
 
   me.SetupDragFrame(trinketMenuFrame)
@@ -160,7 +160,7 @@ function me.UpdateTrinketMenuSlotSize()
       yPos
     )
 
-    mod.themeCoordinator.UpdateSlotTextureAttributes(trinketMenuSlot, trinketMenuSlotSize)
+    mod.slotStyle.UpdateSlotTextureAttributes(trinketMenuSlot, trinketMenuSlotSize)
   end
 end
 
@@ -191,7 +191,7 @@ end
   @param {number} trinketMenuSlotSize
 ]]--
 function me.UpdateTrinketMenuSlot(trinketMenuSlot, item, trinketMenuSlotSize)
-  mod.themeCoordinator.UpdateSlotTextureAttributes(trinketMenuSlot, trinketMenuSlotSize)
+  mod.slotStyle.UpdateSlotTextureAttributes(trinketMenuSlot, trinketMenuSlotSize)
 
   trinketMenuSlot.itemId = item.id
   trinketMenuSlot.equipSlot = item.equipSlot
@@ -230,7 +230,6 @@ end
 ]]--
 function me.ResetTrinketMenuSlot(trinketMenuSlot)
   trinketMenuSlot:Hide()
-  mod.themeCoordinator.TrinketMenuSlotReset(trinketMenuSlot)
 end
 
 --[[
@@ -328,17 +327,13 @@ end
 ]]--
 function me.TrinketMenuSlotOnEnter(self)
   mod.tooltip.UpdateTooltipForBagItem(self.itemId)
-  mod.themeCoordinator.TrinketMenuSlotOnEnter(self)
 end
 
 --[[
   Callback for a trinketMenuSlot OnLeave
-
-  @param {table} self
 ]]--
-function me.TrinketMenuSlotOnLeave(self)
+function me.TrinketMenuSlotOnLeave()
   mod.tooltip.TooltipClear()
-  mod.themeCoordinator.TrinketMenuSlotOnLeave(self)
 end
 
 --[[
@@ -363,8 +358,6 @@ function me.TrinketMenuSlotOnClick(self, button)
     item.slotId = INVSLOT_TRINKET1
     mod.itemManager.EquipItemByItemAndEnchantId(item)
   end
-
-  mod.themeCoordinator.TrinketMenuSlotOnClick(self, button)
 end
 
 --[[

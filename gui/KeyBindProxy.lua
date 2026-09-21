@@ -185,7 +185,7 @@ function me.OnProxyClick(bindIndex, position, button, down)
       local uiGearSlot = uiGearBar and uiGearBar.gearSlotReferences[position]
 
       if uiGearSlot ~= nil then
-        mod.gearBar.GearSlotOnKeyPress(uiGearSlot, button, down)
+        mod.gearBar.GearSlotOnKeyPress(uiGearSlot, down)
       end
 
       return

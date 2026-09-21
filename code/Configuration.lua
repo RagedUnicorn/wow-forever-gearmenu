@@ -840,7 +840,6 @@ end
 ]]--
 function me.SetUiTheme(uiTheme)
   GearMenuConfiguration.uiTheme = uiTheme
-  mod.themeCoordinator.UpdateTheme()
 end
 
 --[[

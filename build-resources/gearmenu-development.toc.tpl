@@ -52,9 +52,7 @@ gui/GearBar.lua
 gui/KeyBindProxy.lua
 gui/GearBarChangeMenu.lua
 gui/TrinketMenu.lua
-gui/ThemeCoordinator.lua
-gui/ThemeClassic.lua
-gui/ThemeCustom.lua
+gui/SlotStyle.lua
 gui/Cooldown.lua
 gui/GearBarStorage.lua
 gui/GearBarConfigurationMenu.lua

@@ -23,14 +23,20 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
+--[[
+  The single look of every GearMenu slot: the gearSlots of a gearBar, the changeSlots of the
+  changeMenu and the trinketMenuSlots. Builds the slot buttons and keeps their textures in
+  step with the configurable slot size.
+]]--
+
 -- luacheck: globals CreateFrame
 
 local mod = rggm
 local me = {}
 
-mod.themeClassic = me
+mod.slotStyle = me
 
-me.tag = "ThemeClassic"
+me.tag = "SlotStyle"
 
 --[[
   Create a single gearSlot. Note that a gearSlot inherits from the SecureActionButtonTemplate to enable the usage
@@ -65,8 +71,7 @@ function me.CreateGearSlot(gearBarFrame, gearBar, position)
   gearSlot.cooldownOverlay = mod.cooldown.CreateCooldownOverlay(
     gearSlot,
     RGGM_CONSTANTS.ELEMENT_SLOT_COOLDOWN_FRAME,
-    gearBar.gearSlotSize,
-    RGGM_CONSTANTS.UI_THEME_CLASSIC
+    gearBar.gearSlotSize
   )
 
   mod.gearBar.SetupEvents(gearSlot)

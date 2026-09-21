@@ -33,7 +33,7 @@
   drop option.
 
   gui/TrinketMenu.lua has no load-time WoW api surface, so it can be dofile'd with the
-  collaborator modules (configuration, itemManager, themeCoordinator, tooltip, logger) replaced
+  collaborator modules (configuration, itemManager, tooltip, logger) replaced
   by recorder / no-op stubs and trinketSlots faked as recording tables.
 ]]--
 
@@ -110,7 +110,6 @@ describe("TrinketMenu drag and drop", function()
       pickedUpContainerItems = {}, -- C_Container.PickupContainerItem(bagNumber, bagPos)
       placedInBag = {},          -- itemManager.PlaceCursorItemInBag(itemId)
       equipped = {},             -- itemManager.EquipItemByItemAndEnchantId(item)
-      themeClicks = {},          -- themeCoordinator.TrinketMenuSlotOnClick(self, button)
       menuUpdates = 0            -- trinketMenu.UpdateTrinketMenu()
     }
 
@@ -119,7 +118,6 @@ describe("TrinketMenu drag and drop", function()
       trinketMenu = rggm.trinketMenu,
       configuration = rggm.configuration,
       itemManager = rggm.itemManager,
-      themeCoordinator = rggm.themeCoordinator,
       tooltip = rggm.tooltip,
       logger = rggm.logger
     }
@@ -145,12 +143,6 @@ describe("TrinketMenu drag and drop", function()
       end,
       EquipItemByItemAndEnchantId = function(item)
         calls.equipped[#calls.equipped + 1] = item
-      end
-    }
-
-    rggm.themeCoordinator = {
-      TrinketMenuSlotOnClick = function(self, button)
-        calls.themeClicks[#calls.themeClicks + 1] = { self = self, button = button }
       end
     }
 
@@ -203,7 +195,6 @@ describe("TrinketMenu drag and drop", function()
     rggm.trinketMenu = previous.trinketMenu
     rggm.configuration = previous.configuration
     rggm.itemManager = previous.itemManager
-    rggm.themeCoordinator = previous.themeCoordinator
     rggm.tooltip = previous.tooltip
     rggm.logger = previous.logger
   end)
@@ -369,7 +360,6 @@ describe("TrinketMenu drag and drop", function()
       assert.are.equal(1, #calls.equipped)
       assert.are.equal(TRINKET_ITEM_ID, calls.equipped[1].itemId)
       assert.are.equal(INVSLOT_TRINKET1, calls.equipped[1].slotId)
-      assert.are.equal(1, #calls.themeClicks)
     end)
 
     it("still equips into the second trinket slot on a right click", function()
@@ -378,7 +368,6 @@ describe("TrinketMenu drag and drop", function()
       assert.are.equal(1, #calls.equipped)
       assert.are.equal(TRINKET_ITEM_ID, calls.equipped[1].itemId)
       assert.are.equal(INVSLOT_TRINKET2, calls.equipped[1].slotId)
-      assert.are.equal(1, #calls.themeClicks)
     end)
   end)
 end)

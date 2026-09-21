@@ -304,8 +304,6 @@ Initialize = function()
   me.profile.EnsureActiveProfile()
   -- setup addon configuration ui
   me.addonConfiguration.SetupAddonConfiguration()
-  -- sync up theme (needs to be happening before accessing ui elements)
-  me.themeCoordinator.UpdateTheme()
   -- create the hidden key-bind proxies the bindings target (before the gearBars that name them)
   me.keyBindProxy.Setup()
   -- build ui for all gearBars
