@@ -212,11 +212,29 @@ end
     How long the flash stays, in seconds
 ]]--
 function me.FlashSlot(slot, color, duration)
+  local highlightTexture = slot:GetHighlightTexture()
+  -- a newer flash outlives the timer of an older one
+  slot.flashToken = (slot.flashToken or 0) + 1
+  local flashToken = slot.flashToken
+
   slot.flashTexture:SetVertexColor(color[1], color[2], color[3])
   slot.flashTexture:Show()
+  --[[
+    The mouse is over the slot when it is clicked, so the hover glow would add up with the flash.
+    The button keeps managing the visibility of its highlight; only its alpha is muted meanwhile
+  ]]--
+  if highlightTexture ~= nil then
+    highlightTexture:SetAlpha(0)
+  end
 
   C_Timer.After(duration, function()
+    if slot.flashToken ~= flashToken then return end
+
     slot.flashTexture:Hide()
+
+    if highlightTexture ~= nil then
+      highlightTexture:SetAlpha(1)
+    end
   end)
 end
 
