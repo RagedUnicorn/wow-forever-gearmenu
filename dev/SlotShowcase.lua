@@ -155,7 +155,7 @@ local STATES = {
     label = "Queued item",
     slot = function(slot)
       slot.combatQueueSlot.icon:SetTexture(QUEUED_ITEM_ICON)
-      slot.combatQueueSlot.icon:Show()
+      slot.combatQueueSlot:Show()
     end
   }, {
     label = "Quick Keybind Mode",

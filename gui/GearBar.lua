@@ -243,7 +243,8 @@ end
 
 --[[
   The queued item sits in the top left corner of the slot - the top right belongs to the key
-  binding text like the hotkey of an action button
+  binding text like the hotkey of an action button - framed like a small slot of its own. The
+  frame is hidden until an item is queued (me.UpdateCombatQueue)
 
   @param {table} gearSlot
   @param {number} gearSlotSize
@@ -271,6 +272,8 @@ function me.CreateCombatQueueSlot(gearSlot, gearSlotSize)
   iconHolderTexture:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 
   combatQueueSlot.icon = iconHolderTexture
+  mod.slotStyle.ApplyInsetSlotStyle(combatQueueSlot, combatQueueSlotSize)
+  combatQueueSlot:Hide()
 
   return combatQueueSlot
 end
@@ -538,15 +541,15 @@ function me.UpdateCombatQueue(itemId, enchantId, slotId)
 
     for i = 1, #gearSlots do
       if gearSlots[i]:GetAttribute("slotId") == slotId then
-        local icon = gearSlots[i].combatQueueSlot.icon
+        local combatQueueSlot = gearSlots[i].combatQueueSlot
 
         if itemId then
           local bagNumber, bagPos = mod.itemManager.FindItemInBag(itemId, enchantId)
 
           if bagNumber ~= nil and bagPos ~= nil then
             local itemInfo = C_Container.GetContainerItemInfo(bagNumber, bagPos)
-            icon:SetTexture(itemInfo.iconFileID)
-            icon:Show()
+            combatQueueSlot.icon:SetTexture(itemInfo.iconFileID)
+            combatQueueSlot:Show()
           else
             --[[
               With the introduction of the macrobridge it would be possible for items to not be found if the player
@@ -555,7 +558,7 @@ function me.UpdateCombatQueue(itemId, enchantId, slotId)
             mod.logger.LogError(me.tag, "Failed to find item in bag")
           end
         else
-          icon:Hide()
+          combatQueueSlot:Hide()
         end
       end
     end
@@ -744,10 +747,10 @@ end
   @param {number} slotSize
 ]]--
 function me.UpdateGearSlotCombatQueueSize(uiGearSlot, slotSize)
-  uiGearSlot.combatQueueSlot:SetSize(
-    slotSize * RGGM_CONSTANTS.GEAR_BAR_COMBAT_QUEUE_SLOT_SIZE_MODIFIER,
-    slotSize * RGGM_CONSTANTS.GEAR_BAR_COMBAT_QUEUE_SLOT_SIZE_MODIFIER
-  )
+  local combatQueueSlotSize = slotSize * RGGM_CONSTANTS.GEAR_BAR_COMBAT_QUEUE_SLOT_SIZE_MODIFIER
+
+  uiGearSlot.combatQueueSlot:SetSize(combatQueueSlotSize, combatQueueSlotSize)
+  mod.slotStyle.UpdateInsetSlotTextureAttributes(uiGearSlot.combatQueueSlot, combatQueueSlotSize)
 end
 
 --[[

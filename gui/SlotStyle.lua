@@ -233,3 +233,36 @@ function me.UpdateSlotTextureAttributes(slot, slotSize)
   ]]--
   LayoutFrameTexture(slot.QuickKeybindHighlightTexture, slot, slotSize)
 end
+
+--[[
+  Dress an inset icon frame - the combatQueueSlot of a gearSlot - in the same look as the slot
+  it sits on: the icon rounded by the slot mask and the slot frame art around it. Expects the
+  icon to exist already as frame.icon
+
+  @param {table} frame
+  @param {number} size
+]]--
+function me.ApplyInsetSlotStyle(frame, size)
+  frame.iconMask = frame:CreateMaskTexture()
+  frame.iconMask:SetAtlas(SLOT_ICON_MASK_ATLAS)
+  frame.iconMask:SetPoint("CENTER", frame.icon)
+  frame.icon:AddMaskTexture(frame.iconMask)
+
+  frame.frameTexture = frame:CreateTexture(nil, "OVERLAY")
+  frame.frameTexture:SetAtlas(SLOT_FRAME_ATLAS)
+
+  me.UpdateInsetSlotTextureAttributes(frame, size)
+end
+
+--[[
+  Scale the mask and the frame art of an inset icon frame to its size
+
+  @param {table} frame
+  @param {number} size
+]]--
+function me.UpdateInsetSlotTextureAttributes(frame, size)
+  local maskSize = size * GetMaskSizeModifier()
+
+  frame.iconMask:SetSize(maskSize, maskSize)
+  LayoutFrameTexture(frame.frameTexture, frame, size)
+end
