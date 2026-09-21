@@ -22,7 +22,7 @@
   SOFTWARE.
 ]]--
 
--- luacheck: globals CreateFrame STANDARD_TEXT_FONT ReloadUI StaticPopupDialogs StaticPopup_Show
+-- luacheck: globals CreateFrame STANDARD_TEXT_FONT
 
 local mod = rggm
 local me = {}
@@ -71,23 +71,6 @@ local enableFallbackToBaseItemMetaData = {
 
 -- track whether the menu was already built
 local builtMenu = false
-
---[[
-  Popup dialog for reloading interface
-]]--
-
-StaticPopupDialogs["RGGM_RELOAD_INTERFACE"] = {
-  text = rggm.L["theme_change_confirmation"],
-  button1 = rggm.L["theme_change_confirmation_yes"],
-  button2 = rggm.L["theme_change_confirmation_no"],
-  OnAccept = function(_, data)
-    mod.configuration.SetUiTheme(tonumber(data))
-    ReloadUI()
-  end,
-  timeout = 0,
-  whileDead = true,
-  preferredIndex = 3
-}
 
 --[[
   Build the ui for the general menu
@@ -159,8 +142,6 @@ function me.BuildUi(parentFrame)
 
   me.CreateItemQualityLabel(parentFrame)
   me.CreateItemQualityDropdown(parentFrame)
-  me.CreateThemeLabel(parentFrame)
-  me.CreateChooseThemeDropdown(parentFrame)
 
   builtMenu = true
 end
@@ -252,83 +233,6 @@ end
 ]]--
 function me.OnItemQualitySelect(itemQuality)
   mod.configuration.SetFilterItemQuality(itemQuality)
-end
-
---[[
-  @param {table} frame
-]]--
-function me.CreateThemeLabel(frame)
-  local chooseThemeLabel = frame:CreateFontString(
-    RGGM_CONSTANTS.ELEMENT_GENERAL_LABEL_CHOOSE_THEME,
-    "OVERLAY"
-  )
-  chooseThemeLabel:SetPoint("TOPLEFT", 250, -360)
-  chooseThemeLabel:SetFont(STANDARD_TEXT_FONT, 15)
-  mod.uiHelper.SetColor(chooseThemeLabel, RGGM_CONSTANTS.COLOR.BODY)
-  chooseThemeLabel:SetText(rggm.L["choose_theme"])
-end
-
---[[
-  @param {table} frame
-]]--
-function me.CreateChooseThemeDropdown(frame)
-  local chooseThemeDropdownMenu = mod.uiHelper.CreateSettingsDropdown(
-    RGGM_CONSTANTS.ELEMENT_GENERAL_OPT_CHOOSE_THEME,
-    frame,
-    {"TOPLEFT", 250, -380},
-    170,
-    me.InitializeChooseThemeDropdownMenu
-  )
-  -- generate once so the button shows the current selection before the menu was ever opened
-  chooseThemeDropdownMenu:GenerateMenu()
-end
-
---[[
-  Menu generator for the choose theme dropdown - fills the root description with a radio
-  entry per available ui theme
-
-  @param {table} _
-    The dropdown the menu is generated for (unused)
-  @param {table} rootDescription
-]]--
-function me.InitializeChooseThemeDropdownMenu(_, rootDescription)
-  local themes = {
-    { value = RGGM_CONSTANTS.UI_THEME_CUSTOM, text = rggm.L["theme_custom"] },
-    { value = RGGM_CONSTANTS.UI_THEME_CLASSIC, text = rggm.L["theme_classic"] }
-  }
-
-  for _, theme in ipairs(themes) do
-    rootDescription:CreateHighlightRadio(theme.text, me.IsThemeSelected, me.OnThemeSelect, theme.value)
-  end
-end
-
---[[
-  Whether the passed theme is the currently configured one
-
-  @param {number} theme
-
-  @return {boolean}
-]]--
-function me.IsThemeSelected(theme)
-  return mod.configuration.GetUiTheme() == theme
-end
-
---[[
-  Callback for when a theme is selected. The theme is only applied once the player confirms
-  the ui reload - a declined dialog leaves the configuration and thus the shown selection
-  untouched
-
-  @param {number} theme
-    The selected ui theme
-]]--
-function me.OnThemeSelect(theme)
-  if theme == mod.configuration.GetUiTheme() then return end
-
-  -- force reload ui
-  local dialog = StaticPopup_Show("RGGM_RELOAD_INTERFACE")
-  if dialog then
-    dialog.data = theme
-  end
 end
 
 --[[

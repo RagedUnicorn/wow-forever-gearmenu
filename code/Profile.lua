@@ -89,7 +89,6 @@ local PROFILE_FIELD_SPEC = {
   { ["name"] = "trinketMenuShowCooldowns", ["type"] = "boolean" },
   { ["name"] = "trinketMenuColumns",       ["type"] = "number"  },
   { ["name"] = "trinketMenuSlotSize",      ["type"] = "number"  },
-  { ["name"] = "uiTheme",                  ["type"] = "number"  },
   { ["name"] = "enableFallbackToBaseItem", ["type"] = "boolean" }
 }
 

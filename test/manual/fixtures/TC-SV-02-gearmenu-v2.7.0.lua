@@ -8,6 +8,10 @@
   slots) and "Demo" (unlocked, horizontal, four slots) - each with their
   own position, sizes and change menu direction.
 
+  The `uiTheme` key further down is deliberate: v2.7.0 still had the theme
+  option, GearMenu Forever has none. It is the stale-key case the upgrade must
+  ignore - the key is neither a profile field nor read anywhere, so it stays.
+
   Copy this file to
 
     WTF/Account/<ACCOUNT>/<Realm>/<Character>/SavedVariables/GearMenu.lua

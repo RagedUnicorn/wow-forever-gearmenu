@@ -38,7 +38,6 @@ describe("Serializer", function()
     local original = {
       enableTooltips = true,
       filterItemQuality = 2,
-      uiTheme = 2,
       gearBars = {
         {
           id = 1,

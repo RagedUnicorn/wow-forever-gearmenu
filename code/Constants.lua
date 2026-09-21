@@ -36,11 +36,6 @@ RGGM_CONSTANTS = {
   ]]--
   UNIT_ID_PLAYER = "player",
   UNIT_ID_TARGET = "target",
-  --[[
-    UI-Styles
-  ]]--
-  UI_THEME_CLASSIC = 1,
-  UI_THEME_CUSTOM = 2,
   ITEMQUALITY = {
     poor = 0,
     common = 1,
@@ -179,8 +174,6 @@ RGGM_CONSTANTS = {
   ELEMENT_GENERAL_OPT_ENABLE_FALLBACK_TO_BASE_ITEM = "GM_OptEnableFallbackToBaseItem",
   ELEMENT_GENERAL_OPT_FILTER_ITEM_QUALITY = "GM_OptFilterItemQuality",
   ELEMENT_GENERAL_LABEL_FILTER_ITEM_QUALITY = "GM_LabelFilterItemQuality",
-  ELEMENT_GENERAL_LABEL_CHOOSE_THEME = "GM_LabelChooseTheme",
-  ELEMENT_GENERAL_OPT_CHOOSE_THEME = "GM_OptChooseTheme",
   --[[
     Trinket Menu
   ]]--

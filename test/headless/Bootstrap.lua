@@ -114,7 +114,6 @@ GearMenuConfiguration = {
   trinketMenuShowCooldowns = true,
   trinketMenuColumns = 4,
   trinketMenuSlotSize = 40,
-  uiTheme = 2,
   profiles = {}
 }
 

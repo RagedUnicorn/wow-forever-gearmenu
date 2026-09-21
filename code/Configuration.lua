@@ -183,10 +183,6 @@ local CONFIGURATION_DEFAULTS = {
   ]]--
   { ["name"] = "trinketMenuSlotSize", ["default"] = RGGM_CONSTANTS.TRINKET_MENU_DEFAULT_SLOT_SIZE },
   --[[
-    Whether to use custom or classic style for gearMenu ui elements (gearBar, changeMenu and trinketMenu)
-  ]]--
-  { ["name"] = "uiTheme", ["default"] = RGGM_CONSTANTS.UI_THEME_CUSTOM },
-  --[[
     Whether a swap may fall back to any bag copy of the requested itemId when no copy
     with the exact enchantId can be found. Off by default to preserve
     strict matching
@@ -822,24 +818,6 @@ function me.SetTrinketMenuSlotSize(slotSize)
   )
 
   GearMenuConfiguration.trinketMenuSlotSize = slotSize
-end
-
---[[
-  Retrieve the configured uiTheme
-
-  @return {number}
-]]--
-function me.GetUiTheme()
-  return GearMenuConfiguration.uiTheme
-end
-
---[[
-  Set the configured uiTheme
-
-  @param {number} uiTheme
-]]--
-function me.SetUiTheme(uiTheme)
-  GearMenuConfiguration.uiTheme = uiTheme
 end
 
 --[[

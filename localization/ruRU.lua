@@ -48,12 +48,6 @@ if (GetLocale() == "ruRU") then
   rggm.L["item_quality_rare"] = "Редкое (Синее)"
   rggm.L["item_quality_epic"] = "Эпическое (Фиолетовое)"
   rggm.L["item_quality_legendary"] = "Легендарное (Оранжевое)"
-  rggm.L["choose_theme"] = "Выберите тему:"
-  rggm.L["theme_classic"] = "Классическая"
-  rggm.L["theme_custom"] = "Пользовательская"
-  rggm.L["theme_change_confirmation"] = "Будет перезагружен интерфейс. Продолжить?"
-  rggm.L["theme_change_confirmation_yes"] = "Да"
-  rggm.L["theme_change_confirmation_no"] = "Нет"
 
   -- trinketMenu
   rggm.L["trinket_menu_category_name"] = "Меню Аксессуаров"

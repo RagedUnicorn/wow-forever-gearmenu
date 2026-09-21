@@ -43,12 +43,6 @@ if (GetLocale() == "zhCN") then
   rggm.L["item_quality_rare"] = "蓝色"
   rggm.L["item_quality_epic"] = "紫色"
   rggm.L["item_quality_legendary"] = "橙色"
-  rggm.L["choose_theme"] = "Choose Theme:"
-  rggm.L["theme_classic"] = "Classic"
-  rggm.L["theme_custom"] = "Custom"
-  rggm.L["theme_change_confirmation"] = "This will reload your Interface. Do you want to proceed?"
-  rggm.L["theme_change_confirmation_yes"] = "Yes"
-  rggm.L["theme_change_confirmation_no"] = "No"
 
   -- quickchange
   rggm.L["quick_change_category_name"] = "快速更换"

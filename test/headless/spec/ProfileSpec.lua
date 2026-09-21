@@ -104,7 +104,6 @@ describe("Profile", function()
     GearMenuConfiguration.enableTooltips = true
     GearMenuConfiguration.enableFastPress = false
     GearMenuConfiguration.filterItemQuality = 2
-    GearMenuConfiguration.uiTheme = 2
     GearMenuConfiguration.gearBars = {}
     GearMenuConfiguration.quickChangeRules = {}
     GearMenuConfiguration.frames = {}
@@ -233,11 +232,11 @@ describe("Profile", function()
   end)
 
   it("applies a snapshot onto the live configuration", function()
-    profile.ApplySnapshot({ enableTooltips = false, filterItemQuality = 4, uiTheme = 1 })
+    profile.ApplySnapshot({ enableTooltips = false, filterItemQuality = 4, enableFastPress = true })
 
     assert.is_false(GearMenuConfiguration.enableTooltips)
     assert.are.equal(4, GearMenuConfiguration.filterItemQuality)
-    assert.are.equal(1, GearMenuConfiguration.uiTheme)
+    assert.is_true(GearMenuConfiguration.enableFastPress)
   end)
 
   it("does not share table references between profile and live config", function()
@@ -310,7 +309,7 @@ describe("Profile", function()
       -- a customized live configuration must not bleed into the factory baseline
       GearMenuConfiguration.enableTooltips = false
       GearMenuConfiguration.filterItemQuality = 5
-      GearMenuConfiguration.uiTheme = RGGM_CONSTANTS.UI_THEME_CLASSIC
+      GearMenuConfiguration.enableFastPress = true
       GearMenuConfiguration.gearBars = { { id = 100001, slots = {} } }
       GearMenuConfiguration.frames = { GM_TrinketMenuFrame = { posX = 42 } }
 
@@ -320,7 +319,7 @@ describe("Profile", function()
 
       assert.is_true(payload.enableTooltips)
       assert.are.equal(2, payload.filterItemQuality)
-      assert.are.equal(RGGM_CONSTANTS.UI_THEME_CUSTOM, payload.uiTheme)
+      assert.is_false(payload.enableFastPress)
       -- the userOwned collections default to empty; the starter GearBar is added by the reset
       assert.are.same({}, payload.gearBars)
       assert.are.same({}, payload.quickChangeRules)
