@@ -76,6 +76,21 @@ Services with "-report" suffix generate output files in the `./target/` director
 - `./target/luacheck-junit.xml` - Luacheck results in JUnit format
 - `./target/busted-junit.xml` - Busted test results in JUnit format
 
+### In-game showcases
+
+The development `.toc` loads the `dev/` modules, which register sub-commands on `/rggm`
+that never show up in `/rggm help`:
+
+- `/rggm showcase` toggles a window that renders every state of a slot - item, empty slot,
+  hover, pushed, cooldown, bound key, queued item, right-click flash, Quick Keybind Mode and
+  an old item icon - at 24, 40 and 64 px, each next to a real Blizzard action button in the
+  same state, plus a bar of four at the action bar pitch (`dev/SlotShowcase.lua`)
+- `/rggm showcase trinkets` feeds the real TrinketMenu (and the ChangeMenu of a trinket
+  slot) a fixed list of Classic trinkets, some on cooldown, until it is toggled off
+  (`dev/TrinketShowcase.lua`)
+- `/rggm shot ...` drives the media capture, see the wow-media-capture skill
+  (`dev/Capture.lua`)
+
 ### Running Luacheck
 
 The project uses [Luacheck](https://github.com/lunarmodules/luacheck), a static analyzer and linter for Lua, to ensure code quality and catch common issues.
@@ -157,8 +172,8 @@ setter writes and every reader reads. The profile store is
 `GearMenuConfiguration.profiles = { [name] = snapshot }`, one stored copy per profile. A
 profile captures the `PROFILE_FIELD_SPEC` fields - the general options, the item quality
 filter, `gearBars` (every bar with its slots, sizes, orientation, lock state, key-binding
-labels and position), `quickChangeRules`, `frames`, the TrinketMenu settings, `uiTheme`
-and the base-item fallback. Bookkeeping stays out of
+labels and position), `quickChangeRules`, `frames`, the TrinketMenu settings and the
+base-item fallback. Bookkeeping stays out of
 it: `addonVersion`, `firstTimeInitializationDone`, the store itself and `activeProfile`,
 the name of the profile the live configuration belongs to. `activeProfile` is written
 only by `EnsureActiveProfile`, `SwitchProfile`, `CreateProfile`, `DeleteProfile` and

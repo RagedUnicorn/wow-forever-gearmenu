@@ -68,7 +68,7 @@ Certain items cannot be switched while the player is in combat. While in combat 
 
 ![](docs/gm_combat_queue.gif)
 
-> Note: You can right-click any slot to clear the combatqueue for that slot
+> Note: You can right-click any slot to clear the combatqueue for that slot - the slot flashes red to confirm
 
 ![](docs/gm_combat_queue_cancel.gif)
 
@@ -90,6 +90,8 @@ Every GearSlot can be bound to a key - up to two keys per slot - through the gam
 
 - **Settings > Keybindings** lists a `GearMenu` section with an entry per GearBar and GearSlot (`GearBar 1 - Slot 3`). The `Key Bindings` button in a GearBar's configuration opens the list at that section.
 - **Quick Keybind Mode** (Settings > Keybindings > Quick Keybind Mode, or the `Quick Keybind Mode` button in a GearBar's configuration): hover a GearSlot and press the key you want to bind, Escape unbinds.
+
+The bound key is shown in the top right corner of the GearSlot like the hotkey of an action button; it turns red while the target is out of range of the item.
 
 The bound key is shown on the GearSlot and in the slot's configuration row, where `Unbind` clears it. Keys are positional - `GearBar 1 - Slot 3` is the third slot of your first GearBar - and follow a slot that moves up when a slot before it is removed. Keys cannot be changed while in combat; a change made in combat is applied as soon as you leave it.
 
@@ -274,18 +276,6 @@ Not interested in seeing items with a quality level below a certain level? Filte
 
 ![](docs/gm_options_filter_item_quality.gif)
 
-#### Themes
-
-GearMenu supports two different themes for its UI elements. By default, the custom theme will be used.
-
-##### Custom
-
-![](docs/gm_theme_custom.png)
-
-##### Classic
-
-![](docs/gm_theme_classic.png)
-
 ### TrinketMenu Configuration
 
 TrinketMenu supports the following configuration features.
@@ -304,12 +294,12 @@ GearMenu lets you save your entire configuration as named profiles, so you can s
 
 ![](docs/gm_profile_configuration.png)
 
-A profile captures your full GearMenu setup – all of your GearBars (their GearSlots, sizes, orientation, lock state and on-screen position), your QuickChange rules, the TrinketMenu settings, the selected theme and the general options. One profile is always the **active** one, marked in gold as *"Raid (active)"* in the list: every change you make in the settings belongs to it, and it is saved automatically – when you switch profiles, log out or reload, export it, and at every login. There is nothing to remember to save.
+A profile captures your full GearMenu setup – all of your GearBars (their GearSlots, sizes, orientation, lock state and on-screen position), your QuickChange rules, the TrinketMenu settings and the general options. One profile is always the **active** one, marked in gold as *"Raid (active)"* in the list: every change you make in the settings belongs to it, and it is saved automatically – when you switch profiles, log out or reload, export it, and at every login. There is nothing to remember to save.
 
 - **Create new Profile**: Stores a copy of your current settings under a new name and makes it the active profile.
 - **Load**: Switches to the selected profile and reloads the UI. The profile you are leaving keeps your settings as they are now.
 - **Rename** / **Delete**: Manage the selected profile. Deleting the active profile switches you back to *Default*.
-- **Reset to defaults**: Puts the active profile back to GearMenu's shipped settings – the general options, the TrinketMenu settings and the theme at their defaults, your GearBars and QuickChange rules replaced by the starter GearBar, exactly like a fresh install – then reloads the UI.
+- **Reset to defaults**: Puts the active profile back to GearMenu's shipped settings – the general options, the TrinketMenu settings at their defaults, your GearBars and QuickChange rules replaced by the starter GearBar, exactly like a fresh install – then reloads the UI.
 
 #### The Default Profile
 

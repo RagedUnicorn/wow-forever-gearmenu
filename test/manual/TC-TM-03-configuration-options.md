@@ -4,7 +4,8 @@
 
 ## Preconditions
 
-- TrinketMenu enabled; a trinket with an active cooldown available
+- TrinketMenu enabled; a trinket with an active cooldown available (on a development build
+  `/rggm showcase trinkets` fills the menu with trinkets, some on cooldown)
 
 ## Steps
 

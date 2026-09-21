@@ -67,6 +67,7 @@ One file per test case under [test/manual/](manual/). Case IDs follow `TC-<AREA>
 | [TC-GB-08](manual/TC-GB-08-cooldown-visibility.md)    | Cooldown show/hide per bar            |
 | [TC-GB-09](manual/TC-GB-09-keybinding-visibility.md)  | Keybinding show/hide per bar          |
 | [TC-GB-10](manual/TC-GB-10-click-empty-gearslot.md)   | Click an empty gearslot               |
+| [TC-GB-11](manual/TC-GB-11-slot-look.md)              | Slots render in the action-button look |
 
 ### ChangeMenu & swapping
 
@@ -127,13 +128,6 @@ One file per test case under [test/manual/](manual/). Case IDs follow `TC-<AREA>
 | [TC-TM-02](manual/TC-TM-02-equip-trinket-left-right.md) | Left/right click equips upper/lower trinket |
 | [TC-TM-03](manual/TC-TM-03-configuration-options.md)    | TrinketMenu configuration options           |
 | [TC-TM-04](manual/TC-TM-04-drag-and-drop.md)            | Drag and drop out of and into the TrinketMenu |
-
-### Themes
-
-| ID                                                | Case                                  |
-|---------------------------------------------------|---------------------------------------|
-| [TC-TH-01](manual/TC-TH-01-switch-theme.md)       | Theme switch confirmation and reload  |
-| [TC-TH-02](manual/TC-TH-02-both-themes-render.md) | Slots render correctly in both themes |
 
 ### Profiles
 

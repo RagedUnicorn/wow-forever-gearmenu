@@ -20,8 +20,9 @@
 
 ## Expected
 
-- The keybinding label appears on the gearslot right after Okay, without a reload, and the
-  configuration row shows the same key
+- The keybinding label appears in the top right corner of the gearslot right after Okay - small
+  grey text like the hotkey of an action button - without a reload, and the configuration row
+  shows the same key
 - Pressing the key triggers the slot exactly like clicking it (uses the item / opens swap
   behavior; respects the FastPress setting)
 - The Quick Keybind tooltip on hover names the slot entry and its current key; the key pressed in

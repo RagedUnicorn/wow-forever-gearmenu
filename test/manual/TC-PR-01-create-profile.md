@@ -5,7 +5,7 @@
 ## Preconditions
 
 - A recognizable configuration (specific gearbars with a key binding on one slot, a
-  QuickChange rule, a non-default theme or filter setting)
+  QuickChange rule, a non-default filter setting)
 
 ## Steps
 
@@ -29,6 +29,6 @@
   profiles under `GearMenuConfiguration.profiles` with the same settings (the mirror ran
   at the reload) and `GearMenuConfiguration.activeProfile` reads `Raid setup`
 - The profile captures the full setup: gearbars (slots, sizes, orientation, lock state,
-  key binding labels, position), QuickChange rules, TrinketMenu settings, theme and
+  key binding labels, position), QuickChange rules, TrinketMenu settings and
   general options
 - No Lua errors

@@ -16,7 +16,7 @@
 
 ## Expected
 
-- During combat the item is not equipped; a small queued-item icon is shown on the gearslot
+- During combat the item is not equipped; a small framed queued-item icon is shown in the top left corner of the gearslot
 - Immediately after leaving combat the swap executes automatically (ticker on
   `PLAYER_REGEN_ENABLED`)
 - The queued-item overlay clears and the slot shows the new item

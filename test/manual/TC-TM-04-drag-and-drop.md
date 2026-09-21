@@ -26,5 +26,4 @@
 - Step 6: no protected-frame or taint error; a drop on a gearslot is queued via the combat queue,
   and a refused bag placement clears the cursor and prints the localized "no free space" error
 - With full bags, step 3 prints the localized "no free space" message and leaves the trinket equipped
-- Both the Classic and the Custom theme behave identically
 - No Lua errors

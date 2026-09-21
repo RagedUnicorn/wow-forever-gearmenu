@@ -268,26 +268,6 @@ RGGM_SHOTS = {
     shows = "Options panel quality filter changing which items the changeMenu offers"
   },
   {
-    name = "gm_theme_custom",
-    shot = "theme_custom",
-    frame = "GM_GearBarFrame_1",
-    setup = {},
-    includeFrames = { "GM_ChangeMenu" },
-    hideChrome = true,
-    padding = 60,
-    shows = "GearBar and changeMenu rendered in the Custom theme"
-  },
-  {
-    name = "gm_theme_classic",
-    shot = "theme_classic",
-    frame = "GM_GearBarFrame_1",
-    setup = {},
-    includeFrames = { "GM_ChangeMenu" },
-    hideChrome = true,
-    padding = 60,
-    shows = "GearBar and changeMenu rendered in the Classic theme"
-  },
-  {
     name = "gm_trinketmenu_configuration",
     shot = "trinketmenu_configuration",
     frame = "SettingsPanel",

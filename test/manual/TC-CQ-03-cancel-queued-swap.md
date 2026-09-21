@@ -16,6 +16,7 @@
 
 ## Expected
 
-- The right-click clears the combat queue for that slot; the queued-item overlay disappears
+- The right-click clears the combat queue for that slot; the queued-item overlay disappears and
+  the slot flashes red for a moment
 - After leaving combat no swap fires — the originally equipped item stays equipped
 - No Lua errors
