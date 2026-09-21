@@ -86,7 +86,8 @@ that never show up in `/rggm help`:
   an old item icon - at 24, 40 and 64 px, each next to a real Blizzard action button in the
   same state, plus a bar of four at the action bar pitch (`dev/SlotShowcase.lua`)
 - `/rggm showcase trinkets` feeds the real TrinketMenu (and the ChangeMenu of a trinket
-  slot) a fixed list of Classic trinkets, some on cooldown, until it is toggled off
+  slot) a fixed list of Classic trinkets, some on cooldown, until it is toggled off;
+  `/rggm showcase changemenu` feeds that list to the ChangeMenu of every GearSlot instead
   (`dev/TrinketShowcase.lua`)
 - `/rggm shot ...` drives the media capture, see the wow-media-capture skill
   (`dev/Capture.lua`)

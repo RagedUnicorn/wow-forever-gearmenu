@@ -24,11 +24,13 @@
 ]]--
 
 --[[
-  Development-only trinketMenu showcase. Loaded by the development .toc only - it must never
-  ship in a release. `/rggm showcase trinkets` toggles it: while it is on, the real trinketMenu
-  (and the changeMenu of a trinket gearSlot) is fed a fixed list of Classic trinkets instead of
-  the bag contents, with a few of them on a running cooldown, so the menu can be judged full at
-  the configured slot size and column amount without owning the items.
+  Development-only trinketMenu and changeMenu showcase. Loaded by the development .toc only -
+  it must never ship in a release. `/rggm showcase trinkets` toggles it: while it is on, the
+  real trinketMenu (and the changeMenu of a trinket gearSlot) is fed a fixed list of Classic
+  trinkets instead of the bag contents, with a few of them on a running cooldown, so the menu
+  can be judged full at the configured slot size and column amount without owning the items.
+  `/rggm showcase changemenu` feeds that list to the changeMenu of every gearSlot instead,
+  whatever its type, up to the 40 items a changeMenu shows - hover any slot to see it full.
 
   It works by wrapping two lookups the menu goes through - itemManager.GetItemsForInventoryType
   for the trinket inventory type and C_Container.GetItemCooldown for the showcased item ids -
@@ -50,8 +52,8 @@ mod.trinketShowcase = me
 me.tag = "TrinketShowcase"
 
 --[[
-  Classic trinkets with distinct icons, TRINKET_MENU_DEFAULT_SLOT_AMOUNT and a few spare in case
-  the client does not know some of them
+  Classic trinkets with distinct icons - enough for the 40 items of a changeMenu with spares in
+  case the client does not know some of them
 ]]--
 local TRINKET_ITEM_IDS = {
   13965, -- Blackhand's Breadth
@@ -96,7 +98,20 @@ local TRINKET_ITEM_IDS = {
   21180, -- Earthstrike
   13213, -- Smolderweb's Eye
   13171, -- Smokey's Lighter
-  11904  -- Piccolo of the Flaming Fire
+  11904, -- Piccolo of the Flaming Fire
+  19949, -- Zandalarian Hero Medallion
+  19950, -- Zandalarian Hero Charm
+  19948, -- Zandalarian Hero Badge
+  19339, -- Mind Quickening Gem
+  19340, -- Rune of Metamorphosis
+  19336, -- Arcane Infused Gem
+  19337, -- The Black Book
+  19344, -- Natural Alignment Crystal
+  19345, -- Aegis of Preservation
+  18470, -- Royal Seal of Eldre'Thalas (Priest)
+  18471, -- Royal Seal of Eldre'Thalas (Rogue)
+  18472, -- Royal Seal of Eldre'Thalas (Warlock)
+  18473  -- Royal Seal of Eldre'Thalas (Warrior)
 }
 
 -- every n-th showcased trinket is put on a cooldown that started COOLDOWN_ELAPSED seconds ago
@@ -105,6 +120,8 @@ local COOLDOWN_ELAPSED = 30
 local COOLDOWN_DURATION = 120
 
 local active = false
+-- true while the changeMenu variant is on: every inventory type resolves to the trinkets
+local everyInventoryType = false
 local showcaseItems
 local cooldowns
 local originalGetItemsForInventoryType
@@ -115,16 +132,19 @@ local originalGetItemCooldown
   trinkets the client knows. GetItemInfoInstant answers without the item cache; the name and
   quality come from GetItemInfo when it is cached and stay placeholders otherwise
 
+  @param {number} itemCap
+    How many trinkets to collect at most
+
   @return {table} items
   @return {table} cooldowns
     itemId -> { startTime, duration } for the trinkets on cooldown
 ]]--
-local function BuildShowcaseItems()
+local function BuildShowcaseItems(itemCap)
   local items = {}
   local itemCooldowns = {}
 
   for _, itemId in ipairs(TRINKET_ITEM_IDS) do
-    if #items >= RGGM_CONSTANTS.TRINKET_MENU_DEFAULT_SLOT_AMOUNT then break end
+    if #items >= itemCap then break end
 
     local _, _, _, equipSlot, icon = C_Item.GetItemInfoInstant(itemId)
 
@@ -154,13 +174,18 @@ local function BuildShowcaseItems()
 end
 
 --[[
-  Route the trinket inventory type to the showcase items, everything else to the real lookup
+  Route the trinket inventory type - or every inventory type in the changeMenu variant - to the
+  showcase items, everything else to the real lookup
 
   @param {table} inventoryType
 
   @return {table}
 ]]--
 local function GetItemsForInventoryType(inventoryType)
+  if everyInventoryType then
+    return showcaseItems
+  end
+
   if type(inventoryType) == "table" then
     for _, entry in ipairs(inventoryType) do
       if entry == RGGM_CONSTANTS.TRINKET_MENU_INV_TYPE then
@@ -192,10 +217,21 @@ local function GetItemCooldown(itemId)
 end
 
 --[[
-  Feed the showcase into the trinketMenu
+  Feed the showcase into the trinketMenu, or into the changeMenu of every gearSlot
+
+  @param {boolean} forEveryInventoryType
+    true for the changeMenu variant
 ]]--
-function me.Enable()
-  showcaseItems, cooldowns = BuildShowcaseItems()
+function me.Enable(forEveryInventoryType)
+  everyInventoryType = forEveryInventoryType == true
+
+  local itemCap = RGGM_CONSTANTS.TRINKET_MENU_DEFAULT_SLOT_AMOUNT
+
+  if everyInventoryType then
+    itemCap = RGGM_CONSTANTS.GEAR_BAR_CHANGE_SLOT_AMOUNT_ITEMS
+  end
+
+  showcaseItems, cooldowns = BuildShowcaseItems(itemCap)
 
   originalGetItemsForInventoryType = mod.itemManager.GetItemsForInventoryType
   originalGetItemCooldown = C_Container.GetItemCooldown
@@ -203,10 +239,17 @@ function me.Enable()
   C_Container.GetItemCooldown = GetItemCooldown
   active = true
 
-  mod.trinketMenu.UpdateTrinketMenu()
+  if mod.configuration.IsTrinketMenuEnabled() then
+    mod.trinketMenu.UpdateTrinketMenu()
+  end
 
-  print("|cFF00FFB0GearMenu:|r trinket showcase on - " .. #showcaseItems .. " trinkets, "
-    .. "`/rggm showcase trinkets` again restores the bags")
+  if everyInventoryType then
+    print("|cFF00FFB0GearMenu:|r changeMenu showcase on - " .. #showcaseItems .. " trinkets on every "
+      .. "gearSlot, hover one; `/rggm showcase changemenu` again restores the bags")
+  else
+    print("|cFF00FFB0GearMenu:|r trinket showcase on - " .. #showcaseItems .. " trinkets, "
+      .. "`/rggm showcase trinkets` again restores the bags")
+  end
 end
 
 --[[
@@ -220,27 +263,34 @@ function me.Disable()
   showcaseItems = nil
   cooldowns = nil
   active = false
+  everyInventoryType = false
 
-  mod.trinketMenu.UpdateTrinketMenu()
+  if mod.configuration.IsTrinketMenuEnabled() then
+    mod.trinketMenu.UpdateTrinketMenu()
+  end
 
-  print("|cFF00FFB0GearMenu:|r trinket showcase off")
+  print("|cFF00FFB0GearMenu:|r showcase off - the menus show the bags again")
 end
 
 --[[
-  Toggle the showcase. Needs the trinketMenu to be enabled - it is the real menu that renders
+  Toggle the showcase; either variant turns a running one off. The trinketMenu variant needs
+  the trinketMenu to be enabled - it is the real menu that renders
+
+  @param {boolean} forEveryInventoryType
+    true for the changeMenu variant
 ]]--
-function me.Toggle()
+function me.Toggle(forEveryInventoryType)
   if active then
     me.Disable()
 
     return
   end
 
-  if not mod.configuration.IsTrinketMenuEnabled() then
+  if not forEveryInventoryType and not mod.configuration.IsTrinketMenuEnabled() then
     print("|cFF00FFB0GearMenu:|r enable the TrinketMenu in the settings first - the showcase renders through it")
 
     return
   end
 
-  me.Enable()
+  me.Enable(forEveryInventoryType)
 end

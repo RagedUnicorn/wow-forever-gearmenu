@@ -452,15 +452,17 @@ function me.Toggle()
 end
 
 --[[
-  `showcase` toggles the slot window, `showcase trinkets` the trinketMenu showcase
-  (dev/TrinketShowcase.lua)
+  `showcase` toggles the slot window, `showcase trinkets` the trinketMenu showcase and
+  `showcase changemenu` the changeMenu showcase (both dev/TrinketShowcase.lua)
 
   @param {table} args
     The arguments after the sub-command
 ]]--
 local function HandleShowcaseCommand(args)
   if args[1] == "trinkets" then
-    mod.trinketShowcase.Toggle()
+    mod.trinketShowcase.Toggle(false)
+  elseif args[1] == "changemenu" then
+    mod.trinketShowcase.Toggle(true)
   else
     me.Toggle()
   end

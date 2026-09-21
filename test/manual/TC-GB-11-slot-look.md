@@ -11,7 +11,8 @@
 
 1. `/rggm showcase` and compare every row of the GearMenu columns with the Blizzard columns at
    24, 40 and 64
-2. On a real gearbar hover a slot, click it, right-click it and open its ChangeMenu
+2. `/rggm showcase changemenu`, then on a real gearbar hover a slot, click it, right-click it and
+   open its ChangeMenu - it lists the showcase trinkets on every slot; toggle the showcase off
 3. `/rggm showcase trinkets`, open the TrinketMenu, move the column amount and slot size sliders
    across their whole range, then `/rggm showcase trinkets` again
 4. Enter Quick Keybind Mode and hover a slot
