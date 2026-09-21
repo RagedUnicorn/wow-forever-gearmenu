@@ -98,10 +98,9 @@ RGGM_CONSTANTS = {
     atlases are 46 x 45 and whose cooldown sits 3 px inside the icon. The modifiers scale those
     template measures to the configurable slot size (gui/SlotStyle.lua, gui/Cooldown.lua)
   ]]--
+  SLOT_TEMPLATE_BUTTON_SIZE = 45,
   SLOT_FRAME_WIDTH_MODIFIER = 46 / 45,
   SLOT_COOLDOWN_INSET_MODIFIER = 3 / 45,
-  -- how much of the item icon texture is trimmed on every side to hide the border ring of the old icons
-  SLOT_ICON_TEXCOORD_INSET = 0.08,
   --[[
     Size (in pixels) of the drag handle strip reserved on the trailing edge of an
     unlocked gearBar. Doubles as the bar's trailing margin in both orientations so

@@ -27,15 +27,14 @@
   The single look of every GearMenu slot - the gearSlots of a gearBar, the changeSlots of the
   changeMenu and the trinketMenuSlots: the style of the game's own action bar buttons. The frame,
   pushed and hover art are the UI-HUD-ActionBar-IconFrame atlases the Forever action bar is built
-  from (Blizzard_ActionBar/Mainline/ActionButtonTemplate.xml), the item icon fills the slot (its
-  built-in border ring trimmed) and is rounded by the matching mask, the slot background shows
-  through the rounded corners and the
+  from (Blizzard_ActionBar/Mainline/ActionButtonTemplate.xml), the item icon fills the slot and is
+  rounded by the matching mask, the slot background shows through the rounded corners and the
   cooldown swipe (gui/Cooldown.lua) sits inside the frame. The template is drawn for a 45 px
   button; every measure is scaled to the configurable slot size instead of using the atlas sizes
   so the 24 - 64 px slots keep the proportions of the template.
 ]]--
 
--- luacheck: globals CreateFrame
+-- luacheck: globals CreateFrame C_Texture
 
 local mod = rggm
 local me = {}
@@ -49,6 +48,33 @@ local SLOT_FRAME_PUSHED_ATLAS = "UI-HUD-ActionBar-IconFrame-Down"
 local SLOT_FRAME_HIGHLIGHT_ATLAS = "UI-HUD-ActionBar-IconFrame-Mouseover"
 local SLOT_BACKGROUND_ATLAS = "UI-HUD-ActionBar-IconFrame-Background"
 local SLOT_ICON_MASK_ATLAS = "UI-HUD-ActionBar-IconFrame-Mask"
+
+-- the mask size per px of slot size, resolved once from the atlas (see GetMaskSizeModifier)
+local maskSizeModifier
+
+--[[
+  The mask atlas is larger than the icon it rounds: its white area does not fill the atlas,
+  so the template leaves the mask at the atlas size on its 45 px button (the 30 px
+  SmallActionButtonTemplate even keeps it at 45). Sizing the mask to the icon shrinks the
+  visible icon and leaves a dark gap to the frame. Scale the atlas size with the slot instead;
+  fall back to the slot size should the atlas be unknown to the client
+
+  @return {number}
+]]--
+local function GetMaskSizeModifier()
+  if maskSizeModifier == nil then
+    local atlasInfo = C_Texture.GetAtlasInfo(SLOT_ICON_MASK_ATLAS)
+
+    if atlasInfo ~= nil and atlasInfo.width ~= nil and atlasInfo.width > 0 then
+      maskSizeModifier = atlasInfo.width / RGGM_CONSTANTS.SLOT_TEMPLATE_BUTTON_SIZE
+    else
+      mod.logger.LogWarn(me.tag, "Unknown atlas " .. SLOT_ICON_MASK_ATLAS .. " - sizing the icon mask to the slot")
+      maskSizeModifier = 1
+    end
+  end
+
+  return maskSizeModifier
+end
 
 --[[
   Create a single gearSlot. Note that a gearSlot inherits from the SecureActionButtonTemplate to enable the usage
@@ -157,18 +183,6 @@ function me.ApplySlotStyle(slot, slotSize)
   slot.slotBackground:SetAtlas(SLOT_BACKGROUND_ATLAS)
   slot.slotBackground:SetAllPoints(slot)
 
-  --[[
-    Trim the dark border ring the Classic item icons carry in their art. Blizzard draws its
-    action-bar icons uncropped, but those are drawn edge to edge; the old item icons put a
-    frame of their own around the art, which shows as a second, darker rim inside the slot frame
-  ]]--
-  slot.itemTexture:SetTexCoord(
-    RGGM_CONSTANTS.SLOT_ICON_TEXCOORD_INSET,
-    1 - RGGM_CONSTANTS.SLOT_ICON_TEXCOORD_INSET,
-    RGGM_CONSTANTS.SLOT_ICON_TEXCOORD_INSET,
-    1 - RGGM_CONSTANTS.SLOT_ICON_TEXCOORD_INSET
-  )
-
   slot.itemTextureMask = slot:CreateMaskTexture()
   slot.itemTextureMask:SetAtlas(SLOT_ICON_MASK_ATLAS)
   slot.itemTextureMask:SetPoint("CENTER", slot.itemTexture)
@@ -206,7 +220,9 @@ end
   @param {number} slotSize
 ]]--
 function me.UpdateSlotTextureAttributes(slot, slotSize)
-  slot.itemTextureMask:SetSize(slotSize, slotSize)
+  local maskSize = slotSize * GetMaskSizeModifier()
+
+  slot.itemTextureMask:SetSize(maskSize, maskSize)
 
   LayoutFrameTexture(slot:GetNormalTexture(), slot, slotSize)
   LayoutFrameTexture(slot:GetPushedTexture(), slot, slotSize)
