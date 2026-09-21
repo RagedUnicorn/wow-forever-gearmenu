@@ -452,6 +452,21 @@ function me.Toggle()
 end
 
 --[[
+  `showcase` toggles the slot window, `showcase trinkets` the trinketMenu showcase
+  (dev/TrinketShowcase.lua)
+
+  @param {table} args
+    The arguments after the sub-command
+]]--
+local function HandleShowcaseCommand(args)
+  if args[1] == "trinkets" then
+    mod.trinketShowcase.Toggle()
+  else
+    me.Toggle()
+  end
+end
+
+--[[
   The dev module cannot hook into code/Core.lua's initialization without touching a
   production file, so it drives its own PLAYER_LOGIN setup.
 ]]--
@@ -460,5 +475,5 @@ local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
 eventFrame:SetScript("OnEvent", function()
   -- no helpTextKey - the dev-only command must not show up in /rggm help
-  mod.cmd.RegisterCommand("showcase", me.Toggle)
+  mod.cmd.RegisterCommand("showcase", HandleShowcaseCommand)
 end)
