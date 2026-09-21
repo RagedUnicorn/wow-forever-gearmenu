@@ -102,6 +102,23 @@ RGGM_CONSTANTS = {
   SLOT_FRAME_WIDTH_MODIFIER = 46 / 45,
   SLOT_COOLDOWN_INSET_MODIFIER = 3 / 45,
   --[[
+    The hotkey of the template button: NumberFontNormalSmallGray (12 px), a 32 x 10 field anchored
+    TOPRIGHT at -4 / -5 (Blizzard_ActionBar/Shared/ActionButton.lua UpdateHotkeys)
+  ]]--
+  SLOT_KEY_BINDING_TEXT_SIZE_MODIFIER = 12 / 45,
+  SLOT_KEY_BINDING_TEXT_WIDTH_MODIFIER = 32 / 45,
+  SLOT_KEY_BINDING_TEXT_HEIGHT_MODIFIER = 10 / 45,
+  SLOT_KEY_BINDING_TEXT_OFFSET_X_MODIFIER = -4 / 45,
+  SLOT_KEY_BINDING_TEXT_OFFSET_Y_MODIFIER = -5 / 45,
+  --[[
+    Spacing between neighbouring slots as a fraction of the slot size (gearBar, changeMenu and
+    trinketMenu). The outline of the frame art sits about 0.6 px inside the atlas edge on each side
+    of the 45 px template button, so the slots are pulled together by that much and neighbouring
+    outlines touch - the way the buttons of the action bar read, where the bar art fills the
+    padding between them
+  ]]--
+  SLOT_SPACING_MODIFIER = -1.2 / 45,
+  --[[
     Size (in pixels) of the drag handle strip reserved on the trailing edge of an
     unlocked gearBar. Doubles as the bar's trailing margin in both orientations so
     the grip always fits exactly and is visible while a bar is unlocked.
@@ -119,7 +136,6 @@ RGGM_CONSTANTS = {
   ELEMENT_GEAR_BAR_CHANGE_SLOT = "$parentSlot_",
   GEAR_BAR_CHANGE_DEFAULT_HEIGHT = 50,
   GEAR_BAR_CHANGE_COLUMN_AMOUNT = 3,
-  GEAR_BAR_CHANGE_KEYBIND_TEXT_MODIFIER = .27,
   GEAR_BAR_CHANGE_DEFAULT_SLOT_SIZE = 40,
   -- Amount of created slots. Rule: GEAR_BAR_CHANGE_SLOT_AMOUNT_ITEMS + 1 = GEAR_BAR_CHANGE_SLOT_AMOUNT
   GEAR_BAR_CHANGE_SLOT_AMOUNT = 41,
@@ -154,7 +170,10 @@ RGGM_CONSTANTS = {
     BODY = { 0.91, 0.87, 0.80 },            -- #e8decc body text / option labels (warm near-white)
     MUTED = { 0.541, 0.486, 0.392 },        -- #8a7c64 idle / dim text
     DISABLED = { 0.45, 0.41, 0.35 },        -- disabled control labels
-    SUBNOTE = { 0.66, 0.60, 0.50 }          -- #a89980 option descriptions (warm mid gray)
+    SUBNOTE = { 0.66, 0.60, 0.50 },         -- #a89980 option descriptions (warm mid gray)
+    KEY_BINDING = { 0.6, 0.6, 0.6 },        -- the grey of the action-button hotkey (NumberFontNormalSmallGray)
+    KEY_BINDING_OUT_OF_RANGE = { 1.0, 0.1, 0.1 } -- RED_FONT_COLOR, the hotkey with the target out of range
+
   },
   CHECK_OPTION_SIZE = 24,
   -- keeps two-column option layouts from bleeding into the neighboring column

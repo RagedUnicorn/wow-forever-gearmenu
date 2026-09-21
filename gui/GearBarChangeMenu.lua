@@ -124,6 +124,7 @@ end
 ]]--
 function me.UpdateChangeSlots(changeSlotSize, gearSlotMetaData, items)
   local columnAmount = RGGM_CONSTANTS.GEAR_BAR_CHANGE_COLUMN_AMOUNT
+  local changeSlotSpacing = changeSlotSize * RGGM_CONSTANTS.SLOT_SPACING_MODIFIER
   local displayedItems = #items
 
   if displayedItems > RGGM_CONSTANTS.GEAR_BAR_CHANGE_SLOT_AMOUNT_ITEMS then
@@ -132,7 +133,7 @@ function me.UpdateChangeSlots(changeSlotSize, gearSlotMetaData, items)
   end
 
   for index = 1, displayedItems do
-    local xPos, yPos = mod.uiHelper.CalculateGridPosition(index, columnAmount, changeSlotSize)
+    local xPos, yPos = mod.uiHelper.CalculateGridPosition(index, columnAmount, changeSlotSize, changeSlotSpacing)
     local row = math.floor((index - 1) / columnAmount)
     local changeSlot = changeMenuSlotPool.Acquire(index)
 
@@ -144,7 +145,7 @@ function me.UpdateChangeSlots(changeSlotSize, gearSlotMetaData, items)
 
   -- the empty (unequip) slot takes the next free grid position after the last item
   local emptySlotXPos, emptySlotYPos =
-    mod.uiHelper.CalculateGridPosition(displayedItems + 1, columnAmount, changeSlotSize)
+    mod.uiHelper.CalculateGridPosition(displayedItems + 1, columnAmount, changeSlotSize, changeSlotSpacing)
   local emptySlotPosition = {
     row = math.floor(displayedItems / columnAmount),
     xPos = emptySlotXPos,
@@ -288,11 +289,13 @@ function me.UpdateChangeMenuSize(changeSlotSize, gearSlotMetaData, itemCount)
   -- special case for if only one row needs to be displayed
   if rows < 1 then rows = 1 end
 
-  changeMenuFrame:SetHeight(math.ceil(rows) * changeSlotSize)
+  local changeSlotSpacing = changeSlotSize * RGGM_CONSTANTS.SLOT_SPACING_MODIFIER
+
+  changeMenuFrame:SetHeight(mod.uiHelper.CalculateGridExtent(math.ceil(rows), changeSlotSize, changeSlotSpacing))
   -- width is capped at the column amount - the slots are laid out in a fixed number of columns,
   -- so the frame must match the visible content width (not the total item count) or it anchors wrong
-  changeMenuFrame:SetWidth(
-    math.min(totalItems or itemCount, RGGM_CONSTANTS.GEAR_BAR_CHANGE_COLUMN_AMOUNT) * changeSlotSize)
+  changeMenuFrame:SetWidth(mod.uiHelper.CalculateGridExtent(
+    math.min(totalItems or itemCount, RGGM_CONSTANTS.GEAR_BAR_CHANGE_COLUMN_AMOUNT), changeSlotSize, changeSlotSpacing))
 end
 
 --[[

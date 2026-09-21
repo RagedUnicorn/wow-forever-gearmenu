@@ -23,10 +23,10 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- luacheck: globals CreateFrame UIParent GetInventoryItemID GetCursorInfo STANDARD_TEXT_FONT
+-- luacheck: globals CreateFrame UIParent GetInventoryItemID GetCursorInfo
 -- luacheck: globals GetInventoryItemLink C_Item C_Container InCombatLockdown
 -- luacheck: globals CursorCanGoInSlot EquipCursorItem ClearCursor IsInventoryItemLocked PickupInventoryItem
--- luacheck: globals QuickKeybindButtonTemplateMixin QuickKeybindFrame C_Timer
+-- luacheck: globals QuickKeybindButtonTemplateMixin QuickKeybindFrame C_Timer NumberFontNormalSmallGray
 
 --[[
   The gearBar (GM_Gearbar) module is responsible for building and showing gearBars to the user.
@@ -158,6 +158,9 @@ end
     One of RGGM_CONSTANTS.GEAR_BAR_ORIENTATION_HORIZONTAL or RGGM_CONSTANTS.GEAR_BAR_ORIENTATION_VERTICAL
 ]]--
 function me.AnchorGearSlot(gearSlot, anchorFrame, position, gearSlotSize, orientation)
+  -- the distance between the same corners of two neighbouring slots (see SLOT_SPACING_MODIFIER)
+  local slotPitch = gearSlotSize + gearSlotSize * RGGM_CONSTANTS.SLOT_SPACING_MODIFIER
+
   gearSlot:ClearAllPoints()
 
   if orientation == RGGM_CONSTANTS.GEAR_BAR_ORIENTATION_VERTICAL then
@@ -166,14 +169,14 @@ function me.AnchorGearSlot(gearSlot, anchorFrame, position, gearSlotSize, orient
       anchorFrame,
       "TOP",
       RGGM_CONSTANTS.GEAR_BAR_SLOT_X,
-      RGGM_CONSTANTS.GEAR_BAR_SLOT_Y - (position - 1) * gearSlotSize
+      RGGM_CONSTANTS.GEAR_BAR_SLOT_Y - (position - 1) * slotPitch
     )
   else
     gearSlot:SetPoint(
       "LEFT",
       anchorFrame,
       "LEFT",
-      RGGM_CONSTANTS.GEAR_BAR_SLOT_X + (position - 1) * gearSlotSize,
+      RGGM_CONSTANTS.GEAR_BAR_SLOT_X + (position - 1) * slotPitch,
       RGGM_CONSTANTS.GEAR_BAR_SLOT_Y
     )
   end
@@ -239,6 +242,9 @@ function me.CreateGearSlotBase(gearBarFrame, gearBar, position, template)
 end
 
 --[[
+  The queued item sits in the top left corner of the slot - the top right belongs to the key
+  binding text like the hotkey of an action button
+
   @param {table} gearSlot
   @param {number} gearSlotSize
 
@@ -253,7 +259,7 @@ function me.CreateCombatQueueSlot(gearSlot, gearSlotSize)
     combatQueueSlotSize,
     combatQueueSlotSize
   )
-  combatQueueSlot:SetPoint("TOPRIGHT", gearSlot)
+  combatQueueSlot:SetPoint("TOPLEFT", gearSlot)
 
   local iconHolderTexture = combatQueueSlot:CreateTexture(
     RGGM_CONSTANTS.ELEMENT_GEAR_BAR_SLOT_ICON_TEXTURE_NAME,
@@ -270,6 +276,33 @@ function me.CreateCombatQueueSlot(gearSlot, gearSlotSize)
 end
 
 --[[
+  Place and size the key binding text of a gearSlot like the hotkey of an action button: a small
+  right-aligned field in the top right corner, everything scaled from the 45 px template button
+  to the slot size
+
+  @param {table} keybindingFontString
+  @param {table} gearSlot
+  @param {number} gearSlotSize
+]]--
+local function LayoutKeyBindingText(keybindingFontString, gearSlot, gearSlotSize)
+  local fontFile, _, fontFlags = keybindingFontString:GetFont()
+
+  keybindingFontString:ClearAllPoints()
+  keybindingFontString:SetPoint(
+    "TOPRIGHT",
+    gearSlot,
+    "TOPRIGHT",
+    gearSlotSize * RGGM_CONSTANTS.SLOT_KEY_BINDING_TEXT_OFFSET_X_MODIFIER,
+    gearSlotSize * RGGM_CONSTANTS.SLOT_KEY_BINDING_TEXT_OFFSET_Y_MODIFIER
+  )
+  keybindingFontString:SetSize(
+    gearSlotSize * RGGM_CONSTANTS.SLOT_KEY_BINDING_TEXT_WIDTH_MODIFIER,
+    gearSlotSize * RGGM_CONSTANTS.SLOT_KEY_BINDING_TEXT_HEIGHT_MODIFIER
+  )
+  keybindingFontString:SetFont(fontFile, gearSlotSize * RGGM_CONSTANTS.SLOT_KEY_BINDING_TEXT_SIZE_MODIFIER, fontFlags)
+end
+
+--[[
   @param {table} gearSlot
   @param {number} gearSlotSize
 
@@ -278,14 +311,11 @@ end
 ]]--
 function me.CreateKeyBindingText(gearSlot, gearSlotSize)
   local keybindingFontString = gearSlot:CreateFontString(nil, "OVERLAY")
-  keybindingFontString:SetTextColor(1, 1, 1, 1)
-  keybindingFontString:SetPoint("TOP", 0, 1)
-  keybindingFontString:SetSize(gearSlot:GetWidth(), 20)
-  keybindingFontString:SetFont(
-    STANDARD_TEXT_FONT,
-    gearSlotSize * RGGM_CONSTANTS.GEAR_BAR_CHANGE_KEYBIND_TEXT_MODIFIER,
-    "THICKOUTLINE"
-  )
+  -- the face and outline of the action-button hotkey; the size is scaled to the slot below
+  keybindingFontString:SetFontObject(NumberFontNormalSmallGray)
+  keybindingFontString:SetJustifyH("RIGHT")
+  mod.uiHelper.SetColor(keybindingFontString, RGGM_CONSTANTS.COLOR.KEY_BINDING)
+  LayoutKeyBindingText(keybindingFontString, gearSlot, gearSlotSize)
   keybindingFontString:Hide()
 
   return keybindingFontString
@@ -443,11 +473,14 @@ function me.UpdateGearBarSize(gearBar)
   local uiGearBar = mod.gearBarStorage.GetGearBar(gearBar.id)
   local gearBarReference = uiGearBar.gearBarReference
 
+  local slotsExtent = mod.uiHelper.CalculateGridExtent(
+    #gearBar.slots, gearBar.gearSlotSize, gearBar.gearSlotSize * RGGM_CONSTANTS.SLOT_SPACING_MODIFIER)
+
   if gearBar.orientation == RGGM_CONSTANTS.GEAR_BAR_ORIENTATION_VERTICAL then
     gearBarReference:SetWidth(gearBar.gearSlotSize)
-    gearBarReference:SetHeight(#gearBar.slots * gearBar.gearSlotSize + RGGM_CONSTANTS.GEAR_BAR_DRAG_HANDLE_SIZE)
+    gearBarReference:SetHeight(slotsExtent + RGGM_CONSTANTS.GEAR_BAR_DRAG_HANDLE_SIZE)
   else
-    gearBarReference:SetWidth(#gearBar.slots * gearBar.gearSlotSize + RGGM_CONSTANTS.GEAR_BAR_DRAG_HANDLE_SIZE)
+    gearBarReference:SetWidth(slotsExtent + RGGM_CONSTANTS.GEAR_BAR_DRAG_HANDLE_SIZE)
     gearBarReference:SetHeight(gearBar.gearSlotSize)
   end
 
@@ -541,7 +574,7 @@ function me.UpdateSpellRange()
 
     for _, gearSlot in pairs(uiGearBar.gearSlotReferences) do
       if mod.target.GetCurrentTargetGuid() == "" then
-        gearSlot.keyBindingText:SetTextColor(1, 1, 1, 1)
+        mod.uiHelper.SetColor(gearSlot.keyBindingText, RGGM_CONSTANTS.COLOR.KEY_BINDING)
       else
         local gearSlotMetaData = gearBar.slots[gearSlot.position]
 
@@ -555,9 +588,9 @@ function me.UpdateSpellRange()
           local isInRange = C_Item.IsItemInRange(itemLink or "", RGGM_CONSTANTS.UNIT_ID_TARGET)
 
           if isInRange == nil or isInRange == true then
-            gearSlot.keyBindingText:SetTextColor(1, 1, 1, 1)
+            mod.uiHelper.SetColor(gearSlot.keyBindingText, RGGM_CONSTANTS.COLOR.KEY_BINDING)
           else
-            gearSlot.keyBindingText:SetTextColor(1, 0, 0, 1)
+            mod.uiHelper.SetColor(gearSlot.keyBindingText, RGGM_CONSTANTS.COLOR.KEY_BINDING_OUT_OF_RANGE)
           end
         end
       end
@@ -722,11 +755,7 @@ end
   @param {number} slotSize
 ]]--
 function me.UpdateGearSlotKeyBindingTextSize(uiGearSlot, slotSize)
-  uiGearSlot.keyBindingText:SetFont(
-    STANDARD_TEXT_FONT,
-    slotSize * RGGM_CONSTANTS.GEAR_BAR_CHANGE_KEYBIND_TEXT_MODIFIER,
-    "THICKOUTLINE"
-  )
+  LayoutKeyBindingText(uiGearSlot.keyBindingText, uiGearSlot, slotSize)
 end
 
 --[[

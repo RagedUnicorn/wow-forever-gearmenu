@@ -53,6 +53,11 @@ me.tag = "SlotShowcase"
 local SLOT_SIZES = { 24, 40, 64 }
 -- ActionButtonTemplate is drawn for a 45 px button; the reference is scaled down / up from that
 local BLIZZARD_BUTTON_SIZE = 45
+-- the icon padding of an action bar (Blizzard_ActionBar/Shared/ActionBar.lua minButtonPadding)
+local BLIZZARD_BUTTON_PADDING = 2
+-- the spacing strips below the grid: four buttons at the default slot size
+local STRIP_SLOT_SIZE = 40
+local STRIP_SLOT_COUNT = 4
 local ITEM_ICON = "Interface\\Icons\\INV_Chest_Cloth_07"
 local QUEUED_ITEM_ICON = "Interface\\Icons\\INV_Chest_Leather_03"
 -- an icon of the 2004 generation: art drawn diagonally over a black background and a dark border ring
@@ -269,7 +274,8 @@ end
 function me.BuildShowcase()
   local columnCount = #SLOT_SIZES * 2
   local width = PADDING * 2 + LABEL_WIDTH + columnCount * COLUMN_WIDTH + (columnCount - 1) * COLUMN_GAP
-  local height = PADDING * 2 + TITLE_HEIGHT + HEADER_HEIGHT + #STATES * ROW_HEIGHT
+  -- the state rows plus the spacing strips row
+  local height = PADDING * 2 + TITLE_HEIGHT + HEADER_HEIGHT + (#STATES + 1) * ROW_HEIGHT
 
   window = CreateFrame("Frame", WINDOW_NAME, UIParent, "BackdropTemplate")
   window:SetSize(width, height)
@@ -353,6 +359,51 @@ function me.BuildShowcase()
         state.slot(slot)
       end
     end
+  end
+
+  me.BuildSpacingStrips(rowsTop + #STATES * ROW_HEIGHT, columnsLeft, index)
+end
+
+--[[
+  Two strips of four buttons below the grid to judge the slot pitch: the Blizzard buttons at the
+  pitch of the action bar (its 2 px icon padding on the 45 px button, scaled - the bar art
+  dividers that fill that padding are not drawn) and the GearMenu slots at the pitch of a
+  gearBar (RGGM_CONSTANTS.SLOT_SPACING_MODIFIER)
+
+  @param {number} stripsTop
+  @param {number} stripsLeft
+  @param {number} index
+    The last slot index used by the grid - the strips continue the numbering
+]]--
+function me.BuildSpacingStrips(stripsTop, stripsLeft, index)
+  local slotSize = STRIP_SLOT_SIZE
+  local blizzardPitch = slotSize + BLIZZARD_BUTTON_PADDING * slotSize / BLIZZARD_BUTTON_SIZE
+  local slotPitch = slotSize + slotSize * RGGM_CONSTANTS.SLOT_SPACING_MODIFIER
+  local gearMenuStripLeft = stripsLeft + #SLOT_SIZES * (COLUMN_WIDTH + COLUMN_GAP)
+
+  local rowLabel = CreateLabel(window, "Bar of four (" .. slotSize .. " px)", "GameFontHighlight", LABEL_WIDTH)
+  rowLabel:SetPoint("LEFT", window, "TOPLEFT", PADDING, -(stripsTop + ROW_HEIGHT / 2))
+
+  for stripIndex = 1, STRIP_SLOT_COUNT do
+    index = index + 1
+
+    local cellOffsetY = (ROW_HEIGHT - slotSize) / 2
+
+    local cell = CreateFrame("Frame", nil, window)
+    cell:SetSize(slotSize, slotSize)
+    cell:SetPoint(
+      "TOPLEFT", window, "TOPLEFT", stripsLeft + (stripIndex - 1) * blizzardPitch, -(stripsTop + cellOffsetY))
+
+    local blizzardButton = CreateBlizzardReference(cell, slotSize, index)
+
+    if blizzardButton ~= nil then
+      blizzardButton.icon:SetTexture(ITEM_ICON)
+    end
+
+    local slot = CreateShowcaseSlot(window, slotSize, index)
+    slot:SetPoint(
+      "TOPLEFT", window, "TOPLEFT", gearMenuStripLeft + (stripIndex - 1) * slotPitch, -(stripsTop + cellOffsetY))
+    slot.itemTexture:SetTexture(ITEM_ICON)
   end
 end
 

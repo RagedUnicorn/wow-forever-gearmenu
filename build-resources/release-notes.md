@@ -7,6 +7,7 @@
 * Add a Reset to defaults button that restores the factory settings into the active profile - the shipped options and the starter GearBar, exactly like a fresh install
 * The settings dropdowns (GearBar orientation and change menu direction, the slot type of each slot row, the item quality filter and the QuickChange category) now look like the dropdowns of the game settings: no radio bullets, the current entry is shown in gold and picking an entry applies it and closes the list
 * The slots of the GearBar, the change menu and the TrinketMenu now look like the buttons of the game's own action bar: the same frame, hover highlight and pressed state, the item icon rounded by the same mask and the cooldown swipe inside the frame. The look scales with the slot size setting and Quick Keybind Mode highlights a slot exactly like an action button
+* The key bound to a slot is shown like the hotkey of an action button - small grey text in the top right corner that turns red when the target is out of range - and a queued item now sits in the top left corner of the slot. Neighbouring slots on a GearBar, in the change menu and in the TrinketMenu sit as close together as the buttons of the action bar
 
 # Breaking Changes
 * The theme option is gone: GearMenu Forever ships a single slot look, so the General settings no longer offer "Choose Theme" and its reload prompt. Saved settings, profiles and exported profile strings that still carry a theme value keep working - the value is simply ignored

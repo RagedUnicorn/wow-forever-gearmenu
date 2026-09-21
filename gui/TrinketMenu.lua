@@ -127,10 +127,12 @@ function me.UpdateTrinketMenuSize(itemCount)
   local trinketMenuSlotSize = mod.configuration.GetTrinketMenuSlotSize()
   local trinketMenuColumnAmount = mod.configuration.GetTrinketMenuColumnAmount()
   local rows = itemCount / trinketMenuColumnAmount
+  local trinketMenuSlotSpacing = trinketMenuSlotSize * RGGM_CONSTANTS.SLOT_SPACING_MODIFIER
 
-  trinketMenuFrame:SetHeight(math.ceil(rows) * trinketMenuSlotSize)
+  trinketMenuFrame:SetHeight(
+    mod.uiHelper.CalculateGridExtent(math.ceil(rows), trinketMenuSlotSize, trinketMenuSlotSpacing))
   trinketMenuFrame:SetWidth(
-    trinketMenuSlotSize * trinketMenuColumnAmount
+    mod.uiHelper.CalculateGridExtent(trinketMenuColumnAmount, trinketMenuSlotSize, trinketMenuSlotSpacing)
     + RGGM_CONSTANTS.TRINKET_MENU_WIDTH_MARGIN
   )
 end
@@ -144,7 +146,8 @@ function me.UpdateTrinketMenuSlotSize()
 
   for index = 1, RGGM_CONSTANTS.TRINKET_MENU_DEFAULT_SLOT_AMOUNT do
     local trinketMenuSlot = trinketMenuSlotPool.Acquire(index)
-    local xPos, yPos = mod.uiHelper.CalculateGridPosition(index, trinketMenuColumnAmount, trinketMenuSlotSize)
+    local xPos, yPos = mod.uiHelper.CalculateGridPosition(
+      index, trinketMenuColumnAmount, trinketMenuSlotSize, trinketMenuSlotSize * RGGM_CONSTANTS.SLOT_SPACING_MODIFIER)
 
     trinketMenuSlot:SetSize(
       trinketMenuSlotSize,

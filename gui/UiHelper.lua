@@ -447,13 +447,32 @@ end
   @param {number} index
   @param {number} columnAmount
   @param {number} slotSize
+  @param {number} spacing
+    Optional distance between neighbouring cells (negative pulls them together), 0 by default
 
   @return {number} xPos
   @return {number} yPos
 ]]--
-function me.CalculateGridPosition(index, columnAmount, slotSize)
+function me.CalculateGridPosition(index, columnAmount, slotSize, spacing)
   local row = math.floor((index - 1) / columnAmount)
   local column = (index - 1) % columnAmount
+  local pitch = slotSize + (spacing or 0)
 
-  return column * slotSize, row * slotSize
+  return column * pitch, row * pitch
+end
+
+--[[
+  The extent of a run of cells laid out with me.CalculateGridPosition: the cells plus the
+  spacing between them
+
+  @param {number} cellCount
+  @param {number} slotSize
+  @param {number} spacing
+
+  @return {number}
+]]--
+function me.CalculateGridExtent(cellCount, slotSize, spacing)
+  if cellCount < 1 then return 0 end
+
+  return cellCount * slotSize + (cellCount - 1) * (spacing or 0)
 end
