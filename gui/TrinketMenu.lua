@@ -161,6 +161,7 @@ function me.UpdateTrinketMenuSlotSize()
     )
 
     mod.slotStyle.UpdateSlotTextureAttributes(trinketMenuSlot, trinketMenuSlotSize)
+    mod.cooldown.UpdateCooldownOverlaySize(trinketMenuSlot, trinketMenuSlotSize)
   end
 end
 

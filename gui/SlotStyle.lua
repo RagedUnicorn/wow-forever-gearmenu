@@ -24,9 +24,14 @@
 ]]--
 
 --[[
-  The single look of every GearMenu slot: the gearSlots of a gearBar, the changeSlots of the
-  changeMenu and the trinketMenuSlots. Builds the slot buttons and keeps their textures in
-  step with the configurable slot size.
+  The single look of every GearMenu slot - the gearSlots of a gearBar, the changeSlots of the
+  changeMenu and the trinketMenuSlots: the style of the game's own action bar buttons. The frame,
+  pushed and hover art are the UI-HUD-ActionBar-IconFrame atlases the Forever action bar is built
+  from (Blizzard_ActionBar/Mainline/ActionButtonTemplate.xml), the item icon fills the slot and is
+  rounded by the matching mask, the slot background shows through the rounded corners and the
+  cooldown swipe (gui/Cooldown.lua) sits inside the frame. The template is drawn for a 45 px
+  button; every measure is scaled to the configurable slot size instead of using the atlas sizes
+  so the 24 - 64 px slots keep the proportions of the template.
 ]]--
 
 -- luacheck: globals CreateFrame
@@ -37,6 +42,12 @@ local me = {}
 mod.slotStyle = me
 
 me.tag = "SlotStyle"
+
+local SLOT_FRAME_ATLAS = "UI-HUD-ActionBar-IconFrame"
+local SLOT_FRAME_PUSHED_ATLAS = "UI-HUD-ActionBar-IconFrame-Down"
+local SLOT_FRAME_HIGHLIGHT_ATLAS = "UI-HUD-ActionBar-IconFrame-Mouseover"
+local SLOT_BACKGROUND_ATLAS = "UI-HUD-ActionBar-IconFrame-Background"
+local SLOT_ICON_MASK_ATLAS = "UI-HUD-ActionBar-IconFrame-Mask"
 
 --[[
   Create a single gearSlot. Note that a gearSlot inherits from the SecureActionButtonTemplate to enable the usage
@@ -60,14 +71,7 @@ function me.CreateGearSlot(gearBarFrame, gearBar, position)
     "QuickKeybindButtonTemplate, SecureActionButtonTemplate"
   )
 
-  gearSlot:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
-  gearSlot:SetNormalTexture("Interface\\Buttons\\UI-Quickslot2")
-  gearSlot:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
-
-  local normalTexture = gearSlot:GetNormalTexture()
-  normalTexture:SetTexCoord(0.19, 0.80, 0.19, 0.80)
-  normalTexture:SetSize(gearBar.gearSlotSize, gearBar.gearSlotSize)
-
+  me.ApplySlotStyle(gearSlot, gearBar.gearSlotSize)
   gearSlot.cooldownOverlay = mod.cooldown.CreateCooldownOverlay(
     gearSlot,
     RGGM_CONSTANTS.ELEMENT_SLOT_COOLDOWN_FRAME,
@@ -95,19 +99,12 @@ function me.CreateChangeSlot(changeMenuFrame, position)
     changeMenuFrame
   )
 
-  changeSlot:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
-  changeSlot:SetNormalTexture("Interface\\Buttons\\UI-Quickslot2")
-  changeSlot:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
-
-  local normalTexture = changeSlot:GetNormalTexture()
-  normalTexture:SetTexCoord(0.19, 0.80, 0.19, 0.80)
-  normalTexture:SetSize(RGGM_CONSTANTS.GEAR_BAR_DEFAULT_SLOT_SIZE, RGGM_CONSTANTS.GEAR_BAR_DEFAULT_SLOT_SIZE)
-
-  mod.uiHelper.CreateItemTexture(changeSlot, RGGM_CONSTANTS.GEAR_BAR_DEFAULT_SLOT_SIZE)
+  mod.uiHelper.CreateItemTexture(changeSlot)
+  me.ApplySlotStyle(changeSlot, RGGM_CONSTANTS.GEAR_BAR_CHANGE_DEFAULT_SLOT_SIZE)
   changeSlot.cooldownOverlay = mod.cooldown.CreateCooldownOverlay(
     changeSlot,
     RGGM_CONSTANTS.ELEMENT_SLOT_COOLDOWN_FRAME,
-    RGGM_CONSTANTS.GEAR_BAR_DEFAULT_SLOT_SIZE
+    RGGM_CONSTANTS.GEAR_BAR_CHANGE_DEFAULT_SLOT_SIZE
   )
 
   mod.gearBarChangeMenu.SetupEvents(changeSlot)
@@ -130,17 +127,10 @@ function me.CreateTrinketSlot(trinketMenuFrame, position)
     RGGM_CONSTANTS.ELEMENT_TRINKET_MENU_SLOT .. position,
     trinketMenuFrame
   )
-
-  trinketMenuSlot:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
-  trinketMenuSlot:SetNormalTexture("Interface\\Buttons\\UI-Quickslot2")
-  trinketMenuSlot:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
-
-  local normalTexture = trinketMenuSlot:GetNormalTexture()
   local trinketMenuSlotSize = mod.configuration.GetTrinketMenuSlotSize()
-  normalTexture:SetTexCoord(0.19, 0.80, 0.19, 0.80)
-  normalTexture:SetSize(trinketMenuSlotSize, trinketMenuSlotSize)
 
-  mod.uiHelper.CreateItemTexture(trinketMenuSlot, trinketMenuSlotSize)
+  mod.uiHelper.CreateItemTexture(trinketMenuSlot)
+  me.ApplySlotStyle(trinketMenuSlot, trinketMenuSlotSize)
   trinketMenuSlot.cooldownOverlay = mod.cooldown.CreateCooldownOverlay(
     trinketMenuSlot,
     RGGM_CONSTANTS.ELEMENT_SLOT_COOLDOWN_FRAME,
@@ -153,26 +143,64 @@ function me.CreateTrinketSlot(trinketMenuFrame, position)
 end
 
 --[[
-  Slot prepare texture
+  Dress a slot in the action-button look: the slot background beneath the item icon, the mask
+  that rounds the icon, and the frame, pushed and hover atlases of the button. Expects the item
+  icon to exist already (mod.uiHelper.CreateItemTexture)
+
+  @param {table} slot
+  @param {number} slotSize
+]]--
+function me.ApplySlotStyle(slot, slotSize)
+  -- shows through the rounded corners of the masked icon (and behind an icon that is not set)
+  slot.slotBackground = slot:CreateTexture(nil, "BACKGROUND", nil, -1)
+  slot.slotBackground:SetAtlas(SLOT_BACKGROUND_ATLAS)
+  slot.slotBackground:SetAllPoints(slot)
+
+  slot.itemTextureMask = slot:CreateMaskTexture()
+  slot.itemTextureMask:SetAtlas(SLOT_ICON_MASK_ATLAS)
+  slot.itemTextureMask:SetPoint("CENTER", slot.itemTexture)
+  slot.itemTexture:AddMaskTexture(slot.itemTextureMask)
+
+  slot:SetNormalAtlas(SLOT_FRAME_ATLAS)
+  slot:SetPushedAtlas(SLOT_FRAME_PUSHED_ATLAS)
+  slot:SetHighlightAtlas(SLOT_FRAME_HIGHLIGHT_ATLAS)
+
+  me.UpdateSlotTextureAttributes(slot, slotSize)
+end
+
+--[[
+  Lay a frame texture over the slot the way the template does: anchored to the top left and
+  slightly wider than the button (the frame art is 46 x 45 on a 45 px button)
+
+  @param {table} texture
+    nil is accepted so optional textures (the Quick Keybind Mode highlight) can be passed as is
+  @param {table} slot
+  @param {number} slotSize
+]]--
+local function LayoutFrameTexture(texture, slot, slotSize)
+  if texture == nil then return end
+
+  texture:ClearAllPoints()
+  texture:SetPoint("TOPLEFT", slot, "TOPLEFT")
+  texture:SetSize(slotSize * RGGM_CONSTANTS.SLOT_FRAME_WIDTH_MODIFIER, slotSize)
+end
+
+--[[
+  Scale the textures of a slot to its size. The item icon fills the slot and follows it on its
+  own; the mask, the frame art and the highlights carry explicit sizes and are re-laid here
 
   @param {table} slot
   @param {number} slotSize
 ]]--
 function me.UpdateSlotTextureAttributes(slot, slotSize)
-  local texture = slot.itemTexture
-  texture:SetTexCoord(0.12, 0.88, 0.12, 0.88)
-  texture:SetPoint(
-    "TOPLEFT",
-    slot,
-    "TOPLEFT",
-    slotSize * RGGM_CONSTANTS.GEAR_BAR_SLOT_BORDER_MODIFIER,
-    slotSize * RGGM_CONSTANTS.GEAR_BAR_SLOT_BORDER_MODIFIER * -1
-  )
-  texture:SetPoint(
-    "BOTTOMRIGHT",
-    slot,
-    "BOTTOMRIGHT",
-    slotSize * RGGM_CONSTANTS.GEAR_BAR_SLOT_BORDER_MODIFIER * -1,
-    slotSize * RGGM_CONSTANTS.GEAR_BAR_SLOT_BORDER_MODIFIER
-  )
+  slot.itemTextureMask:SetSize(slotSize, slotSize)
+
+  LayoutFrameTexture(slot:GetNormalTexture(), slot, slotSize)
+  LayoutFrameTexture(slot:GetPushedTexture(), slot, slotSize)
+  LayoutFrameTexture(slot:GetHighlightTexture(), slot, slotSize)
+  --[[
+    gearSlots only: the Quick Keybind Mode highlight of the QuickKeybindButtonTemplate ships
+    without anchors and uses the hover atlas - lay it out exactly like the hover highlight
+  ]]--
+  LayoutFrameTexture(slot.QuickKeybindHighlightTexture, slot, slotSize)
 end

@@ -23,7 +23,7 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- luacheck: globals CreateFrame C_Container STANDARD_TEXT_FONT CooldownFrame_Clear
+-- luacheck: globals CreateFrame C_Container CooldownFrame_Clear
 -- luacheck: globals CooldownFrame_Set UIParent
 
 local mod = rggm
@@ -213,20 +213,7 @@ function me.UpdateChangeSlotSize(changeSlotSize, changeMenu, changeSlot, xPos, y
   changeSlot:SetPoint(point, changeMenu, point, xOffset, yOffset)
 
   mod.slotStyle.UpdateSlotTextureAttributes(changeSlot, changeSlotSize)
-  me.UpdateCooldownOverlaySize(changeSlot, changeSlotSize)
-end
-
---[[
-  @param {table} changeSlot
-  @param {number} slotSize
-]]--
-function me.UpdateCooldownOverlaySize(changeSlot, slotSize)
-  changeSlot.cooldownOverlay:SetSize(slotSize, slotSize)
-  changeSlot.cooldownOverlay:GetRegions()
-    :SetFont(
-      STANDARD_TEXT_FONT,
-      slotSize * RGGM_CONSTANTS.GEAR_BAR_COOLDOWN_TEXT_MODIFIER
-    )
+  mod.cooldown.UpdateCooldownOverlaySize(changeSlot, changeSlotSize)
 end
 
 --[[

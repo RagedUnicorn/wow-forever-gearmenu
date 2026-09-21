@@ -292,18 +292,14 @@ function me.CreateSizeSlider(parentFrame, sliderName, position, sliderMinValue, 
 end
 
 --[[
-  Create a texture for the icon of whatever item is currently in the slot
+  Create the texture for the icon of whatever item is currently in the slot. The icon fills
+  the slot; gui/SlotStyle.lua rounds it with the slot mask and frames it
 
   @param {table} slot
-  @param {number} slotSize
 ]]--
-function me.CreateItemTexture(slot, slotSize)
-  slot.itemTexture = slot:CreateTexture()
-  slot.itemTexture:SetSize(slotSize - 1, slotSize - 1)
-  slot.itemTexture:SetPoint(
-    "CENTER",
-    0, 0
-  )
+function me.CreateItemTexture(slot)
+  slot.itemTexture = slot:CreateTexture(nil, "BACKGROUND")
+  slot.itemTexture:SetAllPoints(slot)
 end
 
 --[[

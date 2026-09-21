@@ -222,7 +222,7 @@ function me.CreateGearSlotBase(gearBarFrame, gearBar, position, template)
     gearSlot:SetAttribute("slotId", gearSlotMetaData.slotId)
   end
 
-  mod.uiHelper.CreateItemTexture(gearSlot, gearBar.gearSlotSize)
+  mod.uiHelper.CreateItemTexture(gearSlot)
   gearSlot.combatQueueSlot = me.CreateCombatQueueSlot(gearSlot, gearBar.gearSlotSize)
   gearSlot.keyBindingText = me.CreateKeyBindingText(gearSlot, gearBar.gearSlotSize)
   gearSlot.position = position
@@ -230,13 +230,10 @@ function me.CreateGearSlotBase(gearBarFrame, gearBar, position, template)
     Quick Keybind Mode (QuickKeybindButtonTemplate, mixed into the slot by the slot style): hovering
     the slot in that mode binds the pressed key to commandName - the slot's proxy action, which
     is fixed by the bar's bindIndex and the slot position for the lifetime of the frame. The
-    template's highlight texture ships without anchors; stretch it over the slot
+    template's highlight texture ships without anchors; gui/SlotStyle.lua lays it out together
+    with the hover highlight
   ]]--
   gearSlot.commandName = mod.keyBindProxy.GetProxyAction(gearBar.bindIndex, position)
-
-  if gearSlot.QuickKeybindHighlightTexture ~= nil then
-    gearSlot.QuickKeybindHighlightTexture:SetAllPoints(gearSlot)
-  end
 
   return gearSlot
 end
@@ -689,7 +686,7 @@ function me.UpdateGearSlotSizes(gearBar)
     local uiGearSlot = uiGearBar.gearSlotReferences[position]
 
     me.UpdateGearSlotSize(uiGearBar, uiGearSlot, gearBar.gearSlotSize, position, gearBar.orientation)
-    mod.cooldown.UpdateGearSlotCooldownOverlaySize(uiGearSlot, gearBar.gearSlotSize)
+    mod.cooldown.UpdateCooldownOverlaySize(uiGearSlot, gearBar.gearSlotSize)
     me.UpdateGearSlotCombatQueueSize(uiGearSlot, gearBar.gearSlotSize)
     me.UpdateGearSlotKeyBindingTextSize(uiGearSlot, gearBar.gearSlotSize)
     mod.slotStyle.UpdateSlotTextureAttributes(uiGearSlot, gearBar.gearSlotSize)

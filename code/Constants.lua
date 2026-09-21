@@ -93,7 +93,13 @@ RGGM_CONSTANTS = {
 
   ELEMENT_GEAR_BAR_SLOT_ICON_TEXTURE_NAME = "$parent_Icon",
   GEAR_BAR_COMBAT_QUEUE_SLOT_SIZE_MODIFIER = .55,
-  GEAR_BAR_SLOT_BORDER_MODIFIER = 0.065,
+  --[[
+    The slot art is the action-button style of the game, drawn for a 45 px button whose frame
+    atlases are 46 x 45 and whose cooldown sits 3 px inside the icon. The modifiers scale those
+    template measures to the configurable slot size (gui/SlotStyle.lua, gui/Cooldown.lua)
+  ]]--
+  SLOT_FRAME_WIDTH_MODIFIER = 46 / 45,
+  SLOT_COOLDOWN_INSET_MODIFIER = 3 / 45,
   --[[
     Size (in pixels) of the drag handle strip reserved on the trailing edge of an
     unlocked gearBar. Doubles as the bar's trailing margin in both orientations so

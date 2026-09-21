@@ -33,6 +33,28 @@ mod.cooldown = me
 me.tag = "Cooldown"
 
 --[[
+  Anchor a cooldownOverlay inside its slot - inset from the slot edge the way the cooldown of
+  the game's action button sits inside its icon - and scale the countdown text to the slot size
+
+  @param {table} cooldownOverlay
+  @param {table} slot
+  @param {number} slotSize
+]]--
+local function LayoutCooldownOverlay(cooldownOverlay, slot, slotSize)
+  local inset = slotSize * RGGM_CONSTANTS.SLOT_COOLDOWN_INSET_MODIFIER
+
+  cooldownOverlay:ClearAllPoints()
+  cooldownOverlay:SetPoint("TOPLEFT", slot, "TOPLEFT", inset, -inset)
+  cooldownOverlay:SetPoint("BOTTOMRIGHT", slot, "BOTTOMRIGHT", -inset, inset)
+  -- set fontsize based on slotsize
+  cooldownOverlay:GetRegions()
+                 :SetFont(
+    STANDARD_TEXT_FONT,
+    slotSize * RGGM_CONSTANTS.GEAR_BAR_COOLDOWN_TEXT_MODIFIER
+  )
+end
+
+--[[
   Create a cooldown overlay and attach it to the passed slot
 
   @param {table} slot
@@ -50,18 +72,14 @@ function me.CreateCooldownOverlay(slot, frameName, slotSize)
     "CooldownFrameTemplate"
   )
 
-  cooldownOverlay:ClearAllPoints()
-  cooldownOverlay:SetPoint("CENTER", slot, 0, 0)
-  cooldownOverlay:SetSize(slotSize - 2, slotSize - 2)
-
-  -- set fontsize based on slotsize
-  cooldownOverlay:GetRegions()
-                 :SetFont(
-    STANDARD_TEXT_FONT,
-    slotSize * RGGM_CONSTANTS.GEAR_BAR_COOLDOWN_TEXT_MODIFIER
-  )
+  -- the swipe of the game's action button: no bling flash, no edge line, a translucent black swipe
+  cooldownOverlay:SetDrawBling(false)
+  cooldownOverlay:SetDrawEdge(false)
+  cooldownOverlay:SetSwipeColor(0, 0, 0, 0.64)
   cooldownOverlay:SetHideCountdownNumbers(false)
   cooldownOverlay.currentCooldownType = COOLDOWN_TYPE_NORMAL
+
+  LayoutCooldownOverlay(cooldownOverlay, slot, slotSize)
 
   return cooldownOverlay
 end
@@ -93,14 +111,11 @@ function me.UpdateGearSlotCooldown(gearBar, uiSlot, gearSlotMetaData)
 end
 
 --[[
-  @param {table} uiGearSlot
+  Re-layout the cooldownOverlay of a slot after the slot was resized
+
+  @param {table} slot
   @param {number} slotSize
 ]]--
-function me.UpdateGearSlotCooldownOverlaySize(uiGearSlot, slotSize)
-  uiGearSlot.cooldownOverlay:SetSize(slotSize, slotSize)
-  uiGearSlot.cooldownOverlay:GetRegions()
-            :SetFont(
-    STANDARD_TEXT_FONT,
-    slotSize * RGGM_CONSTANTS.GEAR_BAR_COOLDOWN_TEXT_MODIFIER
-  )
+function me.UpdateCooldownOverlaySize(slot, slotSize)
+  LayoutCooldownOverlay(slot.cooldownOverlay, slot, slotSize)
 end
