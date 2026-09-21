@@ -161,6 +161,9 @@ local STATES = {
     label = "Quick Keybind Mode",
     slot = function(slot)
       slot.QuickKeybindHighlightTexture:Show()
+    end,
+    blizzard = function(button)
+      button.QuickKeybindHighlightTexture:Show()
     end
   }, {
     label = "Old item icon (black corners)",
@@ -246,6 +249,20 @@ local function CreateBlizzardReference(cell, slotSize, index)
   button:SetPushedAtlas("UI-HUD-ActionBar-IconFrame-Down")
   button.PushedTexture:SetDrawLayer("OVERLAY")
   button.PushedTexture:SetSize(46, 45)
+
+  --[[
+    The Quick Keybind Mode highlight belongs to the QuickKeybindButtonTemplate, which Blizzard
+    mixes into its bar buttons through ActionBarButtonCodeTemplate together with the secure
+    click code - not into the art template used here. Recreate it the way
+    Blizzard_ActionBar/Shared/ActionButton.lua lays it out: 46 x 45 centred, the template alpha
+  ]]--
+  button.QuickKeybindHighlightTexture = button:CreateTexture(nil, "OVERLAY")
+  button.QuickKeybindHighlightTexture:SetAtlas("UI-HUD-ActionBar-IconFrame-Mouseover")
+  button.QuickKeybindHighlightTexture:SetBlendMode("ADD")
+  button.QuickKeybindHighlightTexture:SetAlpha(0.4)
+  button.QuickKeybindHighlightTexture:SetPoint("CENTER")
+  button.QuickKeybindHighlightTexture:SetSize(46, 45)
+  button.QuickKeybindHighlightTexture:Hide()
 
   return button
 end
