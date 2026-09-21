@@ -158,6 +158,15 @@ local STATES = {
       slot.combatQueueSlot:Show()
     end
   }, {
+    label = "Right click (queue dropped)",
+    slot = function(slot)
+      -- the flash SlotStyle.FlashSlot shows for a moment, held permanently here
+      local color = RGGM_CONSTANTS.COLOR.QUEUE_REMOVED
+
+      slot.flashTexture:SetVertexColor(color[1], color[2], color[3])
+      slot.flashTexture:Show()
+    end
+  }, {
     label = "Quick Keybind Mode",
     slot = function(slot)
       slot.QuickKeybindHighlightTexture:Show()

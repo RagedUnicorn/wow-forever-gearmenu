@@ -1002,6 +1002,9 @@ function me.GearSlotOnClick(self, button, down)
 
   if button == "RightButton" then
     mod.combatQueue.RemoveFromQueue(self:GetAttribute("slotId"))
+    -- the red flash confirms the drop; a left click has the pushed state of the button
+    mod.slotStyle.FlashSlot(
+      self, RGGM_CONSTANTS.COLOR.QUEUE_REMOVED, RGGM_CONSTANTS.GEAR_SLOT_REMOVE_FLASH_DURATION)
   end
 end
 

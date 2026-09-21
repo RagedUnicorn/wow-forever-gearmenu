@@ -54,6 +54,8 @@ RGGM_CONSTANTS = {
   BAG_UPDATE_DEBOUNCE_DELAY = 0.1,
   -- how long a gearSlot shows its pushed state after a bound key was pressed (seconds)
   GEAR_SLOT_KEY_PRESS_FLASH_DURATION = 0.15,
+  -- how long a gearSlot flashes red after a right click dropped its queued swap (seconds)
+  GEAR_SLOT_REMOVE_FLASH_DURATION = 0.5,
   --[[
     Public swap-lifecycle event names passed to third-party listeners registered through
     GM_RegisterSwapListener. Part of the public API contract (see README) - renaming
@@ -172,7 +174,8 @@ RGGM_CONSTANTS = {
     DISABLED = { 0.45, 0.41, 0.35 },        -- disabled control labels
     SUBNOTE = { 0.66, 0.60, 0.50 },         -- #a89980 option descriptions (warm mid gray)
     KEY_BINDING = { 0.6, 0.6, 0.6 },        -- the grey of the action-button hotkey (NumberFontNormalSmallGray)
-    KEY_BINDING_OUT_OF_RANGE = { 1.0, 0.1, 0.1 } -- RED_FONT_COLOR, the hotkey with the target out of range
+    KEY_BINDING_OUT_OF_RANGE = { 1.0, 0.1, 0.1 }, -- RED_FONT_COLOR, the hotkey with the target out of range
+    QUEUE_REMOVED = { 1.0, 0.02, 0.22 }        -- the slot flash after a right click dropped the queued swap
 
   },
   CHECK_OPTION_SIZE = 24,

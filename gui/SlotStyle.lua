@@ -34,7 +34,7 @@
   so the 24 - 64 px slots keep the proportions of the template.
 ]]--
 
--- luacheck: globals CreateFrame C_Texture
+-- luacheck: globals CreateFrame C_Texture C_Timer
 
 local mod = rggm
 local me = {}
@@ -192,7 +192,32 @@ function me.ApplySlotStyle(slot, slotSize)
   slot:SetPushedAtlas(SLOT_FRAME_PUSHED_ATLAS)
   slot:SetHighlightAtlas(SLOT_FRAME_HIGHLIGHT_ATLAS)
 
+  -- a copy of the hover glow that a click feedback tints and shows for a moment (me.FlashSlot)
+  slot.flashTexture = slot:CreateTexture(nil, "OVERLAY")
+  slot.flashTexture:SetAtlas(SLOT_FRAME_HIGHLIGHT_ATLAS)
+  slot.flashTexture:SetBlendMode("ADD")
+  slot.flashTexture:Hide()
+
   me.UpdateSlotTextureAttributes(slot, slotSize)
+end
+
+--[[
+  Flash a slot with a tinted copy of its hover glow - the click feedback of a slot, for
+  example red after a right click dropped the queued swap
+
+  @param {table} slot
+  @param {table} color
+    One of the RGGM_CONSTANTS.COLOR { r, g, b } tokens
+  @param {number} duration
+    How long the flash stays, in seconds
+]]--
+function me.FlashSlot(slot, color, duration)
+  slot.flashTexture:SetVertexColor(color[1], color[2], color[3])
+  slot.flashTexture:Show()
+
+  C_Timer.After(duration, function()
+    slot.flashTexture:Hide()
+  end)
 end
 
 --[[
@@ -227,6 +252,7 @@ function me.UpdateSlotTextureAttributes(slot, slotSize)
   LayoutFrameTexture(slot:GetNormalTexture(), slot, slotSize)
   LayoutFrameTexture(slot:GetPushedTexture(), slot, slotSize)
   LayoutFrameTexture(slot:GetHighlightTexture(), slot, slotSize)
+  LayoutFrameTexture(slot.flashTexture, slot, slotSize)
   --[[
     gearSlots only: the Quick Keybind Mode highlight of the QuickKeybindButtonTemplate ships
     without anchors and uses the hover atlas - lay it out exactly like the hover highlight

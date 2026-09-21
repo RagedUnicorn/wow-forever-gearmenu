@@ -28,11 +28,11 @@
   action of a button in a single direction only - chosen by the useOnKeyDown attribute
   respectively the ActionButtonUseKeyDown cvar as fallback - so gearSlots must register
   both click directions and map the fastpress option onto the useOnKeyDown attribute.
-  GearSlotOnClick in turn gates its insecure work (combatQueue removal)
+  GearSlotOnClick in turn gates its insecure work (combatQueue removal, the removal flash)
   to the phase that matches the fastpress configuration so it runs once per activation.
 
   gui/GearBar.lua has no load-time WoW api surface, so it can be dofile'd with the
-  collaborator modules (configuration, combatQueue, gearBarStorage,
+  collaborator modules (configuration, combatQueue, slotStyle, gearBarStorage,
   logger) replaced by recorder / no-op stubs and gearSlots faked as recording tables.
 ]]--
 
@@ -107,6 +107,7 @@ describe("GearBar click handling", function()
 
     calls = {
       removedFromQueue = {},  -- combatQueue.RemoveFromQueue(slotId)
+      slotFlashes = {},       -- slotStyle.FlashSlot(slot, color, duration)
       errorsLogged = 0
     }
 
@@ -115,6 +116,7 @@ describe("GearBar click handling", function()
       gearBar = rggm.gearBar,
       configuration = rggm.configuration,
       combatQueue = rggm.combatQueue,
+      slotStyle = rggm.slotStyle,
       gearBarStorage = rggm.gearBarStorage,
       logger = rggm.logger
     }
@@ -128,6 +130,12 @@ describe("GearBar click handling", function()
     rggm.combatQueue = {
       RemoveFromQueue = function(slotId)
         calls.removedFromQueue[#calls.removedFromQueue + 1] = slotId
+      end
+    }
+
+    rggm.slotStyle = {
+      FlashSlot = function(slot, color, duration)
+        calls.slotFlashes[#calls.slotFlashes + 1] = { slot = slot, color = color, duration = duration }
       end
     }
 
@@ -160,6 +168,7 @@ describe("GearBar click handling", function()
     rggm.gearBar = previous.gearBar
     rggm.configuration = previous.configuration
     rggm.combatQueue = previous.combatQueue
+    rggm.slotStyle = previous.slotStyle
     rggm.gearBarStorage = previous.gearBarStorage
     rggm.logger = previous.logger
   end)
@@ -206,12 +215,16 @@ describe("GearBar click handling", function()
       assert.are.equal(0, #calls.removedFromQueue)
     end)
 
-    it("removes the queued item on the buttonUp phase for the right button", function()
+    it("removes the queued item and flashes the slot red on the buttonUp phase for the right button", function()
       local gearSlot = CreateFakeGearSlot(13)
 
       gearBar.GearSlotOnClick(gearSlot, "RightButton", false)
 
       assert.are.same({ 13 }, calls.removedFromQueue)
+      assert.are.equal(1, #calls.slotFlashes)
+      assert.are.equal(gearSlot, calls.slotFlashes[1].slot)
+      assert.are.equal(RGGM_CONSTANTS.COLOR.QUEUE_REMOVED, calls.slotFlashes[1].color)
+      assert.are.equal(RGGM_CONSTANTS.GEAR_SLOT_REMOVE_FLASH_DURATION, calls.slotFlashes[1].duration)
     end)
 
     it("leaves the queue alone on the buttonUp phase for the left button", function()
@@ -220,6 +233,7 @@ describe("GearBar click handling", function()
       gearBar.GearSlotOnClick(gearSlot, "LeftButton", false)
 
       assert.are.equal(0, #calls.removedFromQueue)
+      assert.are.equal(0, #calls.slotFlashes)
     end)
   end)
 
