@@ -68,3 +68,4 @@ gui/KeyBind.lua
 # dev - media capture
 dev/ShotManifest.lua
 dev/Capture.lua
+dev/SlotShowcase.lua

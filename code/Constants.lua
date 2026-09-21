@@ -100,6 +100,8 @@ RGGM_CONSTANTS = {
   ]]--
   SLOT_FRAME_WIDTH_MODIFIER = 46 / 45,
   SLOT_COOLDOWN_INSET_MODIFIER = 3 / 45,
+  -- how much of the item icon texture is trimmed on every side to hide the border ring of the old icons
+  SLOT_ICON_TEXCOORD_INSET = 0.08,
   --[[
     Size (in pixels) of the drag handle strip reserved on the trailing edge of an
     unlocked gearBar. Doubles as the bar's trailing margin in both orientations so

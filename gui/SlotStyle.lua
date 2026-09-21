@@ -27,8 +27,9 @@
   The single look of every GearMenu slot - the gearSlots of a gearBar, the changeSlots of the
   changeMenu and the trinketMenuSlots: the style of the game's own action bar buttons. The frame,
   pushed and hover art are the UI-HUD-ActionBar-IconFrame atlases the Forever action bar is built
-  from (Blizzard_ActionBar/Mainline/ActionButtonTemplate.xml), the item icon fills the slot and is
-  rounded by the matching mask, the slot background shows through the rounded corners and the
+  from (Blizzard_ActionBar/Mainline/ActionButtonTemplate.xml), the item icon fills the slot (its
+  built-in border ring trimmed) and is rounded by the matching mask, the slot background shows
+  through the rounded corners and the
   cooldown swipe (gui/Cooldown.lua) sits inside the frame. The template is drawn for a 45 px
   button; every measure is scaled to the configurable slot size instead of using the atlas sizes
   so the 24 - 64 px slots keep the proportions of the template.
@@ -155,6 +156,18 @@ function me.ApplySlotStyle(slot, slotSize)
   slot.slotBackground = slot:CreateTexture(nil, "BACKGROUND", nil, -1)
   slot.slotBackground:SetAtlas(SLOT_BACKGROUND_ATLAS)
   slot.slotBackground:SetAllPoints(slot)
+
+  --[[
+    Trim the dark border ring the Classic item icons carry in their art. Blizzard draws its
+    action-bar icons uncropped, but those are drawn edge to edge; the old item icons put a
+    frame of their own around the art, which shows as a second, darker rim inside the slot frame
+  ]]--
+  slot.itemTexture:SetTexCoord(
+    RGGM_CONSTANTS.SLOT_ICON_TEXCOORD_INSET,
+    1 - RGGM_CONSTANTS.SLOT_ICON_TEXCOORD_INSET,
+    RGGM_CONSTANTS.SLOT_ICON_TEXCOORD_INSET,
+    1 - RGGM_CONSTANTS.SLOT_ICON_TEXCOORD_INSET
+  )
 
   slot.itemTextureMask = slot:CreateMaskTexture()
   slot.itemTextureMask:SetAtlas(SLOT_ICON_MASK_ATLAS)
