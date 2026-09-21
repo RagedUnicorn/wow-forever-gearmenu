@@ -224,7 +224,12 @@ function me.InitializeItemQualityDropdownMenu(_, rootDescription)
   }
 
   for _, itemQuality in ipairs(itemQualities) do
-    rootDescription:CreateRadio(itemQuality.text, me.IsItemQualitySelected, me.OnItemQualitySelect, itemQuality.value)
+    rootDescription:CreateHighlightRadio(
+      itemQuality.text,
+      me.IsItemQualitySelected,
+      me.OnItemQualitySelect,
+      itemQuality.value
+    )
   end
 end
 
@@ -293,7 +298,7 @@ function me.InitializeChooseThemeDropdownMenu(_, rootDescription)
   }
 
   for _, theme in ipairs(themes) do
-    rootDescription:CreateRadio(theme.text, me.IsThemeSelected, me.OnThemeSelect, theme.value)
+    rootDescription:CreateHighlightRadio(theme.text, me.IsThemeSelected, me.OnThemeSelect, theme.value)
   end
 end
 

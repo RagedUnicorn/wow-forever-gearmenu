@@ -130,6 +130,10 @@ end
   Create a dropdown in the dark style of the stock configuration menus (WowStyle2, without
   the stepper buttons the settings panel adds around some of its dropdowns)
 
+  The generator is expected to add highlight radios (rootDescription:CreateHighlightRadio) -
+  the entry style of the game settings dropdowns: no radio bullet, the selected entry in gold,
+  the menu closes on pick. The dropdown text follows the selected entry.
+
   @param {string} frameName
   @param {table} parent
   @param {table} position

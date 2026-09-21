@@ -344,7 +344,7 @@ function me.InitializeInventoryTypeDropdownMenu(_, rootDescription)
     if registeredInventoryTypes[gearSlot.inventoryTypeId] == nil then
       local slotName = gearSlot.simplifiedName or gearSlot.name
 
-      rootDescription:CreateRadio(
+      rootDescription:CreateHighlightRadio(
         rggm.L[slotName],
         me.IsInventoryTypeSelected,
         me.OnInventoryTypeSelect,

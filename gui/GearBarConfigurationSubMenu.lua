@@ -573,7 +573,7 @@ function me.CreateOrientationDropdown(parentFrame, gearBarId)
     {"TOPLEFT", 260, -72},
     150,
     function(_, rootDescription)
-      me.BuildOrientationRadios(rootDescription, gearBarId, parentFrame)
+      me.BuildOrientationEntries(rootDescription, gearBarId, parentFrame)
     end
   )
 
@@ -603,18 +603,18 @@ end
   @param {table} contentFrame
     The gearBar configuration content frame holding the dropdown references
 ]]--
-function me.BuildOrientationRadios(rootDescription, gearBarId, contentFrame)
+function me.BuildOrientationEntries(rootDescription, gearBarId, contentFrame)
   local orientations = {
     { value = RGGM_CONSTANTS.GEAR_BAR_ORIENTATION_HORIZONTAL, text = rggm.L["orientation_horizontal"] },
     { value = RGGM_CONSTANTS.GEAR_BAR_ORIENTATION_VERTICAL, text = rggm.L["orientation_vertical"] }
   }
 
   for _, orientation in ipairs(orientations) do
-    rootDescription:CreateRadio(
+    rootDescription:CreateHighlightRadio(
       orientation.text,
       function(value) return mod.gearBarManager.GetGearBarOrientation(gearBarId) == value end,
       function(value)
-        me.OrientationRadioOnSelect(gearBarId, value, contentFrame)
+        me.OrientationOnSelect(gearBarId, value, contentFrame)
       end,
       orientation.value
     )
@@ -635,7 +635,7 @@ end
   @param {table} contentFrame
     The gearBar configuration content frame holding the dropdown references
 ]]--
-function me.OrientationRadioOnSelect(gearBarId, value, contentFrame)
+function me.OrientationOnSelect(gearBarId, value, contentFrame)
   if InCombatLockdown() then
     mod.logger.PrintUserError(rggm.L["gearbar_orientation_combat"])
 
@@ -679,7 +679,7 @@ function me.CreateChangeMenuDirectionDropdown(parentFrame, gearBarId)
     {"TOPLEFT", 420, -72},
     150,
     function(_, rootDescription)
-      me.BuildChangeMenuDirectionRadios(rootDescription, gearBarId)
+      me.BuildChangeMenuDirectionEntries(rootDescription, gearBarId)
     end
   )
 
@@ -709,7 +709,7 @@ end
   @param {number} gearBarId
     The id of the gearBar the dropdown configures
 ]]--
-function me.BuildChangeMenuDirectionRadios(rootDescription, gearBarId)
+function me.BuildChangeMenuDirectionEntries(rootDescription, gearBarId)
   local directions
 
   if mod.gearBarManager.GetGearBarOrientation(gearBarId) == RGGM_CONSTANTS.GEAR_BAR_ORIENTATION_VERTICAL then
@@ -725,7 +725,7 @@ function me.BuildChangeMenuDirectionRadios(rootDescription, gearBarId)
   end
 
   for _, direction in ipairs(directions) do
-    rootDescription:CreateRadio(
+    rootDescription:CreateHighlightRadio(
       rggm.L[me.GetChangeMenuDirectionLocaleKey(direction)],
       function(value) return mod.gearBarManager.GetChangeMenuDirection(gearBarId) == value end,
       function(value) mod.gearBarManager.SetChangeMenuDirection(gearBarId, value) end,
@@ -913,7 +913,7 @@ function me.InitializeGearSlotDropdownMenu(dropdown, rootDescription)
   local gearSlots = mod.gearManager.GetGearSlots()
 
   for _, gearSlot in pairs(gearSlots) do
-    rootDescription:CreateRadio(
+    rootDescription:CreateHighlightRadio(
       rggm.L[gearSlot.name],
       function(slotId) return me.IsGearSlotSelected(dropdown, slotId) end,
       function(slotId) me.OnGearSlotSelect(dropdown, slotId) end,

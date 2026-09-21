@@ -24,7 +24,7 @@
 
 --[[
   Spec for the combat guards of the gearBar configuration submenu in
-  gui/GearBarConfigurationSubMenu.lua (me.GearSlotSizeSliderOnValueChanged, me.OrientationRadioOnSelect).
+  gui/GearBarConfigurationSubMenu.lua (me.GearSlotSizeSliderOnValueChanged, me.OrientationOnSelect).
 
   Both options resize and re-anchor gearSlots that inherit from the SecureActionButtonTemplate, which
   is blocked in combat. The guards refuse the change during combat lockdown, tell the user and keep
@@ -181,11 +181,11 @@ describe("GearBarConfigurationSubMenu combat guards", function()
     end)
   end)
 
-  describe("OrientationRadioOnSelect", function()
+  describe("OrientationOnSelect", function()
     it("stores the new orientation and refreshes the change menu direction dropdown out of combat", function()
       local contentFrame = {}
 
-      subMenu.OrientationRadioOnSelect(GEAR_BAR_ID, RGGM_CONSTANTS.GEAR_BAR_ORIENTATION_VERTICAL, contentFrame)
+      subMenu.OrientationOnSelect(GEAR_BAR_ID, RGGM_CONSTANTS.GEAR_BAR_ORIENTATION_VERTICAL, contentFrame)
 
       assert.are.same({
         { gearBarId = GEAR_BAR_ID, value = RGGM_CONSTANTS.GEAR_BAR_ORIENTATION_VERTICAL }
@@ -199,7 +199,7 @@ describe("GearBarConfigurationSubMenu combat guards", function()
         InCombatLockdown = wowStubs.stubs.InCombatLockdown(true)
       })
 
-      subMenu.OrientationRadioOnSelect(GEAR_BAR_ID, RGGM_CONSTANTS.GEAR_BAR_ORIENTATION_VERTICAL, {})
+      subMenu.OrientationOnSelect(GEAR_BAR_ID, RGGM_CONSTANTS.GEAR_BAR_ORIENTATION_VERTICAL, {})
 
       assert.are.equal(0, #calls.orientations)
       assert.are.equal(0, calls.refreshes)
@@ -211,12 +211,12 @@ describe("GearBarConfigurationSubMenu combat guards", function()
     it("is wired to every orientation radio entry", function()
       local radios = {}
       local rootDescription = {
-        CreateRadio = function(_, text, isSelected, onSelect, value)
+        CreateHighlightRadio = function(_, text, isSelected, onSelect, value)
           radios[#radios + 1] = { text = text, isSelected = isSelected, onSelect = onSelect, value = value }
         end
       }
 
-      subMenu.BuildOrientationRadios(rootDescription, GEAR_BAR_ID, {})
+      subMenu.BuildOrientationEntries(rootDescription, GEAR_BAR_ID, {})
       radios[2].onSelect(radios[2].value)
 
       assert.are.equal(2, #radios)

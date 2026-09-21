@@ -5,6 +5,7 @@
 * Profiles now follow the live active profile model: the profile you are on is marked "(active)" in gold and every change you make belongs to it - it is saved automatically when you switch profiles, at logout and reload, on export and at every login, so there is no Save / Update step to remember
 * Create new Profile copies the current settings into a new profile and makes it active; Load switches to the selected profile and reloads the UI, the profile you leave keeping your settings as they are; deleting the active profile falls back to Default
 * Add a Reset to defaults button that restores the factory settings into the active profile - the shipped options and the starter GearBar, exactly like a fresh install
+* The settings dropdowns (GearBar orientation and change menu direction, the slot type of each slot row, the item quality filter, the QuickChange category and the theme) now look like the dropdowns of the game settings: no radio bullets, the current entry is shown in gold and picking an entry applies it and closes the list
 
 # Breaking Changes
 * GearMenu's own keybinding popup ("Set/Unset Keybinding" in the slot configuration) is gone - bind keys in Settings > Keybindings or Quick Keybind Mode instead. Keys are bound to positional entries ("GearBar 2 - Slot 3"), not to the slot frames, so there is nothing to migrate on this fresh WoW: Forever line
