@@ -25,7 +25,7 @@
 
 -- luacheck: globals CreateFrame UIParent GetInventoryItemID GetCursorInfo
 -- luacheck: globals GetInventoryItemLink C_Item C_Container InCombatLockdown
--- luacheck: globals CursorCanGoInSlot EquipCursorItem ClearCursor IsInventoryItemLocked PickupInventoryItem
+-- luacheck: globals C_PaperDollInfo EquipCursorItem ClearCursor IsInventoryItemLocked PickupInventoryItem
 -- luacheck: globals QuickKeybindButtonTemplateMixin QuickKeybindFrame C_Timer NumberFontNormalSmallGray
 
 --[[
@@ -1112,7 +1112,7 @@ function me.GearSlotOnReceiveDrag(self)
   -- abort if no item could be found
   if gearSlotMetaData == nil then return end
 
-  if CursorCanGoInSlot(gearSlotMetaData.slotId) then
+  if C_PaperDollInfo.CursorCanGoInSlot(gearSlotMetaData.slotId) then
     if InCombatLockdown() or mod.common.IsPlayerCasting() then
       local cursorType, _, itemLink = GetCursorInfo()
 
