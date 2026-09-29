@@ -317,16 +317,19 @@ end
   profile is applied: the profile carries the key per slot but not WoW's binding set, so
   without this the keys would show nowhere and do nothing. Binds purely from configuration
   data, so it does not depend on the gearSlot ui frames and runs before the ReloadUI that
-  follows a profile apply.
+  follows a profile apply. Profile import validates the slots already; the numeric loop and
+  the type checks keep a malformed slot table from ever reaching SetBinding regardless.
 ]]--
 function me.ApplyGearBarKeyBindings()
   me.WhenOutOfCombat(function()
     local didBind = false
 
     for _, gearBar in pairs(mod.gearBarManager.GetGearBars()) do
-      if gearBar.bindIndex ~= nil then
-        for position, gearSlot in pairs(gearBar.slots) do
-          if gearSlot.keyBinding ~= nil and gearSlot.keyBinding ~= "" then
+      if gearBar.bindIndex ~= nil and type(gearBar.slots) == "table" then
+        for position = 1, RGGM_CONSTANTS.MAX_GEAR_BAR_SLOTS do
+          local gearSlot = gearBar.slots[position]
+
+          if type(gearSlot) == "table" and type(gearSlot.keyBinding) == "string" and gearSlot.keyBinding ~= "" then
             if BindKey(gearSlot.keyBinding, mod.keyBindProxy.GetProxyAction(gearBar.bindIndex, position)) then
               didBind = true
             end
@@ -349,8 +352,13 @@ end
 ]]--
 function me.RefreshKeyBindingLabels()
   for _, gearBar in pairs(mod.gearBarManager.GetGearBars()) do
-    for position, _ in pairs(gearBar.slots) do
-      mod.gearBarManager.SetSlotKeyBinding(gearBar.id, position, me.GetSlotKeyBinding(gearBar, position))
+    if type(gearBar.slots) == "table" then
+      -- numeric loop - a position that is not an integer in range would raise in the proxy action format
+      for position = 1, RGGM_CONSTANTS.MAX_GEAR_BAR_SLOTS do
+        if type(gearBar.slots[position]) == "table" then
+          mod.gearBarManager.SetSlotKeyBinding(gearBar.id, position, me.GetSlotKeyBinding(gearBar, position))
+        end
+      end
     end
   end
 

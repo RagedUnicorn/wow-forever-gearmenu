@@ -354,6 +354,25 @@ describe("KeyBind", function()
       assert.are.same({ "failed BAD" }, calls.userErrors)
       assert.are.equal(1, bindingSet.savedCount)
     end)
+
+    it("skips malformed slots instead of raising and binds the well-formed ones", function()
+      useBindingSet({})
+      gearBars = {
+        { id = 3, bindIndex = 1, slots = {
+          [1] = { keyBinding = 42 },
+          [2] = "F3",
+          [3] = { keyBinding = "F4" },
+          first = { keyBinding = "F5" },
+          [RGGM_CONSTANTS.MAX_GEAR_BAR_SLOTS + 1] = { keyBinding = "F6" }
+        } },
+        { id = 7, bindIndex = 2, slots = "x" }
+      }
+
+      keyBind.ApplyGearBarKeyBindings()
+
+      assert.are.same({ F4 = action(1, 3) }, bindingSet.actions)
+      assert.are.equal(1, bindingSet.savedCount)
+    end)
   end)
 
   describe("combat deferral", function()
