@@ -20,3 +20,4 @@
 
 # Bug Fixes
 * Fix a flood of Lua errors on WoW Forever when a GearBar change menu is open or the custom theme frame is hovered: the client removed the MouseIsOver global, GearMenu now uses the IsMouseOver widget method instead
+* Choosing the empty entry of a change menu no longer equips the item held on the cursor into the slot, and it now tells you why an item could not be unequipped - in combat, while dead, casting or under a loss of control effect, while a spell asks for a target, or when the item is locked - instead of silently doing nothing. Choosing the empty entry also cancels a swap still queued for that slot
