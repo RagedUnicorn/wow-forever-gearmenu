@@ -20,7 +20,7 @@ if (GetLocale() == "ruRU") then
   rggm.L["author"] = "Автор: Michael Wiesendanger"
   rggm.L["email"] = "E-Mail: michael.wiesendanger@gmail.com"
   rggm.L["version"] = "Версия: " .. C_AddOns.GetAddOnMetadata(RGGM_CONSTANTS.ADDON_NAME, "Version")
-  rggm.L["issues"] = "Баги: https://github.com/RagedUnicorn/wow-classic-gearmenu/issues"
+  rggm.L["issues"] = "Баги: https://github.com/RagedUnicorn/wow-forever-gearmenu/issues"
 
   -- options
   rggm.L["options_category_name"] = "Настройки"

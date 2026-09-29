@@ -19,7 +19,7 @@ if (GetLocale() == "zhCN") then
   rggm.L["author"] = "Author: Michael Wiesendanger"
   rggm.L["email"] = "E-Mail: michael.wiesendanger@gmail.com"
   rggm.L["version"] = "Version: " .. C_AddOns.GetAddOnMetadata(RGGM_CONSTANTS.ADDON_NAME, "Version")
-  rggm.L["issues"] = "Issues: https://github.com/RagedUnicorn/wow-classic-gearmenu/issues"
+  rggm.L["issues"] = "Issues: https://github.com/RagedUnicorn/wow-forever-gearmenu/issues"
 
   -- options
   rggm.L["options_category_name"] = "选项"
