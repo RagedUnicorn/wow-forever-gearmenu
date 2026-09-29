@@ -101,9 +101,22 @@ describe("GearBar click handling", function()
   local restore
   local calls
   local fastPress
+  -- C_Timer.After callbacks waiting for flushTimers, { delay, callback }
+  local pendingTimers
+
+  local function flushTimers()
+    local timers = pendingTimers
+
+    pendingTimers = {}
+
+    for _, timer in ipairs(timers) do
+      timer.callback()
+    end
+  end
 
   before_each(function()
     fastPress = false
+    pendingTimers = {}
 
     calls = {
       removedFromQueue = {},  -- combatQueue.RemoveFromQueue(slotId)
@@ -149,8 +162,12 @@ describe("GearBar click handling", function()
 
     restore = wowStubs.install({
       InCombatLockdown = wowStubs.stubs.InCombatLockdown(false),
-      -- FlashGearSlot resets the pushed state through a timer; run the callback immediately
-      C_Timer = { After = function(_, callback) callback() end },
+      -- FlashGearSlot resets the pushed state through a timer; queue it so a spec sees each phase
+      C_Timer = {
+        After = function(delay, callback)
+          pendingTimers[#pendingTimers + 1] = { delay = delay, callback = callback }
+        end
+      },
       -- the Quick Keybind Mode mixin GearBar forwards its hover handlers to (not exercised here)
       QuickKeybindButtonTemplateMixin = {
         QuickKeybindButtonOnEnter = function() end,
@@ -250,24 +267,53 @@ describe("GearBar click handling", function()
   end)
 
   describe("GearSlotOnKeyPress", function()
-    it("flashes the pushed state on the phase matching fastpress", function()
+    it("flashes on the buttonUp phase only when fastpress is disabled", function()
       local gearSlot = CreateFakeGearSlot(13)
 
       gearBar.GearSlotOnKeyPress(gearSlot, true)
-      gearBar.GearSlotOnKeyPress(gearSlot, false)
+      assert.are.same({}, gearSlot.buttonStates)
 
+      gearBar.GearSlotOnKeyPress(gearSlot, false)
+      assert.are.same({ "PUSHED" }, gearSlot.buttonStates)
+
+      flushTimers()
       assert.are.same({ "PUSHED", "NORMAL" }, gearSlot.buttonStates)
       assert.are.equal(0, #calls.removedFromQueue)
     end)
 
-    it("acts on the buttonDown phase when fastpress is enabled", function()
+    it("flashes on the buttonDown phase only when fastpress is enabled", function()
       fastPress = true
       local gearSlot = CreateFakeGearSlot(13)
 
       gearBar.GearSlotOnKeyPress(gearSlot, true)
+      assert.are.same({ "PUSHED" }, gearSlot.buttonStates)
+
+      gearBar.GearSlotOnKeyPress(gearSlot, false)
+      assert.are.same({ "PUSHED" }, gearSlot.buttonStates)
+
+      flushTimers()
+      assert.are.same({ "PUSHED", "NORMAL" }, gearSlot.buttonStates)
+    end)
+
+    it("does not flash or start a timer on the phase that does not match fastpress", function()
+      local gearSlot = CreateFakeGearSlot(13)
+
+      gearBar.GearSlotOnKeyPress(gearSlot, true)
+
+      fastPress = true
       gearBar.GearSlotOnKeyPress(gearSlot, false)
 
-      assert.are.same({ "PUSHED", "NORMAL" }, gearSlot.buttonStates)
+      assert.are.same({}, gearSlot.buttonStates)
+      assert.are.equal(0, #pendingTimers)
+    end)
+
+    it("resets the pushed state after the flash duration", function()
+      local gearSlot = CreateFakeGearSlot(13)
+
+      gearBar.GearSlotOnKeyPress(gearSlot, false)
+
+      assert.are.equal(1, #pendingTimers)
+      assert.are.equal(RGGM_CONSTANTS.GEAR_SLOT_KEY_PRESS_FLASH_DURATION, pendingTimers[1].delay)
     end)
   end)
 
