@@ -354,7 +354,7 @@ function me.AddGearSlot()
   local gearBar = mod.gearBarManager.GetGearBar(gearBarConfiguration.id)
 
   if gearBar == nil then
-    mod.logger.LogError(me.tag, "Failed to find gearBar with id: " .. gearBarConfiguration.id)
+    mod.logger.LogWarn(me.tag, "Failed to find gearBar with id: " .. gearBarConfiguration.id)
 
     return
   end
@@ -366,7 +366,7 @@ function me.AddGearSlot()
   end
 
   if not mod.gearBarManager.AddGearSlot(gearBarConfiguration.id) then
-    mod.logger.LogError(me.tag, "Failed to add new gearSlot to gearBar with id: " .. gearBarConfiguration.id)
+    mod.logger.LogWarn(me.tag, "Failed to add new gearSlot to gearBar with id: " .. gearBarConfiguration.id)
 
     return
   end
@@ -1058,13 +1058,13 @@ function me.RemoveGearSlot(self)
   local gearSlotPosition = self:GetParent().position
 
   if gearBar == nil then
-    mod.logger.LogError(me.tag, "Failed to find gearBar with id: " .. gearBarConfiguration.id)
+    mod.logger.LogWarn(me.tag, "Failed to find gearBar with id: " .. gearBarConfiguration.id)
     return
   end
 
   -- the keys of the slots that move up follow them, see gearBarManager.RemoveGearSlot
   if not mod.gearBarManager.RemoveGearSlot(gearBarConfiguration.id, gearSlotPosition) then
-    mod.logger.LogError(me.tag, "Failed to remove gearSlot from gearBar with id: " .. gearBarConfiguration.id)
+    mod.logger.LogWarn(me.tag, "Failed to remove gearSlot from gearBar with id: " .. gearBarConfiguration.id)
     return
   end
 

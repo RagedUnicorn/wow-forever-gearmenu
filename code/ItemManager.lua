@@ -171,7 +171,7 @@ function me.GetItemsForInventoryType(inventoryType)
   local items = {}
 
   if inventoryType == nil then
-    mod.logger.LogError(me.tag, "InventoryType(s) missing")
+    mod.logger.LogWarn(me.tag, "InventoryType(s) missing")
     return items
   end
 
@@ -494,7 +494,7 @@ function me.FindItemInBag(itemId, enchantId)
     end
   end
 
-  mod.logger.LogError(me.tag, "Item not found in bags")
+  mod.logger.LogWarn(me.tag, "Item not found in bags")
 
   return nil, nil, false
 end
@@ -537,7 +537,7 @@ function me.FindQuickChangeItems(inventoryType, mustHaveOnUse)
   local items = {}
 
   if inventoryType == nil then
-    mod.logger.LogError(me.tag, "InventoryType(s) missing")
+    mod.logger.LogWarn(me.tag, "InventoryType(s) missing")
     return items
   end
 

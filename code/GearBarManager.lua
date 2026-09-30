@@ -88,7 +88,7 @@ function me.AllocateBindIndex()
     end
   end
 
-  mod.logger.LogError(me.tag, "No free bindIndex left - all " .. RGGM_CONSTANTS.MAX_GEAR_BARS .. " are taken")
+  mod.logger.LogWarn(me.tag, "No free bindIndex left - all " .. RGGM_CONSTANTS.MAX_GEAR_BARS .. " are taken")
 
   return nil
 end
@@ -191,7 +191,7 @@ function me.RemoveGearBar(gearBarId)
     end
   end
 
-  mod.logger.LogError(
+  mod.logger.LogWarn(
     me.tag, "Failed to remove GearBar from storage. Was unable to find GearBar with id: " .. gearBarId
   )
 end
@@ -213,7 +213,7 @@ function me.GetGearBar(gearBarId)
     end
   end
 
-  mod.logger.LogError(me.tag, "Could not find GearBar with id: " .. gearBarId)
+  mod.logger.LogWarn(me.tag, "Could not find GearBar with id: " .. gearBarId)
 
   return nil
 end
@@ -466,7 +466,7 @@ function me.AddGearSlot(gearBarId, init)
     return gearSlot
   end
 
-  mod.logger.LogError(me.tag, "Was unable to find GearBar with id: " .. gearBarId)
+  mod.logger.LogWarn(me.tag, "Was unable to find GearBar with id: " .. gearBarId)
 
   return nil
 end
@@ -497,7 +497,7 @@ function me.RemoveGearSlot(gearBarId, position)
     return true
   end
 
-  mod.logger.LogError(me.tag, "Was unable to find GearBar with id: " .. gearBarId)
+  mod.logger.LogWarn(me.tag, "Was unable to find GearBar with id: " .. gearBarId)
 
   return false
 end
@@ -516,7 +516,7 @@ function me.GetGearSlot(gearBarId, position)
   local gearBar = me.GetGearBar(gearBarId)
 
   if gearBar == nil then
-    mod.logger.LogError(me.tag, "Was unable to find GearBar with id: " .. gearBarId)
+    mod.logger.LogWarn(me.tag, "Was unable to find GearBar with id: " .. gearBarId)
     return nil
   end
 
@@ -550,7 +550,7 @@ function me.UpdateGearSlot(gearBarId, position, updatedGearSlot, init)
     return true
   end
 
-  mod.logger.LogError(me.tag, "Failed to update gearBarSlot position {"
+  mod.logger.LogWarn(me.tag, "Failed to update gearBarSlot position {"
     .. position .. "} for gearBar with id: " .. gearBarId)
 end
 
@@ -570,7 +570,7 @@ function me.SetGearSlotSize(gearBarId, gearSlotSize)
     mod.gearBar.UpdateGearSlotSizes(gearBar)
     mod.gearBar.UpdateGearBarSize(gearBar) -- resize the underlying gearBarFrame
   else
-    mod.logger.LogError(me.tag, "Failed to update the gearSlotSize of the gearBar with id: " .. gearBarId)
+    mod.logger.LogWarn(me.tag, "Failed to update the gearSlotSize of the gearBar with id: " .. gearBarId)
   end
 end
 
@@ -598,7 +598,7 @@ function me.SetGearBarOrientation(gearBarId, orientation)
     mod.gearBar.UpdateGearSlotSizes(gearBar)
     mod.gearBar.UpdateGearBarSize(gearBar) -- resize the underlying gearBarFrame
   else
-    mod.logger.LogError(me.tag, "Failed to update the orientation of the gearBar with id: " .. gearBarId)
+    mod.logger.LogWarn(me.tag, "Failed to update the orientation of the gearBar with id: " .. gearBarId)
   end
 end
 
@@ -650,7 +650,7 @@ function me.GetGearBarOrientation(gearBarId)
   if gearBar then
     return gearBar.orientation
   else
-    mod.logger.LogError(me.tag, "Failed to retrieve orientation - returning nil")
+    mod.logger.LogWarn(me.tag, "Failed to retrieve orientation - returning nil")
 
     return nil
   end
@@ -671,7 +671,7 @@ function me.SetChangeMenuDirection(gearBarId, changeMenuDirection)
   if gearBar then
     gearBar.changeMenuDirection = changeMenuDirection
   else
-    mod.logger.LogError(me.tag, "Failed to update the changeMenuDirection of the gearBar with id: " .. gearBarId)
+    mod.logger.LogWarn(me.tag, "Failed to update the changeMenuDirection of the gearBar with id: " .. gearBarId)
   end
 end
 
@@ -689,7 +689,7 @@ function me.GetChangeMenuDirection(gearBarId)
   if gearBar then
     return gearBar.changeMenuDirection
   else
-    mod.logger.LogError(me.tag, "Failed to retrieve changeMenuDirection - returning nil")
+    mod.logger.LogWarn(me.tag, "Failed to retrieve changeMenuDirection - returning nil")
 
     return nil
   end
@@ -709,7 +709,7 @@ function me.GetGearSlotSize(gearBarId)
   if gearBar then
     return gearBar.gearSlotSize
   else
-    mod.logger.LogError(me.tag, "Failed to retrieve gearSlotSize. Using default size")
+    mod.logger.LogWarn(me.tag, "Failed to retrieve gearSlotSize. Using default size")
 
     return nil
   end
@@ -730,7 +730,7 @@ function me.SetChangeSlotSize(gearBarId, changeSlotSize)
     gearBar.changeSlotSize = changeSlotSize
     -- no ui update necessary, update will be triggered next time the changeMenu is shown
   else
-    mod.logger.LogError(me.tag, "Failed to update the changeSlotSize of the gearBar with id: " .. gearBarId)
+    mod.logger.LogWarn(me.tag, "Failed to update the changeSlotSize of the gearBar with id: " .. gearBarId)
   end
 end
 
@@ -748,7 +748,7 @@ function me.GetChangeSlotSize(gearBarId)
   if gearBar then
     return gearBar.changeSlotSize
   else
-    mod.logger.LogError(me.tag, "Failed to retrieve changeSlotSize. Using default size")
+    mod.logger.LogWarn(me.tag, "Failed to retrieve changeSlotSize. Using default size")
 
     return nil
   end
@@ -769,7 +769,7 @@ function me.SetSlotKeyBinding(gearBarId, position, keyBinding)
   if gearBar ~= nil and gearBar.slots[position] ~= nil then
     gearBar.slots[position].keyBinding = keyBinding
   else
-    mod.logger.LogError(me.tag, "Failed to update gearBarSlot keybinding {"
+    mod.logger.LogWarn(me.tag, "Failed to update gearBarSlot keybinding {"
     .. position .. "} for gearBar with id: " .. gearBarId)
   end
 end

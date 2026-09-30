@@ -200,7 +200,7 @@ function me.UnsetKeyBinding(gearBarId, position)
   local gearBar = mod.gearBarManager.GetGearBar(gearBarId)
 
   if gearBar == nil or gearBar.bindIndex == nil or gearBar.slots[position] == nil then
-    mod.logger.LogError(me.tag, "Unable to unbind - no gearSlot at position " .. tostring(position)
+    mod.logger.LogWarn(me.tag, "Unable to unbind - no gearSlot at position " .. tostring(position)
       .. " on gearBar with id: " .. tostring(gearBarId))
 
     return
@@ -420,7 +420,7 @@ end
 ]]--
 function me.OpenKeyBindingSettings()
   if Settings.KEYBINDINGS_CATEGORY_ID == nil then
-    mod.logger.LogError(me.tag, "Keybindings settings category not available")
+    mod.logger.LogWarn(me.tag, "Keybindings settings category not available")
 
     return
   end
