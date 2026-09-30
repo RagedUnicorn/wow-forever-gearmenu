@@ -69,3 +69,4 @@ dev/ShotManifest.lua
 dev/Capture.lua
 dev/SlotShowcase.lua
 dev/TrinketShowcase.lua
+dev/FakeStage.lua
