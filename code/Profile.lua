@@ -554,7 +554,7 @@ end
 --[[
   Rename a stored profile. The default profile can neither be renamed nor be replaced by
   renaming another profile onto its name. Renaming the active profile moves the active
-  name along.
+  name along. Renaming a profile to the name it already has changes nothing.
 
   @param {string} oldName
   @param {string} newName
@@ -571,6 +571,11 @@ function me.RenameProfile(oldName, newName)
 
   if store[oldName] == nil then
     return false
+  end
+
+  -- moving the entry onto its own key and then clearing the old key would delete it
+  if newName == oldName then
+    return true
   end
 
   store[newName] = store[oldName]
