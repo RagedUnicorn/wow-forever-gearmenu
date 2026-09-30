@@ -134,7 +134,7 @@ end
 ]]--
 function me.CreateGearSlot(gearBarFrame, gearBar, position)
   if InCombatLockdown() then
-    mod.logger.LogError(me.tag, "Unable to update slots in combat. Please /reload after your are out of combat")
+    mod.logger.PrintUserError(rggm.L["gear_bar_update_slots_combat"])
 
     return
   end
@@ -772,7 +772,7 @@ end
 ]]--
 function me.UpdateGearBarGearSlots(gearBar)
   if InCombatLockdown() then
-    mod.logger.LogError(me.tag, "Unable to update slots in combat. Please /reload after your are out of combat")
+    mod.logger.PrintUserError(rggm.L["gear_bar_update_slots_combat"])
 
     return
   end
@@ -970,7 +970,7 @@ end
 ]]--
 function me.UpdateClickHandler()
   if InCombatLockdown() then
-    mod.logger.LogError(me.tag, "Unable to update slots in combat. Please /reload after your are out of combat")
+    mod.logger.PrintUserError(rggm.L["gear_bar_update_slots_combat"])
 
     return
   end
