@@ -152,6 +152,11 @@ This generates a JUnit XML report in `./target/busted-junit.xml`.
 - `test/headless/Bootstrap.lua` - test globals and pure-module bootstrap
 - `test/headless/WowStubs.lua` - opt-in registry of WoW-global stubs
 
+**Modules deliberately without a spec:**
+- `gui/AboutContent.lua` - builds a logo and four fixed font strings; no branches or state to pin
+- `gui/QuickChangeMenu.lua` - deferred until it is decided whether QuickChange ships in the first
+  WoW Forever release (`code/QuickChange.lua` itself is covered by `QuickChangeSpec`)
+
 ### Testing and Code Quality
 
 Before committing changes:
