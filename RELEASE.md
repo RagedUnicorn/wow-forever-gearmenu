@@ -16,7 +16,7 @@ Push all commits before proceeding
 * Make sure Metadata https://github.com/RagedUnicorn/wow-gearmenu-meta is up-to-date
 * Create a GitHub deployment
   * Invoke GitHub action
-    * https://github.com/RagedUnicorn/wow-classic-gearmenu/actions/workflows/release_github.yaml
+    * https://github.com/RagedUnicorn/wow-forever-gearmenu/actions/workflows/release_github.yaml
 * Create a CurseForge deployment
   * Invoke CurseForge action
-    * https://github.com/RagedUnicorn/wow-classic-gearmenu/actions/workflows/release_curseforge.yaml
+    * https://github.com/RagedUnicorn/wow-forever-gearmenu/actions/workflows/release_curseforge.yaml
