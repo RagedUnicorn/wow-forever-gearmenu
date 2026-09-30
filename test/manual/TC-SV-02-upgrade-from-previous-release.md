@@ -30,8 +30,7 @@
 ## Expected
 
 - No Lua errors on login; the defaults backfill (`ApplyConfigurationDefaults`) runs silently.
-  The newest step in `MigrationPath()` is `UpgradeToV2_0_0()` and it only fires for pre-2.0.0
-  versions — for a v2.7.0 file no migration step should run or log
+  GearMenu Forever has no migration path, so nothing converts or logs an upgrade
 - All v2.7.0 user data survives byte-for-byte: both `gearBars` entries (ids 130090 / 182509
   with their slots, sizes, positions, lock state, orientation and change menu direction), all
   scalar options, and the empty `quickChangeRules` / `frames` containers stay empty — no rules
@@ -50,8 +49,8 @@
 
 The v2.6.0 schema is not identical to v2.7.0 — v2.7.0 added per-gearBar `orientation` and
 `changeMenuDirection` — so this fixture covers only the v2.7.0 hop. Upgrades from older
-releases rely on the nil-backfill in `SetupConfiguration` plus `MigrationPath()` and are not
-covered by this case.
+releases rely on the nil-backfill in `SetupConfiguration` alone (GearMenu Forever has no migration
+path) and are not covered by this case.
 
 Profiles did not exist in v2.7.0, which is why this case asserts that `profiles` is *created*
 rather than *preserved*. When the next release ships, snapshot a fixture that does carry saved

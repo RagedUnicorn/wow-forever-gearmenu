@@ -26,7 +26,6 @@
 -- luacheck: globals INVSLOT_HEAD INVSLOT_NECK INVSLOT_SHOULDER INVSLOT_CHEST INVSLOT_WAIST INVSLOT_LEGS INVSLOT_FEET
 -- luacheck: globals INVSLOT_WRIST INVSLOT_HAND INVSLOT_FINGER1 INVSLOT_FINGER2 INVSLOT_TRINKET1 INVSLOT_TRINKET2
 -- luacheck: globals INVSLOT_BACK INVSLOT_MAINHAND INVSLOT_OFFHAND INVSLOT_RANGED INVSLOT_AMMO C_AddOns ReloadUI
--- luacheck: globals GetBindingKey SetBinding SetBindingClick GetCurrentBindingSet SaveBindings
 
 local mod = rggm
 local me = {}
@@ -44,7 +43,7 @@ me.tag = "Configuration"
   used elsewhere (see gearSlots in code/GearManager.lua and PROFILE_FIELD_SPEC in
   code/Profile.lua). Table defaults are merged recursively -- a saved table gains any
   key it lacks but keeps every value it holds. Entries marked ["userOwned"] = true are
-  collections whose content is created by the player (or by migration paths); for those
+  collections whose content is created by the player; for those
   the merge only guarantees the container exists and never descends into it.
 ]]--
 local CONFIGURATION_DEFAULTS = {
@@ -284,10 +283,7 @@ function me.SetupConfiguration()
   -- existed or a profile export without it gets one here)
   mod.gearBarManager.EnsureBindIndices()
 
-  --[[
-    Set saved variables with addon version. This can be used later to determine whether
-    a migration path applies to the current saved variables or not
-  ]]--
+  -- stamp the saved variables with the running addon version
   me.SetAddonVersion()
 end
 
@@ -315,32 +311,18 @@ function me.GetDefaults()
 end
 
 --[[
-  Set addon version on addon options. Before setting a new version make sure
-  to run through migration paths.
+  Stamp the saved variables with the running addon version and run the first time
+  initialization on a fresh install. GearMenu Forever has no migration path: WoW Forever
+  started without any GearMenu saved variables, so there is no older layout to convert - fields
+  added later are backfilled by ApplyConfigurationDefaults and the per-bar nil-checks in
+  me.SetupConfiguration instead.
 ]]--
 function me.SetAddonVersion()
-  -- if no version set so far make sure to set the current one
-  if GearMenuConfiguration.addonVersion == nil then
-    GearMenuConfiguration.addonVersion = C_AddOns.GetAddOnMetadata(RGGM_CONSTANTS.ADDON_NAME, "Version")
-  end
-
-  me.MigrationPath()
-  -- migration done update addon version to current
   GearMenuConfiguration.addonVersion = C_AddOns.GetAddOnMetadata(RGGM_CONSTANTS.ADDON_NAME, "Version")
 
   if #GearMenuConfiguration.gearBars == 0 and not GearMenuConfiguration.firstTimeInitializationDone then
     me.FirstTimeInitialization()
   end
-end
-
---[[
-  Run through all migration paths. Each migration path needs to decide by itself whether it
-  should run or not.
-]]--
-function me.MigrationPath()
-  me.UpgradeToV1_3_0()
-  me.UpgradeToV1_4_0()
-  me.UpgradeToV2_0_0()
 end
 
 --[[
@@ -387,151 +369,6 @@ function me.FirstTimeInitialization()
   mod.gearBarManager.UpdateGearSlot(gearBar.id, 3, mod.gearManager.GetGearSlotForSlotId(INVSLOT_HEAD), true)
 
   GearMenuConfiguration.firstTimeInitializationDone = true
-end
-
---[[
-  Should be run by versions: All < v1.3.0
-  Description: RGGM_CONSTANTS.INVSLOT_NONE was previously defined as 0 (zero) for slots
-  that where inactive and did not have an active slot. 0 (zero) however is the ammo slots in wow
-  because of that we change the definition to 99. All old configurations need to be adapted to reflect this.
-]]--
-function me.UpgradeToV1_3_0()
-  local versions = {"v1.2.0", "v1.1.0", "v1.0.1", "v1.0.0"}
-  local shouldRunUpgradePath = false
-
-  for _, version in pairs(versions) do
-    if GearMenuConfiguration.addonVersion == version then
-      shouldRunUpgradePath = true
-      break
-    end
-  end
-
-  if not shouldRunUpgradePath then return end
-
-  mod.logger.LogDebug(me.tag, "Running upgrade path from " .. GearMenuConfiguration.addonVersion .. " to v1.3.0")
-
-  local slots = GearMenuConfiguration.slots
-
-  for i = 0, #slots do
-    if slots[i] == 0 then
-      slots[i] = RGGM_CONSTANTS.INVSLOT_NONE
-    end
-  end
-
-  mod.logger.LogDebug(me.tag, "Finished upgrade path from " .. GearMenuConfiguration.addonVersion .. " to v1.3.0")
-end
-
---[[
-  Should be run by versions: All < v1.4.0
-  Description: Renamed enableFastpress to enableFastPress
-]]--
-function me.UpgradeToV1_4_0()
-  local versions = {"v1.3.0", "v1.2.0", "v1.1.0", "v1.0.1", "v1.0.0"}
-  local shouldRunUpgradePath = false
-
-  for _, version in pairs(versions) do
-    if GearMenuConfiguration.addonVersion == version then
-      shouldRunUpgradePath = true
-      break
-    end
-  end
-
-  if not shouldRunUpgradePath then return end
-
-  mod.logger.LogDebug(me.tag, "Running upgrade path from " .. GearMenuConfiguration.addonVersion .. " to v1.4.0")
-
-  GearMenuConfiguration.enableFastPress = GearMenuConfiguration.enableFastpress
-  GearMenuConfiguration.enableFastpress = nil
-
-  mod.logger.LogDebug(me.tag, "Finished upgrade path from " .. GearMenuConfiguration.addonVersion .. " to v1.4.0")
-end
-
---[[
-  Should be run by versions: All < v2.0.0
-  Description: Complete overhaul of how gearBars are created
-]]--
-function me.UpgradeToV2_0_0()
-  local versions = {"v1.6.0", "v1.5.0", "v1.4.0", "v1.3.0", "v1.2.0", "v1.1.0", "v1.0.1", "v1.0.0"}
-  local shouldRunUpgradePath = false
-
-  for _, version in pairs(versions) do
-    if GearMenuConfiguration.addonVersion == version then
-      shouldRunUpgradePath = true
-      break
-    end
-  end
-
-  if not shouldRunUpgradePath then return end
-
-  mod.logger.LogDebug(me.tag, "Running upgrade path from " .. GearMenuConfiguration.addonVersion .. " to v2.0.0")
-
-  if GearMenuConfiguration.frames.GM_GearBar == nil then
-    mod.logger.LogError(me.tag, "Migration failed - no gearBar found. Continuing with default initialization")
-    GearMenuConfiguration.gearBars = nil
-    GearMenuConfiguration.gearBars = {}
-    return
-  end
-
-  local gearBar = mod.gearBarManager.AddGearBar(RGGM_CONSTANTS.GEAR_BAR_DEFAULT_NAME, false)
-
-  gearBar.isLocked = GearMenuConfiguration.lockGearBar
-  gearBar.showKeyBindings = GearMenuConfiguration.showKeyBindings
-  gearBar.showCooldowns = GearMenuConfiguration.showCooldowns
-  gearBar.gearSlotSize = GearMenuConfiguration.slotSize
-  gearBar.changeSlotSize = GearMenuConfiguration.slotSize -- use gearSlot size as changeSlot size
-  gearBar.position = {}
-  gearBar.position.relativePoint = GearMenuConfiguration.frames.GM_GearBar.relativePoint
-  gearBar.position.point = GearMenuConfiguration.frames.GM_GearBar.point
-  gearBar.position.posX = GearMenuConfiguration.frames.GM_GearBar.posX
-  gearBar.position.posY = GearMenuConfiguration.frames.GM_GearBar.posY
-  gearBar.slots = nil -- reset slots
-  gearBar.slots = {}
-
-  local slotPosition = 1
-
-  for i = 1, #GearMenuConfiguration.slots do
-    if GearMenuConfiguration.slots[i] ~= RGGM_CONSTANTS.INVSLOT_NONE then
-      local gearSlot = mod.gearManager.GetGearSlotForSlotId(GearMenuConfiguration.slots[i])
-      -- check if a keybinding was set for that slot
-      local key = GetBindingKey("CLICK GM_GearBarSlot_" .. i .. ":LeftButton")
-
-      if key ~= nil then
-        mod.logger.LogInfo(me.tag, "Slot with id{" .. i .. "} has keyBinding{" .. key .. "} set - attempting migration")
-
-        SetBinding(key)
-        SetBindingClick(
-          key,
-          RGGM_CONSTANTS.ELEMENT_GEAR_BAR_BASE_FRAME_NAME .. gearBar.id .. "Slot_" .. slotPosition
-        )
-
-        gearSlot.keyBinding = key
-      end
-
-      table.insert(gearBar.slots, gearSlot)
-      slotPosition = slotPosition + 1
-    end
-  end
-
-  -- unbind rest of possible keybind corpses
-  for i = 1, 17 do -- there where a max amount of 17 slots possible
-    local key = GetBindingKey("CLICK GM_GearBarSlot_" .. i .. ":LeftButton")
-
-    if key ~= nil then
-      SetBinding(key)
-    end
-  end
-
-  SaveBindings(GetCurrentBindingSet()) -- save bindings
-
-  -- no longer used properties (moved to specific gearBar)
-  GearMenuConfiguration.lockGearBar = nil
-  GearMenuConfiguration.showKeyBindings = nil
-  GearMenuConfiguration.showCooldowns = nil
-  GearMenuConfiguration.slotSize = nil
-  GearMenuConfiguration.frames = nil
-  GearMenuConfiguration.slots = nil
-
-  mod.logger.LogDebug(me.tag, "Finished upgrade path from " .. GearMenuConfiguration.addonVersion .. " to v2.0.0")
 end
 
 --[[
