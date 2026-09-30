@@ -395,6 +395,13 @@ Headless coverage: `KeyBindProxySpec` (creation, mapping, deferral), `KeyBindRec
 (reads, writes, shift, profile pair, deferral queue) against the in-memory `BindingSet` and
 `FrameRegistry` stubs in `test/headless/WowStubs.lua`.
 
+## Localization
+
+`localization/enUS.lua` is the source of truth: it defines every key, and the other locales
+(`deDE`, `ruRU`, `zhCN`) translate that same key set inside their `GetLocale()` guard. Add or remove a
+key in all four files together. `LocalizationParitySpec` enforces this headlessly - every locale
+must carry exactly the enUS keys and the same `string.format` placeholders.
+
 ## Dependency Management
 
 This repository uses [Renovate](https://renovatebot.com/) for automated dependency updates. Renovate monitors and updates:
