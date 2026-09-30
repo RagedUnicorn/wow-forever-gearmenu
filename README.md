@@ -45,11 +45,11 @@ This is the GearMenu line for World of Warcraft: Forever. It supports the Foreve
 | WristSlot         | Wrist/Bracers slot           |
 | HandsSlot         | Hands slot                   |
 | Finger0Slot       | First/Upper Ring slot        |
-| Finger1Slot       | Second/Upper Ring slot       |
+| Finger1Slot       | Second/Lower Ring slot       |
 | Trinket0Slot      | First/Upper Trinket slot     |
 | Trinket1Slot      | Second/Lower Trinket slot    |
 | BackSlot          | Back/Cloak slot              |
-| MainhandSlot      | Main-hand slot               |
+| MainHandSlot      | Main-hand slot               |
 | SecondaryHandSlot | Secondary-hand/Off-hand slot |
 | RangedSlot        | Ranged slot                  |
 | AmmoSlot          | Ammo slot                    |
@@ -91,9 +91,7 @@ Every GearSlot can be bound to a key - up to two keys per slot - through the gam
 - **Settings > Keybindings** lists a `GearMenu` section with an entry per GearBar and GearSlot (`GearBar 1 - Slot 3`). The `Key Bindings` button in a GearBar's configuration opens the list at that section.
 - **Quick Keybind Mode** (Settings > Keybindings > Quick Keybind Mode, or the `Quick Keybind Mode` button in a GearBar's configuration): hover a GearSlot and press the key you want to bind, Escape unbinds.
 
-The bound key is shown in the top right corner of the GearSlot like the hotkey of an action button; it turns red while the target is out of range of the item.
-
-The bound key is shown on the GearSlot and in the slot's configuration row, where `Unbind` clears it. Keys are positional - `GearBar 1 - Slot 3` is the third slot of your first GearBar - and follow a slot that moves up when a slot before it is removed. Keys cannot be changed while in combat; a change made in combat is applied as soon as you leave it.
+The bound key is shown in the top right corner of the GearSlot like the hotkey of an action button - it turns red while the target is out of range of the item - and in the slot's configuration row, where `Unbind` clears it. Keys are positional - `GearBar 1 - Slot 3` is the third slot of your first GearBar - and follow a slot that moves up when a slot before it is removed. Keys cannot be changed while in combat; a change made in combat is applied as soon as you leave it.
 
 ![](docs/gm_keybinding.gif)
 
@@ -322,7 +320,7 @@ Make sure to recheck the installation part of this Readme and check that the Add
 
 #### I get a red error (Lua Error) on my screen. What is this?
 
-This is what we call a Lua error, and it usually happens because of an oversight or error by the developer (in this case me). Take a screenshot off the error and create a GitHub Issue with it, and I will see if I can resolve it. It also helps if you can add any additional information of what you were doing at the time and what other addons you have active. Additionally, if you are able to reproduce the error make sure to check if it still happens if you disable all others addons.
+This is what we call a Lua error, and it usually happens because of an oversight or error by the developer (in this case me). Take a screenshot of the error and create a GitHub Issue with it, and I will see if I can resolve it. It also helps if you can add any additional information of what you were doing at the time and what other addons you have active. Additionally, if you are able to reproduce the error make sure to check if it still happens if you disable all other addons.
 
 #### GearMenu spams my chat with messages. How can I deactivate this?
 
