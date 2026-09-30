@@ -104,6 +104,8 @@ end
 --[[
   @return {boolean}
     whether binding writes are waiting for the end of combat
+
+  Test API: only the headless specs call this - keep it for them
 ]]--
 function me.HasPendingWrites()
   return #pendingWrites > 0

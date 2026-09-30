@@ -112,6 +112,8 @@ end
 --[[
   @return {boolean}
     whether the proxy buttons have been created
+
+  Test API: only the headless specs call this - keep it for them
 ]]--
 function me.IsSetUp()
   return isSetUp
@@ -120,6 +122,8 @@ end
 --[[
   @return {boolean}
     whether a re-point is waiting for the end of combat
+
+  Test API: only the headless specs call this - keep it for them
 ]]--
 function me.HasPendingUpdate()
   return pendingUpdate
@@ -131,6 +135,8 @@ end
 
   @return {table | nil}
     the proxy button, nil before Setup ran
+
+  Test API: only the headless specs call this - keep it for them
 ]]--
 function me.GetProxy(bindIndex, position)
   return proxies[bindIndex] and proxies[bindIndex][position]

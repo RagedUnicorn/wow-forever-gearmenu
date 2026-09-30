@@ -43,7 +43,6 @@ code/Comm.lua
 code/Macro.lua
 
 # debug
-code/Debug.lua
 
 # gui
 gui/Frame.xml
