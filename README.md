@@ -140,13 +140,13 @@ If you prefer having certain items in your actionslots GearMenu can still be of 
 ```
 /run GM_AddToCombatQueue(itemId, enchantId, slotId)
 
-# Example - Equip Hand of Justice into the lower trinket slot
-/run GM_AddToCombatQueue(233734, 0, 14)
+# Example - Equip the Worn Dagger into the main hand slot
+/run GM_AddToCombatQueue(2092, 0, 16)
 ```
 
 **Note:** The enchantId is optional. If you don't have multiple items with different enchantIds in your inventory, set it to 0.
 
-> Note: It is not recommended using this for weapons because addons cannot switch weapons during combat (GearMenu will put the item into the combatQueue). With a normal weaponswitch macro however this is still possible.
+> Note: Addons cannot switch weapons during combat - a weapon added this way waits in the combatQueue and is equipped as soon as the fight is over. A normal weaponswitch macro can still switch weapons during combat.
 
 #### Clear Slot From CombatQueue
 ```
@@ -158,14 +158,14 @@ If you prefer having certain items in your actionslots GearMenu can still be of 
 
 ##### Finding itemId
 
-Finding the id of a certain item is easiest with websites such as [wowhead](https://classic.wowhead.com/).
+Finding the id of a certain item is easiest with websites such as [wowhead](https://www.wowhead.com/classic/).
 
 ```
 # Example:
-https://classic.wowhead.com/item=11815/hand-of-justice
+https://www.wowhead.com/classic/item=2092/worn-dagger
 ```
 
-The number after item is the itemId we search for.
+The number after item is the itemId we search for. WoW Forever uses the Classic Era item ids, but its client does not know every item wowhead lists yet - check an id in game with `/dump C_Item.GetItemInfoInstant(2092)`, which returns no result for an item the client does not know.
 
 ##### Finding slotId
 
