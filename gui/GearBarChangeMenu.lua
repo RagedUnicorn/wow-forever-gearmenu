@@ -23,8 +23,8 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- luacheck: globals CreateFrame C_Container CooldownFrame_Clear
--- luacheck: globals CooldownFrame_Set UIParent
+-- luacheck: read globals CreateFrame C_Container CooldownFrame_Clear
+-- luacheck: read globals CooldownFrame_Set UIParent
 
 local mod = rggm
 local me = {}

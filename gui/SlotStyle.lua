@@ -34,7 +34,7 @@
   so the 24 - 64 px slots keep the proportions of the template.
 ]]--
 
--- luacheck: globals CreateFrame C_Texture C_Timer
+-- luacheck: read globals CreateFrame C_Texture C_Timer
 
 local mod = rggm
 local me = {}

@@ -23,8 +23,8 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- luacheck: globals GetBindingKey SetBinding GetCurrentBindingSet SaveBindings InCombatLockdown
--- luacheck: globals Settings SettingsPanel QuickKeybindFrame
+-- luacheck: read globals GetBindingKey SetBinding GetCurrentBindingSet SaveBindings InCombatLockdown
+-- luacheck: read globals Settings SettingsPanel QuickKeybindFrame
 
 --[[
   The keyBind (GM_KeyBind) module reads and writes the key bindings of gearSlots.

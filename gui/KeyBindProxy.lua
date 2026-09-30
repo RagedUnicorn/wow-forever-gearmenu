@@ -23,7 +23,7 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- luacheck: globals CreateFrame UIParent InCombatLockdown
+-- luacheck: read globals CreateFrame UIParent InCombatLockdown
 
 --[[
   The keyBindProxy (GM_KeyBindProxy) module owns the hidden secure buttons that GearMenu's key

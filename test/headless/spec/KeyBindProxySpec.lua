@@ -35,11 +35,7 @@
   localization stub is installed before the dofile.
 ]]--
 
--- busted extends `assert` with .same / .equal / etc. at runtime; luacheck cannot verify those
--- fields statically. Suppress warning 143 (accessing undefined field of a global variable).
--- luacheck: globals describe it before_each after_each
--- luacheck: globals BINDING_HEADER_GEARMENU PREFACE_GEARMENU_BAR1 PREFACE_GEARMENU_BAR10
--- luacheck: ignore 143
+-- luacheck: read globals BINDING_HEADER_GEARMENU PREFACE_GEARMENU_BAR1 PREFACE_GEARMENU_BAR10
 
 local wowStubs = require("WowStubs")
 
