@@ -76,14 +76,6 @@ GearMenu also detects whether an itemswitch is possible even when out of combat.
 
 ![](docs/gm_combat_queue_cast.gif)
 
-### Quick Change
-
-Quick change consists of rules that apply when certain items are used. The player can define rules for items that have a usable effect. An item might be immediately switched after use or only after a certain delay. Otherwise, the same rules for item switching apply. This means that if the user is in combat it will be moved to the combat queue and if he is out of combat the item will be immediately switched. See the options menu for defining new rules based on the item type.
-
-> Note: If an item has a buff effect, and you immediately change the item you will usually also lose its buff. In most cases it makes sense to set the delay to the duration of the buff
-
-![](docs/gm_quick_change_add_rule.gif)
-
 ### Keybinding
 
 Every GearSlot can be bound to a key - up to two keys per slot - through the game's own keybinding UI:
@@ -292,12 +284,12 @@ GearMenu lets you save your entire configuration as named profiles, so you can s
 
 ![](docs/gm_profile_configuration.png)
 
-A profile captures your full GearMenu setup – all of your GearBars (their GearSlots, sizes, orientation, lock state and on-screen position), your QuickChange rules, the TrinketMenu settings and the general options. One profile is always the **active** one, marked in gold as *"Raid (active)"* in the list: every change you make in the settings belongs to it, and it is saved automatically – when you switch profiles, log out or reload, export it, and at every login. There is nothing to remember to save.
+A profile captures your full GearMenu setup – all of your GearBars (their GearSlots, sizes, orientation, lock state and on-screen position), the TrinketMenu settings and the general options. One profile is always the **active** one, marked in gold as *"Raid (active)"* in the list: every change you make in the settings belongs to it, and it is saved automatically – when you switch profiles, log out or reload, export it, and at every login. There is nothing to remember to save.
 
 - **Create new Profile**: Stores a copy of your current settings under a new name and makes it the active profile.
 - **Load**: Switches to the selected profile and reloads the UI. The profile you are leaving keeps your settings as they are now.
 - **Rename** / **Delete**: Manage the selected profile. Deleting the active profile switches you back to *Default*.
-- **Reset to defaults**: Puts the active profile back to GearMenu's shipped settings – the general options, the TrinketMenu settings at their defaults, your GearBars and QuickChange rules replaced by the starter GearBar, exactly like a fresh install – then reloads the UI.
+- **Reset to defaults**: Puts the active profile back to GearMenu's shipped settings – the general options, the TrinketMenu settings at their defaults, your GearBars replaced by the starter GearBar, exactly like a fresh install – then reloads the UI.
 
 #### The Default Profile
 
