@@ -24,8 +24,8 @@
 ]]--
 
 -- THIS FILE IS AUTO-GENERATED. ALL CHANGES ARE OVERWRITTEN
--- Source: wow-media-capture/reference/media/gearmenu.json
--- Regenerate: scripts/gen-shot-table.ps1 -Addon gearmenu
+-- Source: wow-media-capture/reference/media/gearmenu-forever.json
+-- Regenerate: scripts/gen-shot-table.ps1 -Addon gearmenu-forever
 
 -- shows/name are human-facing copy carried over from the manifest verbatim - reflowing
 -- them is not the generator's call, so the 120-column limit does not apply here
@@ -77,17 +77,6 @@ RGGM_SHOTS = {
     shows = "Switching while casting queues the swap; it fires when the cast completes - and immediately if the cast is cancelled"
   },
   {
-    name = "gm_quick_change_add_rule",
-    shot = "quick_change_add_rule",
-    frame = "SettingsPanel",
-    kind = "gif",
-    setup = { "openCategory:quickChange" },
-    hideFrames = { "GM_TrinketMenuFrame", "GM_GearBarFrame_2" },
-    hideChrome = true,
-    padding = 100,
-    shows = "QuickChange panel: picking a used-item and a switch-to item and adding a delayed rule"
-  },
-  {
     name = "gm_keybinding",
     shot = "keybinding",
     frame = "SettingsPanel",
@@ -97,7 +86,7 @@ RGGM_SHOTS = {
     hideFrames = { "GM_TrinketMenuFrame", "GM_GearBarFrame_2" },
     hideChrome = true,
     padding = 250,
-    shows = "Binding a key to a gearSlot in Settings > Keybindings (GearMenu section) and using it in the world"
+    shows = "Binding keys to gearSlots in Blizzard's Quick Keybind Mode - the key label appears on the slot"
   },
   {
     name = "gm_drag_and_drop_slots",
