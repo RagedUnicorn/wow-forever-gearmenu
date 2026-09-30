@@ -213,9 +213,6 @@ GearMenuConfiguration = GearMenuConfiguration or {}
 ]]--
 local defaultsByName
 
--- forward declarations
-local ApplyConfigurationDefaults
-
 --[[
   Recursively backfill missing keys of target with a fresh deep copy of the matching
   defaults value. A key is missing only when its value is nil -- false is a real value
@@ -242,7 +239,7 @@ end
   nested default reaches upgrading players -- except userOwned collections, whose
   content belongs to the player and is never touched beyond creating the container.
 ]]--
-ApplyConfigurationDefaults = function()
+local function ApplyConfigurationDefaults()
   for _, entry in ipairs(CONFIGURATION_DEFAULTS) do
     if GearMenuConfiguration[entry.name] == nil then
       GearMenuConfiguration[entry.name] = mod.common.Clone(entry.default)
