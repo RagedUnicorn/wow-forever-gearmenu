@@ -199,6 +199,12 @@ This generates an addon package for development. For generating a release packag
 mvn package -D generate.sources.overwrite=true -P release
 ```
 
+The release package takes `code/Environment.lua` from the working tree, so the overwrite flag is required. It also leaves `GearMenu.toc` and `code/Environment.lua` in their release state. Switch back to development right after packaging so they are not committed by accident:
+
+```
+mvn generate-resources -D generate.sources.overwrite=true -P development
+```
+
 **Note:** This packaging and switching resources can also be done one after another.
 
 **Note:** The packaging is not fit to be used for CurseForge because CurseForge expects a specific packaging
@@ -208,6 +214,8 @@ mvn package -D generate.sources.overwrite=true -P release
 mvn generate-resources -D generate.sources.overwrite=true -P release
 # package release
 mvn package -P release
+# switch environment back to development
+mvn generate-resources -D generate.sources.overwrite=true -P development
 ```
 
 ### Deploy GitHub Release
@@ -219,6 +227,8 @@ Before creating a new release update `addon.tag.version` in `pom.xml`. Afterward
 mvn generate-resources -D generate.sources.overwrite=true -P release
 # deploy release
 mvn package -P deploy-github -D github.auth-token=[token]
+# switch environment back to development
+mvn generate-resources -D generate.sources.overwrite=true -P development
 ```
 
 **Note:** This is only intended for manual deployment to GitHub. With GitHub actions the token is supplied as a secret to the build process
@@ -232,6 +242,8 @@ mvn package -P deploy-github -D github.auth-token=[token]
 mvn generate-resources -D generate.sources.overwrite=true -P release
 # deploy release
 mvn package -P deploy-curseforge -D curseforge.auth-token=[token]
+# switch environment back to development
+mvn generate-resources -D generate.sources.overwrite=true -P development
 ```
 
 **Note:** This is only intended for manual deployment to CurseForge. With GitHub actions the token is supplied as a secret to the build process
