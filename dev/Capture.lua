@@ -119,26 +119,12 @@ local CHROME = {
   "TicketStatusFrame"
 }
 
--- frames hidden by the current shot, restored afterwards
+-- frame -> original alpha of the frames hidden by the current shot, restored afterwards
 local hidden = {}
 -- cursor for the keybind-safe `shot next` driver
 local cursor = 1
 -- the entry of the last `demo`, so `hide` can apply its chrome/hide configuration
 local lastDemoEntry
-
--- forward declarations
-local FindShot
-local IsShootable
-local RunSetup
-local HideChrome
-local HideFrames
-local RestoreChrome
-local ResolveFrame
-local MeasureFrame
-local MeasureShotRect
-local RecordShot
-local TakeShot
-local HandleShotCommand
 
 --[[
   Setup verbs referenced by the manifest's capture.setup array. Keep this vocabulary
@@ -200,7 +186,7 @@ local setupVerbs = {
   @return {table}, {number}
     The manifest entry and its index, or nil
 ]]--
-FindShot = function(name)
+local function FindShot(name)
   for i = 1, #RGGM_SHOTS do
     if RGGM_SHOTS[i].name == name or RGGM_SHOTS[i].shot == name then
       return RGGM_SHOTS[i], i
@@ -218,14 +204,14 @@ end
 
   @return {boolean}
 ]]--
-IsShootable = function(entry)
+local function IsShootable(entry)
   return entry.kind ~= "gif"
 end
 
 --[[
   @param {table} entry
 ]]--
-RunSetup = function(entry)
+local function RunSetup(entry)
   for _, step in ipairs(entry.setup) do
     local verb, argument = string.match(step, "^(%w+):?(.*)$")
     local handler = setupVerbs[verb]
@@ -239,66 +225,22 @@ RunSetup = function(entry)
 end
 
 --[[
-  Hide the default chrome for a clean capture. Frames named in keepFrames (the shot's
-  capture.includeFrames) are spared so a shot can deliberately keep, e.g., the
-  TrinketMenu next to the settings window.
+  Make a frame invisible for the shot and remember its alpha. Alpha only, never Hide/Show:
+  hiding a Blizzard frame from addon code runs its OnHide/OnShow scripts tainted, and on
+  the Forever client Edit Mode later reads what those scripts wrote - entering Edit Mode
+  then fails on a secret value "while execution tainted by 'GearMenu'". Alpha 0 also keeps
+  the bars invisible when the action bar controller re-shows them mid-recording. The
+  original alpha is restored, not 1 - Edit Mode lets players set a bar's opacity
 
-  @param {table | nil} keepFrames
-    Array of frame names to leave visible
+  @param {table | nil} frame
 ]]--
-HideChrome = function(keepFrames)
-  local keep = {}
-
-  if keepFrames ~= nil then
-    for _, name in ipairs(keepFrames) do
-      keep[name] = true
-    end
+local function HideFrame(frame)
+  if frame == nil or frame.IsShown == nil or not frame:IsShown() or hidden[frame] ~= nil then
+    return
   end
 
-  for _, name in ipairs(CHROME) do
-    if not keep[name] then
-      local frame = ResolveFrame(name)
-
-      if frame ~= nil and frame.IsShown ~= nil and frame:IsShown() then
-        -- alpha 0 on top of Hide: the modern action bar controller re-Shows bars on
-        -- state changes (stance, paging) mid-recording - the alpha keeps them invisible
-        frame:SetAlpha(0)
-        frame:Hide()
-        table.insert(hidden, frame)
-      end
-    end
-  end
-end
-
-RestoreChrome = function()
-  for _, frame in ipairs(hidden) do
-    frame:SetAlpha(1)
-    frame:Show()
-  end
-
-  hidden = {}
-end
-
---[[
-  Hide specific frames named by the shot's capture.hideFrames, right before the
-  screenshot and restored afterwards (queued onto the same `hidden` list as the
-  chrome). Used to suppress a frame a setup step forces visible.
-
-  @param {table | nil} names
-    Array of frame names to hide
-]]--
-HideFrames = function(names)
-  if names == nil then return end
-
-  for _, name in ipairs(names) do
-    local frame = ResolveFrame(name)
-
-    if frame ~= nil and frame.IsShown ~= nil and frame:IsShown() then
-      frame:SetAlpha(0)
-      frame:Hide()
-      table.insert(hidden, frame)
-    end
-  end
+  hidden[frame] = frame:GetAlpha()
+  frame:SetAlpha(0)
 end
 
 --[[
@@ -312,7 +254,7 @@ end
   @return {table | nil}
     The frame or nil
 ]]--
-ResolveFrame = function(name)
+local function ResolveFrame(name)
   local frame = _G[name]
 
   if frame ~= nil then
@@ -351,6 +293,54 @@ ResolveFrame = function(name)
 end
 
 --[[
+  Hide the default chrome for a clean capture. Frames named in keepFrames (the shot's
+  capture.includeFrames) are spared so a shot can deliberately keep, e.g., the
+  TrinketMenu next to the settings window.
+
+  @param {table | nil} keepFrames
+    Array of frame names to leave visible
+]]--
+local function HideChrome(keepFrames)
+  local keep = {}
+
+  if keepFrames ~= nil then
+    for _, name in ipairs(keepFrames) do
+      keep[name] = true
+    end
+  end
+
+  for _, name in ipairs(CHROME) do
+    if not keep[name] then
+      HideFrame(ResolveFrame(name))
+    end
+  end
+end
+
+local function RestoreChrome()
+  for frame, alpha in pairs(hidden) do
+    frame:SetAlpha(alpha)
+  end
+
+  hidden = {}
+end
+
+--[[
+  Hide specific frames named by the shot's capture.hideFrames, right before the
+  screenshot and restored afterwards (queued onto the same `hidden` list as the
+  chrome). Used to suppress a frame a setup step forces visible.
+
+  @param {table | nil} names
+    Array of frame names to hide
+]]--
+local function HideFrames(names)
+  if names == nil then return end
+
+  for _, name in ipairs(names) do
+    HideFrame(ResolveFrame(name))
+  end
+end
+
+--[[
   Convert a frame's UI coordinates to screenshot pixel coordinates. Two conversions are
   needed:
 
@@ -368,7 +358,7 @@ end
   @return {number}, {number}, {number}, {number}, {number}, {number}
     x, y, width, height, screenWidth, screenHeight
 ]]--
-MeasureFrame = function(frame)
+local function MeasureFrame(frame)
   local screenWidth, screenHeight = GetPhysicalScreenSize()
 
   -- referenceHeight is 768; derived live rather than hardcoded so it survives any
@@ -398,7 +388,7 @@ end
   @return {number}, {number}, {number}, {number}, {number}, {number}
     x, y, width, height, screenWidth, screenHeight
 ]]--
-MeasureShotRect = function(entry, frame)
+local function MeasureShotRect(entry, frame)
   local x, y, width, height, screenWidth, screenHeight = MeasureFrame(frame)
   local left, top, right, bottom = x, y, x + width, y + height
 
@@ -427,7 +417,7 @@ end
   @param {table} entry
   @param {table} frame
 ]]--
-RecordShot = function(entry, frame)
+local function RecordShot(entry, frame)
   if GearMenuShotLog == nil then
     GearMenuShotLog = {}
   end
@@ -453,7 +443,7 @@ end
 --[[
   @param {table} entry
 ]]--
-TakeShot = function(entry)
+local function TakeShot(entry)
   if InCombatLockdown() then
     mod.logger.PrintUserError("Refusing to capture in combat - hiding protected frames would taint the UI")
     return
@@ -713,7 +703,7 @@ end
 
   @param {table} args
 ]]--
-HandleShotCommand = function(args)
+local function HandleShotCommand(args)
   if args[1] == nil or args[1] == "help" then
     print("|cFF00FFB0GearMenu:|r media capture (development only)")
     print("  |cFFFFC300list|r - show the shot manifest")
