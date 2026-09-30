@@ -1029,14 +1029,21 @@ end
 
 --[[
   Show the pushed state of a gearSlot for a moment. SetButtonState is purely visual, so it is
-  allowed on the protected button in combat
+  allowed on the protected button in combat. A token makes a newer press outlive the reset timer
+  of an older one - its own field, as slotStyle.FlashSlot keeps flashToken on the same gearSlot
+  for the colour flash
 
   @param {table} gearSlot
 ]]--
 function me.FlashGearSlot(gearSlot)
+  gearSlot.pushFlashToken = (gearSlot.pushFlashToken or 0) + 1
+  local pushFlashToken = gearSlot.pushFlashToken
+
   gearSlot:SetButtonState("PUSHED")
 
   C_Timer.After(RGGM_CONSTANTS.GEAR_SLOT_KEY_PRESS_FLASH_DURATION, function()
+    if gearSlot.pushFlashToken ~= pushFlashToken then return end
+
     gearSlot:SetButtonState("NORMAL")
   end)
 end

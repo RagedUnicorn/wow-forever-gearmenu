@@ -307,6 +307,31 @@ describe("GearBar click handling", function()
       assert.are.equal(0, #pendingTimers)
     end)
 
+    it("keeps a second quick press pushed until its own flash ends", function()
+      local gearSlot = CreateFakeGearSlot(13)
+
+      gearBar.GearSlotOnKeyPress(gearSlot, false)
+      -- the second press lands before the first press's reset timer fires
+      gearBar.GearSlotOnKeyPress(gearSlot, false)
+
+      local firstReset = table.remove(pendingTimers, 1)
+      firstReset.callback()
+      assert.are.same({ "PUSHED", "PUSHED" }, gearSlot.buttonStates)
+
+      flushTimers()
+      assert.are.same({ "PUSHED", "PUSHED", "NORMAL" }, gearSlot.buttonStates)
+    end)
+
+    it("leaves the colour flash token of slotStyle.FlashSlot alone", function()
+      local gearSlot = CreateFakeGearSlot(13)
+      gearSlot.flashToken = 7
+
+      gearBar.GearSlotOnKeyPress(gearSlot, false)
+      flushTimers()
+
+      assert.are.equal(7, gearSlot.flashToken)
+    end)
+
     it("resets the pushed state after the flash duration", function()
       local gearSlot = CreateFakeGearSlot(13)
 

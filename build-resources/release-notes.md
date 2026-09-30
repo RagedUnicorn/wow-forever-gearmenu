@@ -40,3 +40,4 @@
 * Importing a damaged or hand-edited profile string with an out-of-range number (such as 1e999) is refused as invalid instead of storing an infinite size or position or raising a Lua error
 * GearBar and TrinketMenu positions no longer store the frame they are anchored to - they always anchor to the screen - so a moved GearBar can always be exported with its profile
 * The TrinketMenu keeps one row of height when you carry no trinkets, so an unlocked TrinketMenu can still be grabbed and moved, and it no longer grows past its 30 slots when you carry more trinkets
+* Pressing a GearSlot's key twice in quick succession keeps the slot pressed for the full flash of the second press instead of flickering back early
