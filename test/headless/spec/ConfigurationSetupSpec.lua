@@ -342,29 +342,6 @@ describe("Configuration setup", function()
 
       assert.are.same({ point = "TOP", relativePoint = "TOP", posX = 12, posY = -34 }, config.frames.GM_TrinketMenu)
     end)
-
-    it("drops a relativeTo an earlier build stored for a frame or a gearBar", function()
-      local config = useConfig({
-        firstTimeInitializationDone = true,
-        frames = { GM_TrinketMenu = { point = "TOP", relativeTo = { 0 }, relativePoint = "TOP", posX = 1, posY = 2 } },
-        gearBars = {
-          {
-            id = 1,
-            slots = {},
-            position = { point = "LEFT", relativeTo = { 0 }, relativePoint = "LEFT", posX = 3, posY = 4 }
-          }
-        }
-      })
-      -- the per-bar backfill only needs to accept the stored direction here (see the SetupConfiguration block)
-      rggm.gearBarManager.IsChangeMenuDirectionValidForOrientation = function() return true end
-
-      configuration.SetupConfiguration()
-
-      assert.is_nil(config.frames.GM_TrinketMenu.relativeTo)
-      assert.are.equal("TOP", config.frames.GM_TrinketMenu.point)
-      assert.is_nil(config.gearBars[1].position.relativeTo)
-      assert.are.equal(3, config.gearBars[1].position.posX)
-    end)
   end)
 
   describe("SetAddonVersion", function()

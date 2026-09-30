@@ -259,11 +259,6 @@ function me.SetupConfiguration()
   ApplyConfigurationDefaults()
 
   for _, gearBar in pairs(GearMenuConfiguration.gearBars) do
-    -- drop a relativeTo an earlier build stored - positions always anchor to UIParent
-    if type(gearBar.position) == "table" then
-      gearBar.position.relativeTo = nil
-    end
-
     --[[
       gearBars is a userOwned collection - ApplyConfigurationDefaults never descends into it,
       so a per-bar field added in a later version has to be backfilled here
@@ -281,12 +276,6 @@ function me.SetupConfiguration()
         gearBar.changeMenuDirection, gearBar.orientation) then
       mod.logger.LogInfo(me.tag, "gearBar changeMenuDirection has unexpected value")
       gearBar.changeMenuDirection = mod.gearBarManager.GetDefaultChangeMenuDirection(gearBar.orientation)
-    end
-  end
-
-  for _, framePosition in pairs(GearMenuConfiguration.frames) do
-    if type(framePosition) == "table" then
-      framePosition.relativeTo = nil
     end
   end
 
