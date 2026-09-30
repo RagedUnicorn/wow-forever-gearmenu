@@ -170,7 +170,6 @@ if (GetLocale() == "deDE") then
   rggm.L["gear_bar_configuration_add_gearslot_combat"] =
     "Im Kampf kann kein Ausrüstungsplatz hinzugefügt werden. Bitte versuche es nach dem Kampf erneut"
   rggm.L["gear_bar_configuration_remove_gearslot"] = "-"
-  rggm.L["gear_bar_configuration_delete_gearbar"] = "Lösche Ausrüstungsbalken"
   -- gearbar scrollmenu
   rggm.L["gear_bar_configuration_key_binding_unbind_button"] = "Entfernen"
   rggm.L["gear_bar_configuration_key_binding_not_set"] = "Kein Kürzel gesetzt"

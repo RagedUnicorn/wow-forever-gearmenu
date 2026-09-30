@@ -154,7 +154,6 @@ rggm.L["gear_bar_configuration_add_gearslot"] = "Add GearSlot"
 rggm.L["gear_bar_configuration_add_gearslot_combat"] =
   "Unable to add a GearSlot while in combat. Please try again after combat"
 rggm.L["gear_bar_configuration_remove_gearslot"] = "-"
-rggm.L["gear_bar_configuration_delete_gearbar"] = "Delete GearBar"
 -- gearbar scrollmenu
 rggm.L["gear_bar_configuration_key_binding_unbind_button"] = "Unbind"
 rggm.L["gear_bar_configuration_key_binding_not_set"] = "No Keybind Set"
