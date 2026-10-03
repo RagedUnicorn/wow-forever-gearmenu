@@ -11,7 +11,7 @@
 
 ## Providers
 
-[![](docs/curseforge.svg)](https://www.curseforge.com/wow/addons/gearmenu)
+[![](docs/curseforge.svg)](https://www.curseforge.com/wow/addons/gearmenu-rg)
 
 ## Installation
 
