@@ -12,6 +12,7 @@
 ## Providers
 
 [![](docs/curseforge.svg)](https://www.curseforge.com/wow/addons/gearmenu-rg)
+[![](docs/wago.svg)](https://addons.wago.io/addons/gearmenu-rg)
 
 ## Installation
 
