@@ -87,7 +87,7 @@ rggm = {}
 
 -- shimmed environment, mirroring the development build of code/Environment.lua
 RGGM_ENVIRONMENT = {
-  ADDON_IDENTIFIER = "com.ragedunicorn.wow.classic.gearmenu-addon",
+  ADDON_IDENTIFIER = "com.ragedunicorn.wow.forever.gearmenu-addon",
   LOG_LEVEL = 4,
   LOG_EVENT = true,
   DEBUG = true
