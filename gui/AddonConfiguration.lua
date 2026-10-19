@@ -100,7 +100,8 @@ end
     One of "main", "general", "trinketMenu", "quickChange", "profile" or "gearBar"
 
   @return {number | nil}
-    The category id or nil for an unknown key or before SetupAddonConfiguration ran
+    The category id or nil for an unknown key, for "quickChange" while QuickChange is
+    disabled or before SetupAddonConfiguration ran
 ]]--
 function me.GetCategoryId(key)
   return categoryIds[key]
@@ -131,13 +132,15 @@ function me.SetupAddonConfiguration()
     mod.trinketConfigurationMenu.BuildUi
   )
   categoryIds.trinketMenu = trinketMenuSubCategory.ID
-  local quickChangeSubCategory = me.BuildCategory(
-    RGGM_CONSTANTS.ELEMENT_GEAR_BAR_CONFIG_QUICK_CHANGE_FRAME,
-    category,
-    rggm.L["quick_change_category_name"],
-    mod.quickChangeMenu.BuildUi
-  )
-  categoryIds.quickChange = quickChangeSubCategory.ID
+  if RGGM_CONSTANTS.QUICK_CHANGE_ENABLED then
+    local quickChangeSubCategory = me.BuildCategory(
+      RGGM_CONSTANTS.ELEMENT_GEAR_BAR_CONFIG_QUICK_CHANGE_FRAME,
+      category,
+      rggm.L["quick_change_category_name"],
+      mod.quickChangeMenu.BuildUi
+    )
+    categoryIds.quickChange = quickChangeSubCategory.ID
+  end
   local profileSubCategory = me.BuildCategory(
     RGGM_CONSTANTS.ELEMENT_GEAR_BAR_CONFIG_PROFILE_FRAME,
     category,

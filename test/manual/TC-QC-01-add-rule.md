@@ -1,6 +1,6 @@
 # TC-QC-01 — Add a QuickChange rule
 
-**Area:** QuickChange | **Client:** Forever | **Mandatory:** yes
+**Area:** QuickChange | **Client:** Forever | **Mandatory:** no (QuickChange is disabled in the first WoW: Forever release)
 
 ## Preconditions
 

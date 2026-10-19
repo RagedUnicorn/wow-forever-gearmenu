@@ -42,6 +42,7 @@ describe("Core spellcast events", function()
   local calls
   local channelling
   local restore
+  local quickChangeEnabled
 
   --[[
     Fire an event the way the event bus would dispatch it to the handler Core registered
@@ -57,6 +58,8 @@ describe("Core spellcast events", function()
     handlers = {}
     calls = { quickChange = {}, queueProcessed = 0 }
     channelling = false
+    quickChangeEnabled = RGGM_CONSTANTS.QUICK_CHANGE_ENABLED
+    RGGM_CONSTANTS.QUICK_CHANGE_ENABLED = true -- luacheck: ignore 122
 
     rggm.event = {
       Register = function(events, handler)
@@ -95,6 +98,7 @@ describe("Core spellcast events", function()
 
   after_each(function()
     restore()
+    RGGM_CONSTANTS.QUICK_CHANGE_ENABLED = quickChangeEnabled -- luacheck: ignore 122
   end)
 
   describe("UNIT_SPELLCAST_SUCCEEDED", function()
@@ -119,6 +123,15 @@ describe("Core spellcast events", function()
 
       assert.are.same({}, calls.quickChange)
       assert.are.equal(0, calls.queueProcessed)
+    end)
+
+    it("skips QuickChange but still processes the combat queue while QuickChange is disabled", function()
+      RGGM_CONSTANTS.QUICK_CHANGE_ENABLED = false -- luacheck: ignore 122
+
+      fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-1", SPELL_ID)
+
+      assert.are.same({}, calls.quickChange)
+      assert.are.equal(1, calls.queueProcessed)
     end)
   end)
 

@@ -32,6 +32,12 @@ RGGM_CONSTANTS = {
   ]]--
   ADDON_MESSAGE_PREFIX = "RGGM_VER",
   --[[
+    QuickChange is switched off for the first WoW Forever release: its settings category is not
+    registered and no rule fires on a spellcast. The stored rules stay in the configuration and
+    in exported profiles, so turning it back on is a matter of flipping this flag.
+  ]]--
+  QUICK_CHANGE_ENABLED = false,
+  --[[
     Unit ids
   ]]--
   UNIT_ID_PLAYER = "player",

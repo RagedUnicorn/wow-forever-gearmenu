@@ -90,6 +90,8 @@ One file per test case under [test/manual/](manual/). Case IDs follow `TC-<AREA>
 
 ### QuickChange
 
+> Not applicable while QuickChange is disabled (`RGGM_CONSTANTS.QUICK_CHANGE_ENABLED = false`, the first WoW: Forever release). Skip these cases until it is switched back on.
+
 | ID                                                  | Case                        |
 |-----------------------------------------------------|-----------------------------|
 | [TC-QC-01](manual/TC-QC-01-add-rule.md)             | Add a QuickChange rule      |

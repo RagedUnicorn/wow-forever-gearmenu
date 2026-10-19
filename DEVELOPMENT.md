@@ -154,8 +154,8 @@ This generates a JUnit XML report in `./target/busted-junit.xml`.
 
 **Modules deliberately without a spec:**
 - `gui/AboutContent.lua` - builds a logo and four fixed font strings; no branches or state to pin
-- `gui/QuickChangeMenu.lua` - deferred until it is decided whether QuickChange ships in the first
-  WoW Forever release (`code/QuickChange.lua` itself is covered by `QuickChangeSpec`)
+- `gui/QuickChangeMenu.lua` - deferred while QuickChange is disabled
+  (`RGGM_CONSTANTS.QUICK_CHANGE_ENABLED`) (`code/QuickChange.lua` itself is covered by `QuickChangeSpec`)
 
 ### Testing and Code Quality
 

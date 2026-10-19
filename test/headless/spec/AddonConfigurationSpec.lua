@@ -171,6 +171,29 @@ describe("AddonConfiguration", function()
     end)
   end)
 
+  describe("SetupAddonConfiguration with QuickChange enabled", function()
+    local quickChangeEnabled
+
+    before_each(function()
+      quickChangeEnabled = RGGM_CONSTANTS.QUICK_CHANGE_ENABLED
+      RGGM_CONSTANTS.QUICK_CHANGE_ENABLED = true -- luacheck: ignore 122
+      addonConfiguration.SetupAddonConfiguration()
+    end)
+
+    after_each(function()
+      RGGM_CONSTANTS.QUICK_CHANGE_ENABLED = quickChangeEnabled -- luacheck: ignore 122
+    end)
+
+    it("registers the QuickChange subcategory between the TrinketMenu and the profiles", function()
+      local subcategories = addonConfiguration.GetMainCategory().subcategories
+
+      assert.are.equal("quick_change_category_name", subcategories[3].name)
+      assert.are.equal("profile_category_name", subcategories[4].name)
+      assert.are.equal(subcategories[3].ID, addonConfiguration.GetCategoryId("quickChange"))
+      assert.are.equal(6, #settings.registeredAddOnCategories)
+    end)
+  end)
+
   describe("SetupAddonConfiguration", function()
     before_each(function()
       addonConfiguration.SetupAddonConfiguration()
@@ -185,7 +208,7 @@ describe("AddonConfiguration", function()
       assert.are.equal(mainCategory, settings.registeredAddOnCategories[1])
     end)
 
-    it("registers the five subcategories under the main category in order", function()
+    it("registers the four subcategories under the main category in order", function()
       local names = {}
 
       for index, subcategory in ipairs(addonConfiguration.GetMainCategory().subcategories) do
@@ -193,10 +216,10 @@ describe("AddonConfiguration", function()
       end
 
       assert.are.same({
-        "options_category_name", "trinket_menu_category_name", "quick_change_category_name",
+        "options_category_name", "trinket_menu_category_name",
         "profile_category_name", "gear_bar_configuration_panel_text"
       }, names)
-      assert.are.equal(6, #settings.registeredAddOnCategories)
+      assert.are.equal(5, #settings.registeredAddOnCategories)
     end)
 
     it("resolves every navigation key to the id of its category", function()
@@ -204,7 +227,6 @@ describe("AddonConfiguration", function()
         main = addonConfiguration.GetMainCategory(),
         general = subcategoryNamed("options_category_name"),
         trinketMenu = subcategoryNamed("trinket_menu_category_name"),
-        quickChange = subcategoryNamed("quick_change_category_name"),
         profile = subcategoryNamed("profile_category_name"),
         gearBar = subcategoryNamed("gear_bar_configuration_panel_text")
       }
@@ -213,6 +235,7 @@ describe("AddonConfiguration", function()
         assert.are.equal(category.ID, addonConfiguration.GetCategoryId(key))
       end
 
+      assert.is_nil(addonConfiguration.GetCategoryId("quickChange"))
       assert.is_nil(addonConfiguration.GetCategoryId("unknown"))
     end)
 
