@@ -1,0 +1,53 @@
+name: Release Wago.io
+on: [workflow_dispatch]
+
+jobs:
+  lint:
+    uses: ./.github/workflows/lint.yaml
+  test:
+    uses: ./.github/workflows/test.yaml
+  wago-release-job:
+    needs: [lint, test]
+    if: github.ref == 'refs/heads/master'
+    name: Wago.io Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Java and Maven
+        uses: actions/setup-java@v6
+        with:
+          java-version: 25
+          distribution: temurin
+          cache: maven
+      - name: Cache Local Maven Repository
+        uses: actions/cache@v6
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Package Production
+        run: mvn generate-resources -D generate.sources.overwrite=true -P release
+      - name: Build Package
+        run: mvn --batch-mode --no-transfer-progress assembly:single@default-cli -P deploy-wago
+      - name: Verify Package Contents
+        run: |
+          entries=$(unzip -Z1 target/GearMenu.zip)
+          missing=0
+          for pattern in 'GearMenu/GearMenu\.toc' 'GearMenu/Bindings\.xml' 'GearMenu/code/[^/]+\.lua' 'GearMenu/localization/[^/]+\.lua'; do
+            if ! grep -Eqx "$pattern" <<< "$entries"; then
+              echo "::error::target/GearMenu.zip has no entry matching $pattern"
+              missing=1
+            fi
+          done
+          exit $missing
+      - name: Publish Package to Wago.io
+        run: |
+          mvn --batch-mode --no-transfer-progress \
+          package \
+          -P deploy-wago \
+          -D wago.auth-token=$TOKEN_WAGO
+        env:
+          TOKEN_WAGO: ${{ secrets.TOKEN_WAGO }}

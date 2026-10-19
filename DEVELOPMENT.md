@@ -253,6 +253,21 @@ mvn generate-resources -D generate.sources.overwrite=true -P development
 
 **Note:** This is only intended for manual deployment to CurseForge. With GitHub actions the token is supplied as a secret to the build process
 
+### Deploy Wago Release
+
+**Note:** Like CurseForge, create the GitHub release first. The upload goes into the Wago project shared with the Classic line, tagged with Wago's Forever game version (`addon.supported.patch.forever`).
+
+```
+# switch environment to release
+mvn generate-resources -D generate.sources.overwrite=true -P release
+# deploy release
+mvn package -P deploy-wago -D wago.auth-token=[token]
+# switch environment back to development
+mvn generate-resources -D generate.sources.overwrite=true -P development
+```
+
+**Note:** This is only intended for manual deployment to Wago. With GitHub actions the token is supplied as a secret to the build process
+
 ### GitHub Action Profiles
 
 This project has GitHub action profiles for different DevOps-related work such as linting and deployments to different providers. See `.github` folder for details.
@@ -441,7 +456,6 @@ The World of Warcraft: Forever values in `pom.xml` (`addon.interface.forever`,
 `addon.supported.patch.forever`, `addon.curseforge.gameVersionForever`) are not Renovate-managed:
 wow-renovate-data has no Forever variant (the CurseForge game version 17053 is still tagged
 `unknown` there). Bump them by hand when the beta reports a new interface version, then regenerate
-the sources. Wago has a Forever game version, but wago-release-maven-plugin cannot set it yet, so
-this line has no Wago deployment until the plugin gains a Forever patch field.
+the sources. `addon.supported.patch.forever` is also the Forever game version of the Wago upload.
 
 The configuration can be found in `renovate.json`. Renovate runs on a weekly schedule and creates pull requests for available updates.

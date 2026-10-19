@@ -28,11 +28,13 @@ Push all commits before proceeding
 * Make sure `build-resources/release-notes.md` are up-to-date
 * Make sure Metadata https://github.com/RagedUnicorn/wow-gearmenu-meta is up-to-date. The store
   description is shared with the Classic line - it has to stay correct for both
-* Make sure the repository secret `TOKEN_CURSEFORGE` exists
+* Make sure the repository secrets `TOKEN_CURSEFORGE` and `TOKEN_WAGO` exist
 * Create a GitHub deployment (from `master`)
   * Invoke GitHub action
     * https://github.com/RagedUnicorn/wow-forever-gearmenu/actions/workflows/release_github.yaml
 * Create a CurseForge deployment (from `master`)
   * Invoke CurseForge action
     * https://github.com/RagedUnicorn/wow-forever-gearmenu/actions/workflows/release_curseforge.yaml
-* Wago: no deployment yet - wago-release-maven-plugin cannot set Wago's Forever game version
+* Create a Wago.io deployment (from `master`)
+  * Invoke Wago.io action
+    * https://github.com/RagedUnicorn/wow-forever-gearmenu/actions/workflows/release_wago.yaml
