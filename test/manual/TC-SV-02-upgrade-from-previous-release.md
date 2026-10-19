@@ -1,6 +1,11 @@
 # TC-SV-02 — Upgrade from previous release migrates cleanly
 
-**Area:** SavedVariables | **Client:** Forever | **Mandatory:** yes
+**Area:** SavedVariables | **Client:** Forever | **Mandatory:** yes, from the second WoW: Forever release on
+
+> Not applicable to 3.0.0, the first WoW: Forever release: Forever players start fresh, there is no
+> previous Forever release to upgrade from. The v2.7.0 fixture is a Classic schema and only shows that
+> Classic SavedVariables carried over by hand load without errors. Once 3.0.0 has shipped, snapshot a
+> v3.0.0 fixture (with saved profiles) into `test/manual/fixtures/` and point this case at it.
 
 ## Preconditions
 

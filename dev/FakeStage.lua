@@ -25,9 +25,8 @@
 
 --[[
   Development-only fake stage for the media capture. Loaded by the development .toc only - it
-  must never ship in a release. The WoW Forever beta forgets SavedVariables on every client
-  restart and the beta character owns almost no gear, so the README media cannot be shot
-  against a real setup. `/rggm stage` builds one:
+  must never ship in a release. The beta character owns almost no gear, so the README media
+  cannot be shot against a real setup. `/rggm stage` builds one:
 
   - The configuration is staged live: the first gearBar gets head, neck, trinkets and weapons, a
     second, vertical gearBar (created when missing) rings, cloak and hands, and the TrinketMenu
@@ -41,8 +40,7 @@
     the queued-item badge and the right-click drop with its red flash all run the production
     code - only the final item move and the item lookups are faked.
 
-  The stage lives in memory only. A /reload drops it - and on the beta also the configuration,
-  which the client never loads back - so shoot a whole round in one go and /reload once at the
+  The stage lives in memory only. A /reload drops it, so shoot a whole round in one go and /reload once at the
   end to flush the shot log. `/rggm stage` again takes the fake gear away (the staged gearBars
   stay until the next reload); `/rggm stage reset` starts the fake gear over.
 

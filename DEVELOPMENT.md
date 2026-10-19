@@ -225,7 +225,7 @@ mvn generate-resources -D generate.sources.overwrite=true -P development
 
 ### Deploy GitHub Release
 
-Before creating a new release update `addon.tag.version` in `pom.xml`. Afterwards to create a new release and deploy to GitHub the `deploy-github` profile has to be used.
+Before creating a new release bump `<version>` in `pom.xml` (`addon.tag.version` is derived from it) and regenerate the sources with `mvn generate-resources -D generate.sources.overwrite=true -P development`. The Forever line releases 3.x (3.0.0, 3.1.0, 3.1.1, ...) - the Classic line in wow-classic-gearmenu stays on 2.x. The local `v2.x` tags come from the Classic remote, so never push all tags to this repository - push only the new release tag. Afterwards to create a new release and deploy to GitHub the `deploy-github` profile has to be used.
 
 ```
 # switch environment to release
@@ -441,6 +441,7 @@ The World of Warcraft: Forever values in `pom.xml` (`addon.interface.forever`,
 `addon.supported.patch.forever`, `addon.curseforge.gameVersionForever`) are not Renovate-managed:
 wow-renovate-data has no Forever variant (the CurseForge game version 17053 is still tagged
 `unknown` there). Bump them by hand when the beta reports a new interface version, then regenerate
-the sources. There is no Wago release for this line as long as Wago has no Forever game field.
+the sources. Wago has a Forever game version, but wago-release-maven-plugin cannot set it yet, so
+this line has no Wago deployment until the plugin gains a Forever patch field.
 
 The configuration can be found in `renovate.json`. Renovate runs on a weekly schedule and creates pull requests for available updates.

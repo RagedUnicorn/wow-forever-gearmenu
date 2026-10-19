@@ -51,7 +51,7 @@ One file per test case under [test/manual/](manual/). Case IDs follow `TC-<AREA>
 | ID                                                           | Case                                           |
 |--------------------------------------------------------------|------------------------------------------------|
 | [TC-SV-01](manual/TC-SV-01-fresh-install.md)                 | Fresh install seeds defaults                   |
-| [TC-SV-02](manual/TC-SV-02-upgrade-from-previous-release.md) | Upgrade from previous release migrates cleanly |
+| [TC-SV-02](manual/TC-SV-02-upgrade-from-previous-release.md) | Upgrade from previous release migrates cleanly (not applicable to 3.0.0) |
 
 ### GearBar management
 

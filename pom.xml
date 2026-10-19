@@ -36,7 +36,7 @@
     <addon.interface.forever>16001</addon.interface.forever>
     <!-- Interface line consumed by the .toc template. -->
     <addon.interface>${addon.interface.forever}</addon.interface>
-    <!-- WoW: Forever patch version, shown in the badge (Wago has no Forever field). -->
+    <!-- WoW: Forever patch version, shown in the badge (and Wago's Forever game version). -->
     <addon.supported.patch.forever>1.60.1</addon.supported.patch.forever>
     <addon.identifier>${project.groupId}.${project.artifactId}</addon.identifier>
     <addon.project.categories>Action Bars Combat PvP</addon.project.categories>
