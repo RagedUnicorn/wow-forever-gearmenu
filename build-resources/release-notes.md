@@ -1,54 +1,18 @@
-# New Features
-* Key bindings are now set in the game's own keybinding UI: Settings > Keybindings lists a "GearMenu" section with an entry per GearBar and GearSlot (up to two keys each), and Quick Keybind Mode binds a slot by hovering it and pressing a key. A GearBar's configuration has "Key Bindings" and "Quick Keybind Mode" buttons that open both, and each slot row shows its key with an "Unbind" button
-* Keys bound to a GearBar's slots keep working when a slot before them is removed - the keys follow the slots that move up - and a key binding changed while in combat is applied as soon as you leave combat instead of failing silently
-* Applying a profile no longer needs the UI reload for its key bindings; profiles cannot be switched while in combat
-* Profiles now follow the live active profile model: the profile you are on is marked "(active)" in gold and every change you make belongs to it - it is saved automatically when you switch profiles, at logout and reload, on export and at every login, so there is no Save / Update step to remember
-* Create new Profile copies the current settings into a new profile and makes it active; Load switches to the selected profile and reloads the UI, the profile you leave keeping your settings as they are; deleting the active profile falls back to Default
-* Add a Reset to defaults button that restores the factory settings into the active profile - the shipped options and the starter GearBar, exactly like a fresh install
-* The settings dropdowns (GearBar orientation and change menu direction, the slot type of each slot row, the item quality filter and the QuickChange category) now look like the dropdowns of the game settings: no radio bullets, the current entry is shown in gold and picking an entry applies it and closes the list
-* The slots of the GearBar, the change menu and the TrinketMenu now look like the buttons of the game's own action bar: the same frame, hover highlight and pressed state, the item icon rounded by the same mask and the cooldown swipe inside the frame. The look scales with the slot size setting and Quick Keybind Mode highlights a slot exactly like an action button
-* The key bound to a slot is shown like the hotkey of an action button - small grey text in the top right corner that turns red when the target is out of range - and a queued item now sits in the top left corner of the slot, framed like a small slot of its own, and right-clicking a slot to drop its queued swap flashes the slot red. Neighbouring slots on a GearBar, in the change menu and in the TrinketMenu sit as close together as the buttons of the action bar
+# GearMenu for World of Warcraft: Forever
 
-# Breaking Changes
-* The Custom theme and the theme option are gone: GearMenu Forever ships a single slot look, the style of the action bar buttons (see New Features), so the General settings no longer offer "Choose Theme" and its reload prompt. Saved settings, profiles and exported profile strings that still carry a theme value keep working - the value is simply ignored
-* GearMenu's own keybinding popup ("Set/Unset Keybinding" in the slot configuration) is gone - bind keys in Settings > Keybindings or Quick Keybind Mode instead. Keys are bound to positional entries ("GearBar 2 - Slot 3"), not to the slot frames, so there is nothing to migrate on this fresh WoW: Forever line
-* The Default profile is now your editable home profile instead of a frozen copy of the factory settings: it is never deleted or renamed, but loading it brings back what you last had in it. Use Reset to defaults to get the factory settings back
-* The Save current as... and Apply buttons are gone; Create new Profile and Load replace them. On the first login after the update the profile you had applied and not edited since becomes the active one, otherwise Default takes over your current settings - nothing is lost either way
-* Season of Discovery rune support is gone: the rune slots on the GearBar, the "Enable rune slots" option and the engraved-item tracking are removed because GearMenu Forever targets WoW Forever, which has no runes
-* `GM_AddToCombatQueue` no longer takes a runeAbilityId: the macro signature is now `GM_AddToCombatQueue(itemId, enchantId, slotId)` - update existing macros by dropping the third argument (for example `/run GM_AddToCombatQueue(233734, 0, 14)`)
-* This is now the GearMenu line for World of Warcraft: Forever and declares Interface 16001. Classic Era, Hardcore, TBC Anniversary and Mists of Pandaria Classic are no longer supported by this line - keep using GearMenu from wow-classic-gearmenu on those clients. There is no Wago release for this line because Wago has no Forever game version yet
+The first release of GearMenu for World of Warcraft: Forever (Interface 16001). It is based on GearMenu 2.8.0 for Classic and starts the Forever line at version 3.0.0 - Classic Era, TBC Anniversary and Mists of Pandaria Classic keep getting GearMenu 2.x from the same project page.
 
-# Bug Fixes
-* Fix a flood of Lua errors on WoW Forever when a GearBar change menu is open or the custom theme frame is hovered: the client removed the MouseIsOver global, GearMenu now uses the IsMouseOver widget method instead
-* Choosing the empty entry of a change menu no longer equips the item held on the cursor into the slot, and it now tells you why an item could not be unequipped - in combat, while dead, casting or under a loss of control effect, while a spell asks for a target, or when the item is locked - instead of silently doing nothing. Choosing the empty entry also cancels a swap still queued for that slot
-* Importing a profile string now checks the GearBar slots it carries: a string with a slot at an invalid position, a slot that is not a slot or a key binding that is not a key is refused as invalid instead of raising Lua errors while its key bindings are applied
-* The update notice now only accepts a version broadcast over the guild, raid, party or instance channel that is a plain version number - a whispered version or one carrying extra text is ignored, and only the clean version number is shown and remembered, so another player can no longer put their own text into your chat or silence genuine update notices
-* Chinese (zhCN): the "Add Gearslot" button and the maximum-slots message now speak of gear slots instead of GearBars, and the TrinketMenu settings are translated
-* Fix a Lua error when the GearSlot size is changed for a GearBar that no longer exists
-* Fix a Lua error when "Add Gearslot" is clicked on the configuration page of a GearBar that was deleted in the meantime
-* Fix a Lua error when your bags change while the change menu of a GearBar you just deleted is still open - the change menu now closes instead
-* A swap listener registered with GM_RegisterSwapListener that unregisters itself while handling an event no longer causes the next listener to be skipped and a "Swap listener failed" error to be logged
-* QuickChange rules now also fire for channelled spells and for casts that finish while a channel is active - before, those casts were silently ignored
-* The key binding on a GearSlot turns red for an out-of-range target right after a login or /reload - before, a target selected before the reload was only picked up once you changed target
-* The version check no longer repeats its guild message on every group change - the guild hears it once per login, the group on every change - and a group change right after another one is announced a few seconds later instead of being skipped, so a player who joins right away still learns about a newer version
-* The combat queue no longer restarts its update loop in the middle of a fight after a resurrection, a loss of control ending or an item being queued - queued items are still equipped as soon as the fight is over
-* A queued item that is momentarily locked (being moved or traded) is no longer dropped from the combat queue - GearMenu tells you once and equips it as soon as the lock clears
-* Fix an item waiting in the combat queue being queued again every tenth of a second right at the end of a fight - the queue now waits until the game treats you as fully out of combat and equips the item once
-* A QuickChange rule with a delay no longer swaps a slot back when you equipped or queued another item there while the delay was running
-* Importing a damaged or hand-edited profile string whose profile name is not text no longer raises a Lua error - the name prompt simply starts empty
-* An imported profile string now only brings in GearMenu's own settings - anything else a damaged or foreign string carries is left out of your saved profiles - and a paste far longer than any real profile is refused right away
-* Importing a damaged or hand-edited profile string with an out-of-range number (such as 1e999) is refused as invalid instead of storing an infinite size or position or raising a Lua error
-* GearBar and TrinketMenu positions no longer store the frame they are anchored to - they always anchor to the screen - so a moved GearBar can always be exported with its profile
-* The TrinketMenu keeps one row of height when you carry no trinkets, so an unlocked TrinketMenu can still be grabbed and moved, and it no longer grows past its 30 slots when you carry more trinkets
-* Pressing a GearSlot's key twice in quick succession keeps the slot pressed for the full flash of the second press instead of flickering back early
-* With simple tooltips enabled, hovering an item the game has not loaded yet no longer risks a Lua error or an empty tooltip - the tooltip appears on the next hover once the item is loaded
-* The message shown when GearSlots cannot be updated during combat is now translated into every supported language and no longer reads "after your are out of combat"
-* German, Russian and Chinese players see the English text for any message not translated yet instead of an empty label or a Lua error
-* Corrected spelling and grammar in the English, German and Russian texts, and every language now uses one consistent word for GearBars and GearSlots (German: Ausrüstungsbalken / Ausrüstungsplatz, Russian: панель / слот экипировки, Chinese: 装备条 / 装备槽) - the key binding list uses those words as well
-* Fix renaming a profile to the name it already has - for example pressing Enter in the prefilled rename box - deleting the profile; an unchanged name now simply closes the box
-* An imported profile string is now refused as invalid when it carries values the settings could never produce - a TrinketMenu with 0 columns, an oversized GearSlot, an unknown GearBar anchor or more GearBars than allowed - instead of breaking the layout after the reload, and the TrinketMenu always uses a column count and slot size inside its setting range
-* Inside a battleground the version check now reaches the battleground group over the instance chat channel - and your own party as well when you queued together - instead of sending on a party channel the battleground does not use
-* An error during GearMenu's start-up no longer switches off gear updates, the combat queue and the profile save on logout for the rest of the session - the error is still reported, and the rest of GearMenu keeps working
-* Creating or deleting a GearBar in combat is now refused with a message instead of failing half-way with an "Interface action failed because of an AddOn" error that left the saved GearBars out of step with the ones on screen - try again after combat
-* GearMenu no longer prints English-only internal error messages (such as "Could not find GearBar with id") to the chat window - they were developer diagnostics a player could not act on. An error raised by a swap listener registered with GM_RegisterSwapListener is now reported through the game's Lua error display (or an error-catching AddOn such as BugSack) instead
-* Deleting a GearBar that sits between two others no longer leaves the settings list of GearBars with a gap - the GearBars after it stay listed and can be deleted without a /reload
+# Highlights
+* Key bindings live in the game's own keybinding UI: Settings > Keybindings lists a "GearMenu" section with an entry per GearBar and GearSlot (up to two keys each), and Quick Keybind Mode binds a slot by hovering it and pressing a key. A GearBar's configuration opens both, and each slot row shows its key with an "Unbind" button. Keys follow a slot that moves up when a slot before it is removed, and a change made in combat is applied as soon as you leave combat
+* The GearBar slots, the change menu and the TrinketMenu look like the buttons of the game's own action bar - frame, hover and pressed state, rounded item icon, cooldown swipe, a hotkey that turns red when the target is out of range and a framed badge for a queued item
+* Profiles follow a live active profile: the profile you are on is marked "(active)" and every change belongs to it and is saved automatically. Create new Profile copies your current settings, Load switches profiles, and Reset to defaults restores the factory settings - exactly like a fresh install
+* The settings dropdowns look like the dropdowns of the game settings
+* Translated into German, Russian and Chinese; text not translated yet falls back to English
+
+# Differences from GearMenu 2.x for Classic
+* There is a single slot look - the Classic and Custom themes and the "Choose Theme" option are not part of the Forever line
+* GearMenu's own keybinding popup is replaced by the game's Keybindings list and Quick Keybind Mode (see Highlights)
+* Season of Discovery rune slots are not available - WoW: Forever has no runes
+* `GM_AddToCombatQueue` takes no runeAbilityId: the macro signature is `GM_AddToCombatQueue(itemId, enchantId, slotId)` (for example `/run GM_AddToCombatQueue(233734, 0, 14)`)
+* QuickChange (switching rules triggered by using an item) is not available in this release
+* Profile strings exported from GearMenu 2.x can be imported; settings that do not exist on Forever (such as the theme) are ignored
