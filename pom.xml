@@ -145,7 +145,7 @@
                 <configuration>
                   <game>wow</game>
                   <projectId>${addon.curseforge.projectId}</projectId>
-                  <displayName>${addon.displayName}-${addon.tag.version}.zip</displayName>
+                  <displayName>${addon.displayName}-forever-${addon.tag.version}.zip</displayName>
                   <changelogFile>${project.basedir}/build-resources/release-notes.md</changelogFile>
                   <changelogType>markdown</changelogType>
                   <gameVersions>

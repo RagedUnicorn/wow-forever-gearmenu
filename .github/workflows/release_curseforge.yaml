@@ -8,6 +8,7 @@ jobs:
     uses: ./.github/workflows/test.yaml
   curseforge-release-job:
     needs: [lint, test]
+    if: github.ref == 'refs/heads/master'
     name: CurseForge Release
     runs-on: ubuntu-latest
     timeout-minutes: 10

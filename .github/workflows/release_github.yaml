@@ -8,6 +8,9 @@ jobs:
     uses: ./.github/workflows/test.yaml
   github-release-job:
     needs: [lint, test]
+    if: github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
     name: GitHub Release
     runs-on: ubuntu-latest
     timeout-minutes: 10
