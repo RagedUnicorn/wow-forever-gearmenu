@@ -23,7 +23,7 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- luacheck: read globals GetItemInfo C_LossOfControl
+-- luacheck: read globals GetItemInfo C_LossOfControl issecretvalue
 
 local mod = rggm
 local me = {}
@@ -227,6 +227,18 @@ function me.UpdateEquipChangeBlockStatus()
 
   while eventIndex > 0 do
     local event = C_LossOfControl.GetActiveLossOfControlData(eventIndex)
+
+    --[[
+      The Forever client can return locType as a secret string that may not be used as a table
+      key. Such an effect cannot be classified, so it is treated as blocking - the block clears on
+      the LOSS_OF_CONTROL_UPDATE that fires once the effect ends.
+    ]]--
+    if issecretvalue ~= nil and issecretvalue(event.locType) then
+      mod.logger.LogDebug(me.tag, "UpdateEquipChangeBlockStatus detected a secret locType - blocking")
+      isEquipChangeBlocked = true
+
+      return
+    end
 
     mod.logger.LogDebug(me.tag, "UpdateEquipChangeBlockStatus detected locType: " .. event.locType)
 

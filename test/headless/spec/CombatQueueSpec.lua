@@ -434,6 +434,38 @@ describe("CombatQueue", function()
       assert.are.equal(1, calls.startTicker)
     end)
 
+    it("blocks equipment changes when the locType is a secret value", function()
+      local secretLocType = "ROOT"
+      local restoreSecret = wowStubs.install({
+        issecretvalue = function(value) return value == secretLocType end
+      })
+
+      withLossOfControl({ { locType = secretLocType } }, function()
+        combatQueue.UpdateEquipChangeBlockStatus()
+      end)
+      restoreSecret()
+
+      assert.is_true(combatQueue.IsEquipChangeBlocked())
+      assert.are.equal(0, calls.startTicker)
+    end)
+
+    it("clears a block from a secret locType once the effect ends", function()
+      local restoreSecret = wowStubs.install({
+        issecretvalue = function(value) return value == "ROOT" end
+      })
+
+      withLossOfControl({ { locType = "ROOT" } }, function()
+        combatQueue.UpdateEquipChangeBlockStatus()
+      end)
+      withLossOfControl({}, function()
+        combatQueue.UpdateEquipChangeBlockStatus()
+      end)
+      restoreSecret()
+
+      assert.is_false(combatQueue.IsEquipChangeBlocked())
+      assert.are.equal(1, calls.startTicker)
+    end)
+
     it("does not block when there are no active loss-of-control events", function()
       withLossOfControl({}, function()
         combatQueue.UpdateEquipChangeBlockStatus()
