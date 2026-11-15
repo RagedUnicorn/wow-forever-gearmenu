@@ -23,37 +23,38 @@
 ]]--
 
 --[[
-  Spec for the tracked target in code/Target.lua (me.UpdateCurrentTarget,
-  me.GetCurrentTargetGuid). gui/GearBar.lua reads the guid to tell whether the player has a
-  target at all, so a target that was cleared must not leave its guid behind.
+  Spec for the tracked target in code/Target.lua (me.UpdateCurrentTarget, me.HasTarget).
+  gui/GearBar.lua reads it to tell whether the player has a target at all, so a target that
+  was cleared must not be reported afterwards. Only UnitExists is consulted - UnitGUID can
+  return a secret string on the Forever client that addon code may not compare.
 
   CoreInitializeSpec covers the seeding on login; this spec covers the updates that
-  PLAYER_TARGET_CHANGED drives afterwards. UnitGUID is stubbed per test.
+  PLAYER_TARGET_CHANGED drives afterwards. UnitExists is stubbed per test.
 ]]--
 
 local wowStubs = require("WowStubs")
 
-local FIRST_GUID = "Player-1234-00ABCDEF"
-local SECOND_GUID = "Creature-0-1234-0-0-5678-0000ABCDEF"
-
 describe("Target", function()
   local target
-  local targetGuid
+  local targetExists
   local queriedUnits
   local previousLogger
   local restore
 
   before_each(function()
-    targetGuid = nil
+    targetExists = false
     queriedUnits = {}
 
     previousLogger = rggm.logger
     rggm.logger = { LogDebug = function() end }
 
     restore = wowStubs.install({
-      UnitGUID = function(unit)
+      UnitExists = function(unit)
         queriedUnits[#queriedUnits + 1] = unit
-        return targetGuid
+        return targetExists
+      end,
+      UnitGUID = function()
+        error("Target must not read the target GUID")
       end
     })
 
@@ -68,35 +69,33 @@ describe("Target", function()
   end)
 
   it("starts without a target before the first update", function()
-    assert.are.equal("", target.GetCurrentTargetGuid())
+    assert.is_false(target.HasTarget())
   end)
 
-  it("reads the guid of the target unit", function()
-    targetGuid = FIRST_GUID
+  it("checks whether the target unit exists", function()
+    targetExists = true
 
     target.UpdateCurrentTarget()
 
     assert.are.same({ RGGM_CONSTANTS.UNIT_ID_TARGET }, queriedUnits)
-    assert.are.equal(FIRST_GUID, target.GetCurrentTargetGuid())
+    assert.is_true(target.HasTarget())
   end)
 
-  it("follows the player to a new target", function()
-    targetGuid = FIRST_GUID
+  it("treats a nil result as no target", function()
+    targetExists = nil
+
     target.UpdateCurrentTarget()
 
-    targetGuid = SECOND_GUID
-    target.UpdateCurrentTarget()
-
-    assert.are.equal(SECOND_GUID, target.GetCurrentTargetGuid())
+    assert.is_false(target.HasTarget())
   end)
 
-  it("forgets the previous guid once the target is cleared", function()
-    targetGuid = FIRST_GUID
+  it("forgets the previous target once the target is cleared", function()
+    targetExists = true
     target.UpdateCurrentTarget()
 
-    targetGuid = nil
+    targetExists = false
     target.UpdateCurrentTarget()
 
-    assert.are.equal("", target.GetCurrentTargetGuid())
+    assert.is_false(target.HasTarget())
   end)
 end)

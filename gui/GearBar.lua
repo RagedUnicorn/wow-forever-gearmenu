@@ -27,6 +27,7 @@
 -- luacheck: read globals GetInventoryItemLink C_Item C_Container InCombatLockdown
 -- luacheck: read globals C_PaperDollInfo EquipCursorItem ClearCursor IsInventoryItemLocked PickupInventoryItem
 -- luacheck: read globals QuickKeybindButtonTemplateMixin QuickKeybindFrame C_Timer NumberFontNormalSmallGray
+-- luacheck: read globals issecretvalue
 
 --[[
   The gearBar (GM_Gearbar) module is responsible for building and showing gearBars to the user.
@@ -576,7 +577,7 @@ function me.UpdateSpellRange()
     local gearBar = mod.gearBarManager.GetGearBar(gearBarId)
 
     for _, gearSlot in pairs(uiGearBar.gearSlotReferences) do
-      if mod.target.GetCurrentTargetGuid() == "" then
+      if not mod.target.HasTarget() then
         mod.uiHelper.SetColor(gearSlot.keyBindingText, RGGM_CONSTANTS.COLOR.KEY_BINDING)
       else
         local gearSlotMetaData = gearBar.slots[gearSlot.position]
@@ -590,7 +591,8 @@ function me.UpdateSpellRange()
           ]]--
           local isInRange = C_Item.IsItemInRange(itemLink or "", RGGM_CONSTANTS.UNIT_ID_TARGET)
 
-          if isInRange == nil or isInRange == true then
+          -- a secret result may not be compared from addon code - fall back to the default colour
+          if (issecretvalue ~= nil and issecretvalue(isInRange)) or isInRange == nil or isInRange == true then
             mod.uiHelper.SetColor(gearSlot.keyBindingText, RGGM_CONSTANTS.COLOR.KEY_BINDING)
           else
             mod.uiHelper.SetColor(gearSlot.keyBindingText, RGGM_CONSTANTS.COLOR.KEY_BINDING_OUT_OF_RANGE)

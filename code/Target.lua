@@ -23,7 +23,7 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- luacheck: read globals UnitGUID
+-- luacheck: read globals UnitExists
 
 local mod = rggm
 local me = {}
@@ -32,28 +32,25 @@ mod.target = me
 
 me.tag = "Target"
 
-local currentTargetGuid = ""
+--[[
+  Only whether the player has a target is tracked. UnitGUID can return a secret string on the
+  Forever client that addon code may not compare, so the GUID itself is never stored.
+]]--
+local hasTarget = false
 
 --[[
-  Returns the players current target uid or an empty string if the player has no target.
+  Returns whether the player currently has a target
 
-  @return {string}
+  @return {boolean}
 ]]--
-function me.GetCurrentTargetGuid()
-  return currentTargetGuid
+function me.HasTarget()
+  return hasTarget
 end
 
 --[[
-  Get players current target in the form of the targets unique id and update the currentTarget.
+  Update whether the player currently has a target
 ]]--
 function me.UpdateCurrentTarget()
-  local targetId = UnitGUID(RGGM_CONSTANTS.UNIT_ID_TARGET)
-
-  if targetId == nil then
-    currentTargetGuid = ""
-    mod.logger.LogDebug(me.tag, "Update players targetGUID: [Empty-target]")
-  else
-    currentTargetGuid = targetId
-    mod.logger.LogDebug(me.tag, "Update players targetGUID: " .. currentTargetGuid)
-  end
+  hasTarget = UnitExists(RGGM_CONSTANTS.UNIT_ID_TARGET) and true or false
+  mod.logger.LogDebug(me.tag, "Update players target - hasTarget: " .. tostring(hasTarget))
 end

@@ -29,20 +29,18 @@
 
   Core.lua is loaded with a recording event bus; me.OnLoad registers the handlers and the spec
   fires PLAYER_ENTERING_WORLD directly. code/Target.lua is loaded for real against stubbed
-  UnitGUID; every other module Initialize reaches is a recorder that accepts any call
+  UnitExists; every other module Initialize reaches is a recorder that accepts any call
   and logs it, so the spec can also assert where in the sequence the target is seeded.
 ]]--
 
 local wowStubs = require("WowStubs")
-
-local TARGET_GUID = "Player-1234-00ABCDEF"
 
 describe("Core initialize", function()
   local handlers
   local callLog
   -- errors the client error handler received
   local reportedErrors
-  local targetGuid
+  local targetExists
   local restore
 
   --[[
@@ -78,7 +76,7 @@ describe("Core initialize", function()
     handlers = {}
     callLog = {}
     reportedErrors = {}
-    targetGuid = TARGET_GUID
+    targetExists = true
 
     for _, name in ipairs({
       "logger", "cmd", "configuration", "profile", "addonConfiguration", "keyBindProxy", "gearBar",
@@ -101,7 +99,7 @@ describe("Core initialize", function()
     rggm.L = { help = " %s" }
 
     restore = wowStubs.install({
-      UnitGUID = function() return targetGuid end,
+      UnitExists = function() return targetExists end,
       C_AddOns = wowStubs.stubs.C_AddOns({ Version = "v0.0.0-test" }),
       print = function() end,
       geterrorhandler = function()
@@ -128,15 +126,15 @@ describe("Core initialize", function()
   it("seeds a target selected before the login or /reload", function()
     handlers["PLAYER_ENTERING_WORLD"](false, true)
 
-    assert.are.equal(TARGET_GUID, rggm.target.GetCurrentTargetGuid())
+    assert.is_true(rggm.target.HasTarget())
   end)
 
   it("keeps the target empty when nothing is targeted", function()
-    targetGuid = nil
+    targetExists = false
 
     handlers["PLAYER_ENTERING_WORLD"](true, false)
 
-    assert.are.equal("", rggm.target.GetCurrentTargetGuid())
+    assert.is_false(rggm.target.HasTarget())
   end)
 
   it("seeds the target after the gearBars are built and before their first visual update", function()
@@ -184,7 +182,7 @@ describe("Core initialize", function()
     handlers["PLAYER_ENTERING_WORLD"](false, false)
 
     assert.is_nil(indexOf("target.UpdateCurrentTarget"))
-    assert.are.equal("", rggm.target.GetCurrentTargetGuid())
+    assert.is_false(rggm.target.HasTarget())
   end)
 
   it("broadcasts the version to guild and group once on login or /reload", function()
